@@ -49,14 +49,32 @@ Sri Lanka travel booking web app with mock data (high-fidelity prototype). Locat
 - **All buttons**: Pill-shaped (border-radius: 999px)
 
 ### Pages/Routes
-- `/` — Home (hero, product cards, featured tours, how it works)
+- `/` — Home (hero, 3 product cards, featured tours scroll, how-it-works, vehicle fleet, trust logos, CTA)
 - `/tours` — Tour listing grid with category filters
 - `/tours/:slug` — Tour detail with itinerary & booking widget
 - `/tours/custom` — Create-your-own 5-step wizard
+- `/transfers` — Transfers page (placeholder, routes to Tours for now)
 - `/checkout` — 3-step checkout (contact → review → payment)
 - `/account` — Tourist portal (bookings, invoices, profile)
 - `/driver` — Driver dashboard (mobile-first design)
 - `/admin` — Admin panel (KPI dashboard, tours, bookings, drivers, fleet, CYO pipeline)
+
+### Shared Components (src/components/shared/)
+- SectionHeading — Overline + display heading with italic `*word*`
+- TourCard — Image card with gradient, duration badge, region chips, price
+- VehicleSelector — Horizontal radio cards with vehicle images
+- CurrencySelector — Dropdown with flag + code, stores in CurrencyContext
+- PriceSummary — Line items, add-ons, surcharge, total with converted currency
+- BookingCard — Type icon, title, dates, StatusBadge, vehicle, price
+- StatusBadge — Colored pill per status (confirmed/pending/cancelled/etc)
+- Stepper — Numbered circles with connecting lines
+- MapPlaceholder — Sage-bg waypoint list with dot markers
+- KPICard — Icon, label, value, trend arrow
+- DataTable — Search, filters, sortable headers, pagination
+- Modal — Overlay + card with title, body, cancel/confirm
+
+### Contexts
+- CurrencyContext — React context for multi-currency support (6 currencies, GBP base)
 
 ### Key Dependencies
 - wouter (routing), framer-motion (animations), recharts (admin charts)
