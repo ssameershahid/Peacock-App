@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "Smooth page transitions and micro-interactions"
+  "date-fns": "Date formatting and manipulation for bookings"
+  "recharts": "Admin dashboard analytics visualization"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes safely"
+  "@hookform/resolvers": "Form validation"
+  "react-hook-form": "Form state management"
+  "zod": "Schema validation"
+  "@dnd-kit/core": "Drag and drop for CYO itinerary builder and Kanban board"
+  "@dnd-kit/sortable": "Sortable lists for dnd-kit"
+  "@dnd-kit/utilities": "Utilities for dnd-kit"
+
+notes:
+  - This is a high-fidelity prototype with mocked data.
+  - All API calls are simulated using TanStack Query with mock delays.
+  - Authentication is mocked via a simple context provider.

@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  
+  --color-forest-50: hsl(120 11% 91%);
+  --color-forest-100: hsl(120 12% 81%);
+  --color-forest-200: hsl(120 14% 61%);
+  --color-forest-300: hsl(142 22% 39%);
+  --color-forest-400: hsl(172 38% 23%);
+  --color-forest-500: hsl(165 38% 17%);
+  --color-forest-600: hsl(165 38% 13%);
+  --color-forest-700: hsl(165 38% 9%);
+  
+  --color-amber-50: hsl(36 88% 94%);
+  --color-amber-100: hsl(35 78% 75%);
+  --color-amber-200: hsl(31 76% 60%);
+  --color-amber-300: hsl(32 67% 50%);
+  --color-amber-400: hsl(32 71% 41%);
+  --color-amber-500: hsl(31 72% 34%);
+  
+  --color-warm-50: hsl(43 24% 94%);
+  --color-warm-100: hsl(40 17% 89%);
+  --color-warm-200: hsl(40 12% 81%);
+  --color-warm-300: hsl(40 6% 67%);
+  --color-warm-400: hsl(38 4% 53%);
+  --color-warm-500: hsl(40 5% 40%);
+  --color-warm-600: hsl(38 4% 28%);
+  --color-warm-900: hsl(40 6% 10%);
+
+  --color-cream: hsl(38 33% 95%);
+  --color-sage: hsl(120 11% 91%);
+  
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --font-display: 'Instrument Serif', 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+  
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-modal: 0 12px 32px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04);
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 40 6% 10%; /* warm-900 */
+  
+  --card: 0 0% 100%;
+  --card-foreground: 40 6% 10%;
+  
+  --primary: 165 38% 17%; /* forest-500 */
+  --primary-foreground: 0 0% 100%;
+  
+  --secondary: 43 24% 94%; /* warm-50 */
+  --secondary-foreground: 165 38% 17%;
+  
+  --accent: 32 67% 50%; /* amber-300 */
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 5 65% 47%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --success: 146 46% 33%;
+  --success-foreground: 0 0% 100%;
+  
+  --border: 40 17% 89%; /* warm-100 */
+  --input: 40 17% 89%;
+  --ring: 165 38% 17%;
+  
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-normal;
+  }
+}
+
+/* Custom utility for the italic word in headings */
+.heading-em {
+  @apply italic font-normal;
+}
+
+/* Hide scrollbar for horizontal scrolling areas but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
