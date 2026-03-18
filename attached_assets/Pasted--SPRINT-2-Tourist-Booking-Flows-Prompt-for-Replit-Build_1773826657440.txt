@@ -1,0 +1,160 @@
+# SPRINT 2 — Tourist Booking Flows
+
+## Prompt for Replit:
+
+Build all the tourist-facing booking pages. Load tour data from /data/tours.json, vehicles from /data/vehicles.json, transfers from /data/transfers.json, currencies from /data/currencies.json. Use the shared components built in Sprint 1.
+
+### 1. Tours Listing (/app/tours)
+- SectionHeading: overline "EXPLORE SRI LANKA", heading "Ready-to-go *tours*"
+- **CYO banner at top:** Highlighted card with sage background: "Don't see what you're looking for?" + "Create your own tour →" button linking to /app/tours/custom
+- **Filter bar:** Duration dropdown (Any, 5-7 days, 8-10 days, 11+ days), Region dropdown (All, Cultural Triangle, Hill Country, South Coast, Wildlife), Sort by (Popular, Price low-high, Price high-low, Duration)
+- **Tour grid:** 2 columns desktop, 1 column mobile. TourCards for all 4 tours from tours.json
+- Each card links to /app/tours/[slug]
+
+### 2. Tour Detail (/app/tours/[slug])
+Load tour by slug from tours.json. This is the MOST IMPORTANT page — make it beautiful.
+
+- **Hero:** Full-width placeholder image area (gradient overlay), tour name (font-display, 40px), tagline, duration badge ("10 days / 9 nights"), difficulty badge
+- **Overview section:** bg-white. Tour description paragraph. Highlights as pill chips (bg-sage text-forest-500).
+- **What's included / not included:** Two columns side by side. Included: green check icon + text. Not included: red x icon + text. Light green/red tinted backgrounds.
+- **Day-by-day itinerary:** bg-cream section. SectionHeading: "Your *itinerary*". Expandable accordion — each day card shows:
+  - Day number circle (bg-forest-500 text-white, 36px round)
+  - Title in font-display (e.g., "Colombo to Sigiriya")
+  - Location badge
+  - Description paragraph
+  - Driving time badge (clock icon + "4–5 hours")
+  - Key stops as small chips
+  - Day 1 expanded by default, rest collapsed
+- **MapPlaceholder** alongside itinerary on desktop (sticky), below on mobile. Shows all tour locations as waypoints.
+- **STICKY BOOKING WIDGET** (right sidebar on desktop, fixed bottom sheet on mobile):
+  - "Book this tour" heading (font-display)
+  - Start date picker (DatePicker component, min date = today + tour's minLeadTimeDays)
+  - "Add extra days" slider: -3 to +3, default 0. Label shows "10 days" updating to "11 days" etc.
+  - VehicleSelector showing all 5 types with prices from this tour's vehicleRates
+  - "Passengers" number input (1-35 based on selected vehicle capacity)
+  - **Add-ons section:** Toggle switches for each add-on (mock: "Airport pickup £28", "Welcome pack £15", "Yala safari jeep £45"). Each toggle updates price.
+  - **PriceSummary:** Shows: vehicle rate × days = subtotal, + add-ons, = total. Currency converted.
+  - Cancellation note: "Free cancellation 10+ days before start" (green text, shield icon)
+  - **CTA button:** "Book this tour — £650" (bg-amber-300 text-white rounded-full, large, full width). Price updates in real time.
+
+### 3. Create Your Own (/app/tours/custom)
+5-step wizard. Stepper component at top showing progress.
+
+**Step 1 — Trip basics:**
+- "What kind of trip?" — 4 selectable cards: Holiday, Business, Seasonal/Religious, Sport
+- "How many travellers?" — number input
+- "Preferred vehicle" — VehicleSelector component
+
+**Step 2 — Destinations:**
+- "Where do you want to go?" heading
+- Grid of 12 destination cards (3 cols desktop, 2 mobile): Colombo, Sigiriya, Kandy, Ella, Galle, Yala, Trincomalee, Negombo, Nuwara Eliya, Tangalle, Anuradhapura, Haputale. Each card: placeholder image, name, short description. Selected = ring-2 ring-forest-500 with checkmark overlay.
+- MapPlaceholder on the right showing selected destinations as dots
+- "Anywhere else?" free text input at bottom
+
+**Step 3 — Dates & duration:**
+- Start date picker
+- "How many days?" — slider from 3 to 21, with number displayed
+- "Are your dates flexible?" — toggle switch
+
+**Step 4 — Preferences:**
+- Budget range: 4 radio cards (Budget, Mid-range, Premium, Flexible)
+- Travel style: checkbox group (Adventure, Cultural, Relaxation, Mix)
+- Interests: clickable tag chips (Nature, Wildlife, Beaches, Food & Cuisine, Temples & History, Tea Plantations, Surfing, Hiking, Photography). Selected = bg-forest-500 text-white.
+- Special requests: textarea (500 chars, char counter)
+
+**Step 5 — Review & submit:**
+- Summary card showing all selections from steps 1-4
+- Contact fields: name, email, phone, country dropdown (pre-fill if "logged in")
+- Note: "Our team will review your request and send you a personalised quote within 24–48 hours."
+- "Submit request" button (primary)
+- On submit: show confirmation modal/page with reference number
+
+Each step has "Back" and "Continue" navigation buttons. "Continue" validates required fields.
+
+### 4. Transfers (/app/transfers)
+- **Hero:** SectionHeading: overline "GET THERE", heading "Island *transfers*". Subtext about private driver transfers.
+
+**Airport section (top, prominent):**
+- "Airport pickup & drop-off" subheading (font-display)
+- 6 airport route cards in 2x3 grid (2x1 on mobile). Each card:
+  - Route name (e.g., "Airport → Colombo City")
+  - Distance + estimated time badges
+  - "From £28" starting price
+  - On click/expand: shows price for all 5 vehicle types in a mini table
+  - "Book now" button
+
+**Custom section (below, bg-cream):**
+- "Going somewhere *else*?" subheading
+- Two input fields styled as search bars: "Pickup location" and "Drop-off location" (placeholder text, styled to look like Google Places autocomplete)
+- MapPlaceholder between/beside inputs showing a route line
+- VehicleSelector
+- Date picker + Time picker (dropdown: 00:00 to 23:30 in 30-min increments)
+- Passenger count + Luggage count inputs
+- **Instant price display:** Large text showing calculated price (distance × per-km rate). Updates when vehicle changes.
+- "Book transfer — £XX" CTA button
+
+**Popular routes sidebar/section:**
+- 5 routes as compact cards: Colombo→Galle, Colombo→Kandy, Colombo→Sigiriya, Kandy→Ella, Galle→Ella
+
+### 5. Checkout (/app/checkout)
+Stepper at top: 1. Contact → 2. Review → 3. Payment
+
+**Step 1 — Contact details:**
+- First name, last name (side by side)
+- Email address
+- Phone number (with country code selector)
+- Country dropdown
+- Special requests textarea (500 chars)
+- "Continue to review →" button
+
+**Step 2 — Review booking:**
+- Full booking summary card:
+  - Product type badge (Tour / Transfer)
+  - Tour/route name
+  - Dates
+  - Vehicle type + image
+  - Passengers
+  - Price breakdown (PriceSummary component)
+  - Add-ons listed
+  - Total in bold
+- Cancellation policy box (green border, shield icon): "Free cancellation 10+ days before start. No refund within 10 days."
+- Terms & conditions checkbox: "I agree to the terms & conditions and cancellation policy"
+- "Proceed to payment →" button
+
+**Step 3 — Payment (mock):**
+- Mock Stripe checkout UI: card number input (disabled/placeholder), expiry, CVC
+- Or styled box saying "Stripe Checkout will appear here" with Stripe logo
+- "Pay £650" amber button
+- Security badges: "PCI compliant", "SSL encrypted", Stripe logo
+
+### 6. Confirmation (/app/checkout/confirmation)
+- Green success icon (large checkmark circle)
+- "Booking confirmed!" heading (font-display)
+- Booking reference: "BK-2026-006" in large monospace text
+- Summary card: tour name, dates, vehicle, total paid
+- "What happens next" section:
+  1. "Check your email for confirmation and invoice"
+  2. "Add trip details (passport, hotel, flight) anytime before your trip"
+  3. "Your driver will be assigned and you'll be notified"
+- Action buttons: "View booking" → /app/account/bookings/[id], "Download invoice" (mock), "Book another trip" → /app
+- Confetti or subtle celebration animation (optional)
+
+### 7. Login (/app/login)
+- Centered card on cream background
+- "Welcome back" heading (font-display)
+- Email input, password input
+- "Log in" primary button
+- "Forgot password?" link
+- Divider: "or"
+- "Continue with Google" button (white bg, Google icon, dark text, border)
+- "Don't have an account? Register →" link
+
+### 8. Register (/app/register)
+- Centered card on cream background
+- "Create your *account*" heading
+- First name, last name (side by side)
+- Email, password, confirm password
+- Country dropdown
+- "Create account" primary button
+- Divider + "Continue with Google" button
+- "Already have an account? Log in →" link

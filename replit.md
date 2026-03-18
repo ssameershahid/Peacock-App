@@ -80,10 +80,19 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 
 ### `artifacts/peacock-app` (`@workspace/peacock-app`)
 
-React + Vite web app for Peacock Drivers. Frontend-only prototype with mock data.
+React + Vite web app for Peacock Drivers. Frontend-only prototype with structured JSON data.
 - Entry: `src/main.tsx` → `src/App.tsx`
-- Mock data: `src/lib/mock-data.ts`
+- Data layer: `src/lib/mock-data.ts` imports from JSON files in `src/data/`
+- JSON data files:
+  - `src/data/tours.json` — 4 tours with full day-by-day itineraries
+  - `src/data/vehicles.json` — 5 vehicle types with real images at `/vehicles/`
+  - `src/data/transfers.json` — 6 airport routes + 5 popular routes with per-vehicle pricing
+  - `src/data/currencies.json` — 6 currencies (GBP base) with exchange rates
+  - `src/data/bookings.json` — 5 sample bookings + 3 CYO requests
+- Vehicle images: `public/vehicles/` (car.jpg, minivan.jpg, large-minivan.jpg, small-bus.jpg, medium-bus.jpg)
 - Design tokens: `src/index.css` (CSS custom properties)
+- Vehicle IDs: car, minivan, large-van, small-bus, medium-bus
+- Tour slugs: classic-sri-lanka, wild-sri-lanka, beaches-and-culture, hill-country-explorer
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'wouter';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Button } from '@/components/ui/button';
 import { Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight } from 'lucide-react';

@@ -12,7 +12,7 @@ export default function TourDetail() {
   const { data: tour, isLoading } = useTour(slug || "");
   const { data: vehicles } = useVehicles();
   
-  const [selectedVehicle, setSelectedVehicle] = useState<string>("v2"); // Default minivan
+  const [selectedVehicle, setSelectedVehicle] = useState<string>("minivan");
   const [pax, setPax] = useState(2);
   const [addons, setAddons] = useState({ airport: true, sim: false });
   const [expandedDay, setExpandedDay] = useState<number | null>(1);

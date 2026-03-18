@@ -1,0 +1,41 @@
+# SPRINT 1 — App Shell + Shared Components + Home Page
+
+## Prompt for Replit:
+
+Build the app shell and home page. Use the mock data from /data/ and vehicle images from /public/vehicles/.
+
+### 1. App Shell
+- **Header:** Peacock Drivers logo (text logo for now: "Peacock Drivers" in font-display), main nav links (Tours, Transfers, My Trips), CurrencySelector dropdown (6 currencies with flags), Login/Register buttons. On mobile: hamburger menu.
+- **Footer:** Logo, nav links, contact info, social links placeholder, copyright. Dark forest green background (bg-forest-500), white text.
+- **Layout wrapper:** max-w-[1200px] mx-auto with 24px side padding.
+
+### 2. Shared Components (build in /components/)
+- **VehicleSelector** — Horizontal row of radio cards. Each: vehicle image from /public/vehicles/, name, capacity ("1–3 passengers"), price/day. Selected = ring-2 ring-forest-500 bg-forest-50. Scrollable on mobile.
+- **DatePicker** — Calendar component. Disabled dates before today + lead time. Selected date highlighted in forest-500.
+- **PriceSummary** — Card showing: line items list, add-ons, seasonal surcharge (if any), total. GBP primary + converted currency in smaller text below.
+- **CurrencySelector** — Dropdown: flag emoji + code (🇬🇧 GBP). 6 options. Stores selection in React context.
+- **TourCard** — Image with gradient overlay (transparent → forest-500/70). Tour name in font-display text-white at bottom. Below image: duration tag, region chips, "From £XX/day" price, "View tour →" link.
+- **BookingCard** — Used in tourist portal + admin. Type icon (map pin for tours, car for transfers), tour/route name, dates, StatusBadge, vehicle type, price.
+- **StatusBadge** — Pill badge. Confirmed=green, Pending=amber, Cancelled=red, Completed=gray, In Progress=blue, Quote Requested=blue.
+- **Stepper** — Numbered circles connected by lines. Active=forest-500 filled, completed=forest-500 with checkmark, upcoming=warm-100 outline.
+- **SectionHeading** — Overline label (uppercase, text-xs, tracking-widest, text-amber-300) + font-display heading with one word wrapped in italic `<em>`. Reusable via props: overline string, heading string, italicWord string.
+- **MapPlaceholder** — Styled div with sage background, subtle dotted pattern, and route waypoints listed vertically with dot markers. Props: locations array.
+- **KPICard** — Metric card: icon, label, large value, optional trend arrow.
+- **DataTable** — Table with search input, filter dropdowns, sortable column headers, pagination.
+- **Modal** — Overlay + centered card with title, body content, cancel/confirm buttons.
+
+### 3. Home Page (/app)
+- **Hero section:** bg-cream. "Explore Sri Lanka your *way*" (font-display, 56px, "way" in italic). Subtext: "Private driver & vehicle included. Choose a curated tour, design your own journey, or book an instant transfer." Three product cards below:
+  1. "Ready-to-Go Tours" — sage background, tour illustration placeholder, "Browse curated tours" → /app/tours
+  2. "Create Your Own" — cream background, map illustration placeholder, "Design your perfect trip" → /app/tours/custom  
+  3. "Airport & Transfers" — sage background, vehicle image, "Book a ride" → /app/transfers
+
+- **Featured tours section:** bg-white. SectionHeading: overline "POPULAR JOURNEYS", heading "Tours we *love*". Horizontal scroll of 4 TourCards loading from tours.json.
+
+- **How it works section:** bg-cream. SectionHeading: overline "HOW IT WORKS", heading "Three simple *steps*". Three numbered cards: (1) "Choose your journey" — Browse tours or create your own, (2) "Book & pay securely" — Stripe-powered checkout, (3) "Meet your driver" — Your personal guide awaits.
+
+- **Vehicle fleet section:** bg-white. SectionHeading: overline "OUR FLEET", heading "Travel in *comfort*". All 5 vehicles displayed as cards with images from /public/vehicles/.
+
+- **Trust section:** bg-cream. Horizontal row of placeholder trust logos (Travel+Leisure, Condé Nast, etc.) in muted gray.
+
+- **CTA section:** bg-forest-500. font-display text-white heading: "Ready to explore *Sri Lanka*?" Body: "Book your journey today and travel with trusted local drivers." White pill button: "Start planning →"

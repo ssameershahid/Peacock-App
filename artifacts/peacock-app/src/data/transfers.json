@@ -1,0 +1,94 @@
+{
+  "airportRoutes": [
+    {
+      "id": "cmb-colombo",
+      "from": "Bandaranaike Int. Airport (CMB)",
+      "to": "Colombo City",
+      "distance": 35,
+      "estimatedTime": "1–1.5 hours",
+      "prices": { "car": 28, "minivan": 38, "large-van": 48, "small-bus": 65, "medium-bus": 95 }
+    },
+    {
+      "id": "cmb-kandy",
+      "from": "Bandaranaike Int. Airport (CMB)",
+      "to": "Kandy",
+      "distance": 120,
+      "estimatedTime": "3–3.5 hours",
+      "prices": { "car": 66, "minivan": 90, "large-van": 114, "small-bus": 144, "medium-bus": 180 }
+    },
+    {
+      "id": "cmb-galle",
+      "from": "Bandaranaike Int. Airport (CMB)",
+      "to": "Galle",
+      "distance": 165,
+      "estimatedTime": "3–4 hours",
+      "prices": { "car": 91, "minivan": 124, "large-van": 157, "small-bus": 198, "medium-bus": 248 }
+    },
+    {
+      "id": "cmb-sigiriya",
+      "from": "Bandaranaike Int. Airport (CMB)",
+      "to": "Sigiriya",
+      "distance": 175,
+      "estimatedTime": "4–4.5 hours",
+      "prices": { "car": 96, "minivan": 131, "large-van": 166, "small-bus": 210, "medium-bus": 263 }
+    },
+    {
+      "id": "cmb-ella",
+      "from": "Bandaranaike Int. Airport (CMB)",
+      "to": "Ella",
+      "distance": 270,
+      "estimatedTime": "6–7 hours",
+      "prices": { "car": 149, "minivan": 203, "large-van": 257, "small-bus": 324, "medium-bus": 405 }
+    },
+    {
+      "id": "cmb-negombo",
+      "from": "Bandaranaike Int. Airport (CMB)",
+      "to": "Negombo",
+      "distance": 10,
+      "estimatedTime": "20–30 minutes",
+      "prices": { "car": 12, "minivan": 16, "large-van": 20, "small-bus": 28, "medium-bus": 38 }
+    }
+  ],
+  "popularRoutes": [
+    {
+      "id": "colombo-galle",
+      "from": "Colombo",
+      "to": "Galle",
+      "distance": 130,
+      "estimatedTime": "2.5–3 hours",
+      "description": "Scenic coastal drive along the southern expressway to the historic Dutch fort city."
+    },
+    {
+      "id": "colombo-kandy",
+      "from": "Colombo",
+      "to": "Kandy",
+      "distance": 120,
+      "estimatedTime": "3–3.5 hours",
+      "description": "Journey through lush hill country to Sri Lanka's cultural capital and the Temple of the Tooth."
+    },
+    {
+      "id": "colombo-sigiriya",
+      "from": "Colombo",
+      "to": "Sigiriya",
+      "distance": 170,
+      "estimatedTime": "4–4.5 hours",
+      "description": "Travel to the ancient rock fortress, a UNESCO World Heritage Site rising from the jungle."
+    },
+    {
+      "id": "kandy-ella",
+      "from": "Kandy",
+      "to": "Ella",
+      "distance": 140,
+      "estimatedTime": "4–5 hours",
+      "description": "Wind through tea plantations and misty mountains to the charming hill station of Ella."
+    },
+    {
+      "id": "galle-ella",
+      "from": "Galle",
+      "to": "Ella",
+      "distance": 200,
+      "estimatedTime": "5–6 hours",
+      "description": "From the coastal fort town, climb into the highlands past waterfalls and paddy fields."
+    }
+  ]
+}

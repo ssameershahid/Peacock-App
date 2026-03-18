@@ -1,0 +1,8 @@
+[
+  { "code": "GBP", "symbol": "£", "flag": "🇬🇧", "name": "British Pound", "rate": 1.00 },
+  { "code": "USD", "symbol": "$", "flag": "🇺🇸", "name": "US Dollar", "rate": 1.27 },
+  { "code": "EUR", "symbol": "€", "flag": "🇪🇺", "name": "Euro", "rate": 1.17 },
+  { "code": "CAD", "symbol": "CA$", "flag": "🇨🇦", "name": "Canadian Dollar", "rate": 1.74 },
+  { "code": "AUD", "symbol": "A$", "flag": "🇦🇺", "name": "Australian Dollar", "rate": 1.96 },
+  { "code": "LKR", "symbol": "Rs", "flag": "🇱🇰", "name": "Sri Lankan Rupee", "rate": 378.50 }
+]
