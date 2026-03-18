@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import currenciesData from '@/data/currencies.json';
 
 export type Currency = {
@@ -17,11 +17,52 @@ type CurrencyContextType = {
   format: (gbpAmount: number) => string;
 };
 
+const STORAGE_KEY = 'peacock_currency';
+const BASE_CURRENCIES: Currency[] = currenciesData as Currency[];
+
 const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
+function getSavedCurrency(): Currency | null {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return null;
+    const code = JSON.parse(saved) as string;
+    return BASE_CURRENCIES.find(c => c.code === code) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const currencies = currenciesData as Currency[];
-  const [currency, setCurrency] = useState<Currency>(currencies[0]);
+  const [currencies, setCurrencies] = useState<Currency[]>(BASE_CURRENCIES);
+  const [currency, setCurrencyState] = useState<Currency>(
+    getSavedCurrency() ?? BASE_CURRENCIES[0]
+  );
+
+  // Fetch live exchange rates from API on mount
+  useEffect(() => {
+    const apiBase = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000') + '/api';
+    fetch(`${apiBase}/currencies/rates`)
+      .then(r => r.ok ? r.json() : null)
+      .then((data: Record<string, number> | null) => {
+        if (!data) return;
+        // data = { GBP: 1, USD: 1.27, EUR: 1.17, ... }
+        setCurrencies(prev =>
+          prev.map(c => ({ ...c, rate: data[c.code] ?? c.rate }))
+        );
+        // Update current currency rate in place
+        setCurrencyState(prev => ({
+          ...prev,
+          rate: data[prev.code] ?? prev.rate,
+        }));
+      })
+      .catch(() => { /* use hardcoded fallback rates */ });
+  }, []);
+
+  const setCurrency = (c: Currency) => {
+    setCurrencyState(c);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(c.code));
+  };
 
   const convert = (gbpAmount: number) => gbpAmount * currency.rate;
 

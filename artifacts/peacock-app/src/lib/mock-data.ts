@@ -125,7 +125,7 @@ export const DRIVER_PROFILE = {
       model: 'Toyota HiAce',
       plate: 'WP-CAB-1234',
       year: '2022',
-      image: '/vehicles/minivan.jpg',
+      image: '/vehicles/minivan-v2.png',
       features: ['AC', 'WiFi', 'Cooler box', 'USB charging'],
     },
     {
@@ -134,7 +134,7 @@ export const DRIVER_PROFILE = {
       model: 'Toyota Prius',
       plate: 'WP-CAB-5678',
       year: '2023',
-      image: '/vehicles/car.jpg',
+      image: '/vehicles/car-v2.png',
       features: ['AC', 'USB charging', 'Bluetooth'],
     },
   ],

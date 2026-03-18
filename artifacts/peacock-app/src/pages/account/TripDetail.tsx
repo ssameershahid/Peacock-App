@@ -4,7 +4,10 @@ import { useBooking, useTour, useCYORequests } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { PriceSummary } from '@/components/shared/PriceSummary';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { MapPlaceholder } from '@/components/shared/MapPlaceholder';
+import { MapView } from '@/components/shared/MapView';
+import { getCoords } from '@/lib/mapbox';
+import { downloadInvoicePDF, type InvoiceData } from '@/components/shared/InvoicePDF';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -238,6 +241,78 @@ export default function TripDetail() {
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [itineraryExpanded, setItineraryExpanded] = useState(false);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
+
+  const handleDownloadInvoice = async () => {
+    setDownloadingPDF(true);
+    try {
+      let invoiceData: InvoiceData | null = null;
+      try {
+        // Try to fetch real invoice from API
+        const inv = await api.get<any>(`/invoices?bookingId=${bookingId}`);
+        const realInv = Array.isArray(inv) ? inv[0] : inv;
+        if (realInv) {
+          invoiceData = {
+            invoiceNumber: realInv.invoiceNumber ?? `INV-${bookingId}`,
+            issueDate: realInv.issuedAt ? new Date(realInv.issuedAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
+            status: realInv.status ?? 'PAID',
+            customer: {
+              name: booking?.customer?.name ?? booking?.driver?.name ?? 'Guest',
+              email: booking?.customer?.email ?? '',
+            },
+            booking: {
+              referenceCode: booking?.id ?? bookingId,
+              title: booking?.title ?? '',
+              startDate: booking?.startDate ?? '',
+              endDate: booking?.endDate,
+              vehicleType: booking?.vehicle ?? '',
+              numDays: booking?.pricing ? Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / 86400000) : undefined,
+            },
+            lineItems: [
+              { description: `${booking?.vehicle} — tour package`, amount: booking?.pricing?.vehicleTotal ?? booking?.price ?? 0 },
+              ...(booking?.pricing?.addOnsTotal > 0 ? [{ description: 'Add-ons', amount: booking.pricing.addOnsTotal }] : []),
+              ...(booking?.pricing?.taxesAndFees > 0 ? [{ description: 'Taxes & fees', amount: booking.pricing.taxesAndFees }] : []),
+            ],
+            subtotal: booking?.price ?? 0,
+            totalGBP: booking?.price ?? 0,
+          };
+        }
+      } catch { /* fall through to generated invoice */ }
+
+      // Fallback: generate from booking data
+      if (!invoiceData && booking) {
+        const durationDays = Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / 86400000);
+        invoiceData = {
+          invoiceNumber: `INV-${booking.id}`,
+          issueDate: new Date().toLocaleDateString('en-GB'),
+          status: 'PAID',
+          customer: {
+            name: booking.customer?.name ?? 'Guest',
+            email: booking.customer?.email ?? '',
+          },
+          booking: {
+            referenceCode: booking.id,
+            title: booking.title,
+            startDate: booking.startDate,
+            endDate: booking.endDate,
+            vehicleType: booking.vehicle,
+            numDays: durationDays,
+          },
+          lineItems: [
+            { description: `${booking.vehicle} — ${durationDays} days`, amount: booking.pricing?.vehicleTotal ?? booking.price ?? 0 },
+            ...(booking.pricing?.addOnsTotal > 0 ? [{ description: 'Add-ons', amount: booking.pricing.addOnsTotal }] : []),
+            ...(booking.pricing?.taxesAndFees > 0 ? [{ description: 'Taxes & fees', amount: booking.pricing.taxesAndFees }] : []),
+          ],
+          subtotal: booking.price ?? 0,
+          totalGBP: booking.price ?? 0,
+        };
+      }
+
+      if (invoiceData) await downloadInvoicePDF(invoiceData);
+    } finally {
+      setDownloadingPDF(false);
+    }
+  };
 
   const isCYO = bookingId.startsWith('CTR') || bookingId.startsWith('CYO');
   const cyoData = isCYO ? cyoRequests?.find(r => r.id === bookingId) : null;
@@ -400,9 +475,19 @@ export default function TripDetail() {
           </div>
         </div>
 
-        {tour && tour.stops && (
-          <MapPlaceholder locations={tour.stops.map((s: any) => s.name || s)} className="mb-4" />
-        )}
+        {tour && (tour.stops || tour.itinerary) && (() => {
+          const locs: string[] = tour.stops
+            ? tour.stops.map((s: any) => s.name || s)
+            : (tour.itinerary || []).map((d: any) => d.location).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
+          const tripMarkers = locs.reduce((acc: any[], loc: string, i: number) => {
+            const coords = getCoords(loc);
+            if (coords) acc.push({ id: loc, lng: coords[0], lat: coords[1], label: loc, index: i });
+            return acc;
+          }, []);
+          return tripMarkers.length >= 2 ? (
+            <MapView markers={tripMarkers} showRoute height="280px" className="mb-4" />
+          ) : null;
+        })()}
 
         {tour && tour.itinerary && (
           <div className="border-t border-warm-100 pt-4">
@@ -464,8 +549,8 @@ export default function TripDetail() {
             </button>
           </>
         )}
-        <Button variant="outline" className="rounded-pill">
-          <Download className="w-4 h-4 mr-2" /> Download Invoice
+        <Button variant="outline" className="rounded-pill" onClick={handleDownloadInvoice} disabled={downloadingPDF}>
+          <Download className="w-4 h-4 mr-2" /> {downloadingPDF ? 'Generating…' : 'Download Invoice'}
         </Button>
         <Button variant="outline" className="rounded-pill">
           <FileText className="w-4 h-4 mr-2" /> Download Itinerary

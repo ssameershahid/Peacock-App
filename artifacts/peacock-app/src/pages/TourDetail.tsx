@@ -3,7 +3,8 @@ import { useRoute, Link } from 'wouter';
 import { useTour, useVehicles } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { SectionHeading } from '@/components/shared/SectionHeading';
-import { MapPlaceholder } from '@/components/shared/MapPlaceholder';
+import { MapView, type MapMarker } from '@/components/shared/MapView';
+import { getCoords } from '@/lib/mapbox';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Calendar as CalendarIcon, Users, Check, X, ChevronDown, ChevronUp, Shield, Plus, Minus, ArrowRight } from 'lucide-react';
 
@@ -32,6 +33,13 @@ export default function TourDetail() {
   const vehicleDetails = vehicles?.find((v: any) => v.id === selectedVehicle);
   const maxPax = vehicleDetails?.maxPassengers ?? 35;
   const locations = tour.itinerary.map((d: any) => d.location).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
+
+  // Build map markers from itinerary locations with coordinate lookup
+  const itineraryMarkers: MapMarker[] = locations.reduce((acc: MapMarker[], loc: string, i: number) => {
+    const coords = getCoords(loc);
+    if (coords) acc.push({ id: loc, lng: coords[0], lat: coords[1], label: loc, index: i });
+    return acc;
+  }, []);
 
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + (tour.leadTimeDays || 3));
@@ -174,9 +182,36 @@ export default function TourDetail() {
                 ))}
               </div>
             </div>
-            <div className="lg:w-[280px] shrink-0">
+            <div className="lg:w-[320px] shrink-0">
               <div className="sticky top-24">
-                <MapPlaceholder locations={locations} />
+                <MapView
+                  markers={itineraryMarkers}
+                  activeMarkerId={
+                    expandedDay !== null
+                      ? (itineraryMarkers.find(m => m.label === locations[expandedDay - 1])?.id ?? undefined)
+                      : undefined
+                  }
+                  height="560px"
+                  showRoute
+                  className="shadow-xl"
+                />
+                {itineraryMarkers.length > 0 && (
+                  <div className="mt-3 bg-warm-50 rounded-xl p-3 border border-warm-100">
+                    <p className="font-body text-xs font-semibold text-forest-600 mb-2 uppercase tracking-wide">Route stops</p>
+                    <div className="space-y-1">
+                      {itineraryMarkers.map((m, i) => (
+                        <div key={m.id} className="flex items-center gap-2">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border-2 shrink-0 ${
+                            i === 0 ? 'bg-forest-600 border-forest-600 text-white' :
+                            i === itineraryMarkers.length - 1 ? 'bg-amber-400 border-amber-400 text-forest-800' :
+                            'bg-white border-forest-400 text-forest-600'
+                          }`}>{i + 1}</div>
+                          <span className="font-body text-xs text-warm-600 truncate">{m.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

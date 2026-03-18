@@ -1,19 +1,49 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Lock, Globe, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Globe, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Register() {
   const [, setLocation] = useLocation();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '', confirm: '', country: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocation('/account');
+    setError('');
+    if (form.password !== form.confirm) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await register({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+        country: form.country || undefined,
+      });
+      setLocation('/account');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const f = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center px-6 py-24">
@@ -24,18 +54,25 @@ export default function Register() {
             <p className="font-body text-warm-500 text-sm">Join Peacock Drivers and start planning your Sri Lanka adventure.</p>
           </div>
 
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">
+              <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+              <p className="font-body text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-forest-600 mb-2 font-body">First Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                  <input type="text" value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="Jane" />
+                  <input type="text" value={form.firstName} onChange={f('firstName')} required className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="Jane" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Last Name</label>
-                <input type="text" value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="Doe" />
+                <input type="text" value={form.lastName} onChange={f('lastName')} required className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="Doe" />
               </div>
             </div>
 
@@ -43,7 +80,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Email address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="jane@example.com" />
+                <input type="email" value={form.email} onChange={f('email')} required className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="jane@example.com" />
               </div>
             </div>
 
@@ -51,7 +88,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-10 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="••••••••" />
+                <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={f('password')} required className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-10 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="••••••••" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-warm-400 hover:text-warm-600">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -62,7 +99,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                <input type="password" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })} className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="••••••••" />
+                <input type="password" value={form.confirm} onChange={f('confirm')} required className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none" placeholder="••••••••" />
               </div>
             </div>
 
@@ -70,7 +107,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Country</label>
               <div className="relative">
                 <Globe className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                <select value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none appearance-none">
+                <select value={form.country} onChange={f('country')} className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none appearance-none">
                   <option value="">Select country</option>
                   <option value="GB">United Kingdom</option>
                   <option value="US">United States</option>
@@ -84,7 +121,9 @@ export default function Register() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base font-body mt-2">Create account</Button>
+            <Button type="submit" disabled={loading} className="w-full h-12 text-base font-body mt-2">
+              {loading ? 'Creating account…' : 'Create account'}
+            </Button>
           </form>
 
           <div className="flex items-center gap-4 my-6">

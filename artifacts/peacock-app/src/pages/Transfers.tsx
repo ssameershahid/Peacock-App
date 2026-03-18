@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { SectionHeading } from '@/components/shared/SectionHeading';
-import { MapPlaceholder } from '@/components/shared/MapPlaceholder';
+import { MapView, type MapMarker } from '@/components/shared/MapView';
+import { PlacesAutocomplete, type PlaceResult } from '@/components/shared/PlacesAutocomplete';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTransfers, usePopularRoutes, useVehicles } from '@/hooks/use-app-data';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,8 @@ export default function Transfers() {
   const [selectedVehicle, setSelectedVehicle] = useState('car');
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
+  const [pickupCoords, setPickupCoords] = useState<[number, number] | null>(null);
+  const [dropoffCoords, setDropoffCoords] = useState<[number, number] | null>(null);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('08:00');
   const [passengers, setPassengers] = useState(2);
@@ -120,29 +123,23 @@ export default function Transfers() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Pickup location</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-emerald-500" />
-                    <input
-                      type="text"
-                      value={pickup}
-                      onChange={e => setPickup(e.target.value)}
-                      placeholder="e.g. Colombo Fort"
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                    />
-                  </div>
+                  <PlacesAutocomplete
+                    value={pickup}
+                    onChange={val => { setPickup(val); if (!val) setPickupCoords(null); }}
+                    onPlaceSelect={(p: PlaceResult) => { setPickup(p.name); setPickupCoords([p.lng, p.lat]); }}
+                    placeholder="e.g. Colombo Fort"
+                    icon={<MapPin className="w-4 h-4 text-emerald-500" />}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Drop-off location</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-red-400" />
-                    <input
-                      type="text"
-                      value={dropoff}
-                      onChange={e => setDropoff(e.target.value)}
-                      placeholder="e.g. Galle Fort"
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                    />
-                  </div>
+                  <PlacesAutocomplete
+                    value={dropoff}
+                    onChange={val => { setDropoff(val); if (!val) setDropoffCoords(null); }}
+                    onPlaceSelect={(p: PlaceResult) => { setDropoff(p.name); setDropoffCoords([p.lng, p.lat]); }}
+                    placeholder="e.g. Galle Fort"
+                    icon={<MapPin className="w-4 h-4 text-red-400" />}
+                  />
                 </div>
               </div>
 
@@ -233,8 +230,32 @@ export default function Transfers() {
               )}
             </div>
 
-            <div className="lg:w-[280px] shrink-0">
-              <MapPlaceholder locations={[pickup || 'Pickup', dropoff || 'Drop-off'].filter(l => l !== 'Pickup' && l !== 'Drop-off')} />
+            {/* Map — always visible; shows route when both coords are known */}
+            <div className="lg:w-[360px] shrink-0">
+              <div className="sticky top-24">
+                <MapView
+                  markers={
+                    pickupCoords && dropoffCoords
+                      ? [
+                          { id: 'pickup', lng: pickupCoords[0], lat: pickupCoords[1], label: pickup || 'Pickup', index: 0 },
+                          { id: 'dropoff', lng: dropoffCoords[0], lat: dropoffCoords[1], label: dropoff || 'Drop-off', index: 1 },
+                        ]
+                      : pickupCoords
+                      ? [{ id: 'pickup', lng: pickupCoords[0], lat: pickupCoords[1], label: pickup || 'Pickup', index: 0 }]
+                      : []
+                  }
+                  showRoute={!!(pickupCoords && dropoffCoords)}
+                  height="420px"
+                  className="shadow-xl"
+                />
+                {(!pickupCoords || !dropoffCoords) && (
+                  <p className="font-body text-xs text-warm-400 text-center mt-2">
+                    {!pickupCoords && !dropoffCoords
+                      ? 'Enter pickup & drop-off to see your route'
+                      : 'Enter drop-off location to complete the route'}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

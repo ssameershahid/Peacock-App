@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Login() {
   const [, setLocation] = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocation('/account');
+    setError('');
+    setLoading(true);
+    try {
+      await login(email, password);
+      setLocation('/account');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,6 +36,13 @@ export default function Login() {
             <p className="font-body text-warm-500 text-sm">Sign in to manage your bookings and trip details.</p>
           </div>
 
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">
+              <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+              <p className="font-body text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Email address</label>
@@ -32,6 +52,7 @@ export default function Login() {
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  required
                   className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
                   placeholder="jane@example.com"
                 />
@@ -46,6 +67,7 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  required
                   className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-10 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
                   placeholder="••••••••"
                 />
@@ -59,7 +81,9 @@ export default function Login() {
               <a href="#" className="font-body text-sm text-forest-500 hover:text-amber-500 transition-colors">Forgot password?</a>
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base font-body">Log in</Button>
+            <Button type="submit" disabled={loading} className="w-full h-12 text-base font-body">
+              {loading ? 'Signing in…' : 'Log in'}
+            </Button>
           </form>
 
           <div className="flex items-center gap-4 my-6">

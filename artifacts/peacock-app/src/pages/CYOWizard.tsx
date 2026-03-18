@@ -2,23 +2,23 @@ import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { VehicleSelector } from '@/components/shared/VehicleSelector';
-import { MapPlaceholder } from '@/components/shared/MapPlaceholder';
+import { MapView, type MapMarker } from '@/components/shared/MapView';
 import { Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft, Briefcase, Palmtree, Star, Trophy } from 'lucide-react';
 import { useVehicles } from '@/hooks/use-app-data';
 
 const DESTINATIONS = [
-  { id: 'colombo', name: 'Colombo', desc: 'Vibrant capital city' },
-  { id: 'sigiriya', name: 'Sigiriya', desc: 'Ancient rock fortress' },
-  { id: 'kandy', name: 'Kandy', desc: 'Cultural capital' },
-  { id: 'ella', name: 'Ella', desc: 'Mountain village' },
-  { id: 'galle', name: 'Galle', desc: 'Colonial fort town' },
-  { id: 'yala', name: 'Yala', desc: 'Leopard safaris' },
-  { id: 'trincomalee', name: 'Trincomalee', desc: 'East coast beaches' },
-  { id: 'negombo', name: 'Negombo', desc: 'Beach & fishing village' },
-  { id: 'nuwara-eliya', name: 'Nuwara Eliya', desc: 'Little England' },
-  { id: 'tangalle', name: 'Tangalle', desc: 'Secluded southern beaches' },
-  { id: 'anuradhapura', name: 'Anuradhapura', desc: 'Ancient sacred city' },
-  { id: 'haputale', name: 'Haputale', desc: 'Tea country viewpoint' },
+  { id: 'colombo', name: 'Colombo', desc: 'Vibrant capital city', lng: 79.8612, lat: 6.9271 },
+  { id: 'sigiriya', name: 'Sigiriya', desc: 'Ancient rock fortress', lng: 80.7597, lat: 7.9572 },
+  { id: 'kandy', name: 'Kandy', desc: 'Cultural capital', lng: 80.6350, lat: 7.2906 },
+  { id: 'ella', name: 'Ella', desc: 'Mountain village', lng: 81.0470, lat: 6.8667 },
+  { id: 'galle', name: 'Galle', desc: 'Colonial fort town', lng: 80.2170, lat: 6.0535 },
+  { id: 'yala', name: 'Yala', desc: 'Leopard safaris', lng: 81.5256, lat: 6.3718 },
+  { id: 'trincomalee', name: 'Trincomalee', desc: 'East coast beaches', lng: 81.2342, lat: 8.5772 },
+  { id: 'negombo', name: 'Negombo', desc: 'Beach & fishing village', lng: 79.8380, lat: 7.2083 },
+  { id: 'nuwara-eliya', name: 'Nuwara Eliya', desc: 'Little England', lng: 80.7718, lat: 6.9497 },
+  { id: 'tangalle', name: 'Tangalle', desc: 'Secluded southern beaches', lng: 80.7967, lat: 6.0248 },
+  { id: 'anuradhapura', name: 'Anuradhapura', desc: 'Ancient sacred city', lng: 80.3957, lat: 8.3114 },
+  { id: 'haputale', name: 'Haputale', desc: 'Tea country viewpoint', lng: 80.9585, lat: 6.7667 },
 ];
 
 const INTERESTS = ['Nature', 'Wildlife', 'Beaches', 'Food & Cuisine', 'Temples & History', 'Tea Plantations', 'Surfing', 'Hiking', 'Photography'];
@@ -99,7 +99,15 @@ export default function CYOWizard() {
     { icon: <Send className="w-4 h-4" />, label: 'Submit' },
   ];
 
-  const selectedDestNames = DESTINATIONS.filter(d => selections.destinations.includes(d.id)).map(d => d.name);
+  const selectedDests = DESTINATIONS.filter(d => selections.destinations.includes(d.id));
+  const selectedDestNames = selectedDests.map(d => d.name);
+  const cyoMapMarkers: MapMarker[] = selectedDests.map((d, i) => ({
+    id: d.id,
+    lng: d.lng,
+    lat: d.lat,
+    label: d.name,
+    index: i,
+  }));
 
   if (submitted) {
     const refId = `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`;
@@ -199,36 +207,43 @@ export default function CYOWizard() {
 
           {step === 2 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="flex justify-between items-start mb-8">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="font-display text-3xl text-forest-600 mb-2">Where do you want to go?</h2>
-                  <p className="font-body text-warm-500 text-sm">Select all destinations you'd like to visit.</p>
+                  <h2 className="font-display text-3xl text-forest-600 mb-1">Where do you want to go?</h2>
+                  <p className="font-body text-warm-500 text-sm">Tap destinations — your route builds live on the map.</p>
                 </div>
-                <span className="font-body text-sm font-medium text-forest-500 bg-sage px-4 py-2 rounded-full shrink-0 ml-4">
-                  {selections.destinations.length} selected
-                </span>
+                {selections.destinations.length > 0 && (
+                  <span className="font-body text-sm font-medium text-forest-500 bg-sage px-4 py-2 rounded-full shrink-0 ml-4">
+                    {selections.destinations.length} stop{selections.destinations.length !== 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
 
-              <div className="flex flex-col lg:flex-row gap-8">
-                <div className="flex-1">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+              {/* Split: destinations left, live map right */}
+              <div className="flex flex-col xl:flex-row gap-6">
+                {/* Left: destination grid */}
+                <div className="flex-1 min-w-0">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
                     {DESTINATIONS.map(d => {
                       const isSelected = selections.destinations.includes(d.id);
+                      const selIdx = selections.destinations.indexOf(d.id);
                       return (
                         <div
                           key={d.id}
                           onClick={() => toggleDest(d.id)}
-                          className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                            isSelected ? 'border-forest-500 bg-forest-50 shadow-sm' : 'border-warm-200 hover:border-forest-300 bg-warm-50'
+                          className={`relative p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-forest-500 bg-forest-50 shadow-sm'
+                              : 'border-warm-200 hover:border-forest-300 bg-warm-50'
                           }`}
                         >
-                          <p className="font-display text-lg text-forest-600">{d.name}</p>
-                          <p className="font-body text-xs text-warm-500">{d.desc}</p>
                           {isSelected && (
-                            <div className="absolute top-2 right-2 w-5 h-5 bg-forest-500 rounded-full flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" />
+                            <div className="absolute top-2 right-2 w-5 h-5 bg-forest-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                              {selIdx + 1}
                             </div>
                           )}
+                          <p className="font-display text-base text-forest-600 pr-5">{d.name}</p>
+                          <p className="font-body text-xs text-warm-500 mt-0.5">{d.desc}</p>
                         </div>
                       );
                     })}
@@ -244,8 +259,33 @@ export default function CYOWizard() {
                     />
                   </div>
                 </div>
-                <div className="lg:w-[250px] shrink-0">
-                  <MapPlaceholder locations={selectedDestNames} />
+
+                {/* Right: live map — always visible */}
+                <div className="xl:w-[420px] shrink-0">
+                  <div className="sticky top-24">
+                    <MapView
+                      markers={cyoMapMarkers}
+                      showRoute={cyoMapMarkers.length >= 2}
+                      height="520px"
+                      className="shadow-xl"
+                    />
+                    {cyoMapMarkers.length === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none rounded-2xl">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-4 text-center shadow-lg">
+                          <p className="font-display text-lg text-forest-600 mb-1">Build your route</p>
+                          <p className="font-body text-xs text-warm-500">Select destinations on the left<br />and watch your journey form</p>
+                        </div>
+                      </div>
+                    )}
+                    {cyoMapMarkers.length >= 2 && (
+                      <div className="mt-2 flex items-center justify-center gap-2 text-center">
+                        <div className="w-2 h-2 rounded-full bg-forest-500" />
+                        <p className="font-body text-xs text-warm-500">
+                          {cyoMapMarkers.length} stops · route updating live
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

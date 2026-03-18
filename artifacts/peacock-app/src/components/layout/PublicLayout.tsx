@@ -1,14 +1,16 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, User, Phone, Mail, MapPin } from 'lucide-react';
+import { Menu, X, User, Phone, Mail, MapPin, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CurrencySelector } from '@/components/shared/CurrencySelector';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const { user, logout } = useAuth();
   const isHome = location === '/' || location === '';
 
   React.useEffect(() => {
@@ -63,19 +65,48 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
           <div className="hidden md:flex items-center gap-2">
             <CurrencySelector variant={solidHeader ? 'light' : 'dark'} />
-            <Link href="/login">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'gap-2 font-body',
-                  solidHeader ? 'text-warm-600 hover:bg-warm-50' : 'text-white hover:bg-white/10'
-                )}
-              >
-                <User className="w-4 h-4" />
-                Login
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link href="/account">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      'gap-2 font-body',
+                      solidHeader ? 'text-warm-600 hover:bg-warm-50' : 'text-white hover:bg-white/10'
+                    )}
+                  >
+                    <User className="w-4 h-4" />
+                    {user.name?.split(' ')[0] ?? 'Account'}
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={logout}
+                  className={cn(
+                    'gap-2 font-body',
+                    solidHeader ? 'text-warm-400 hover:bg-warm-50' : 'text-white/70 hover:bg-white/10'
+                  )}
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    'gap-2 font-body',
+                    solidHeader ? 'text-warm-600 hover:bg-warm-50' : 'text-white hover:bg-white/10'
+                  )}
+                >
+                  <User className="w-4 h-4" />
+                  Login
+                </Button>
+              </Link>
+            )}
             <Link href="/tours">
               <Button className="font-body">
                 Book a journey
