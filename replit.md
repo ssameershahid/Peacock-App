@@ -68,7 +68,19 @@ Sri Lanka travel booking web app with mock data (high-fidelity prototype). Locat
 - `/driver/trips/:id` — Trip detail (status banner, tourist contact buttons, trip info grid, special requests, admin notes, itinerary accordion, earnings, status action buttons)
 - `/driver/earnings` — Earnings summary cards (this month/last/all time), period filter, trip-by-trip breakdown, pending payout, export button
 - `/driver/profile` — Profile editor (photo, bio, languages, experience), availability toggle, vehicle cards with add/edit forms
-- `/admin` — Admin panel (KPI dashboard, tours, bookings, drivers, fleet, CYO pipeline)
+- `/admin` — Admin dashboard (KPI cards, revenue chart, CYO alert, recent bookings table)
+- `/admin/tours` — Tours management (DataTable with search/filters, status toggles)
+- `/admin/tours/new` — Create new tour (full builder: basic info, duration, classification, included/not-included, itinerary builder, pricing with vehicle rates/add-ons/seasonal, settings, images)
+- `/admin/tours/:slug/edit` — Edit existing tour (pre-populated form with loading gate)
+- `/admin/drivers` — Drivers management (DataTable with photos, languages, vehicles, trips, status toggles)
+- `/admin/drivers/new` — Add new driver (account, personal info, vehicles, payout rates, status)
+- `/admin/drivers/:id/edit` — Edit driver
+- `/admin/bookings` — Bookings list (DataTable with type/status filters, export CSV)
+- `/admin/bookings/:id` — Booking detail (customer card, trip details, management with status/driver assignment, payment info, cancellation danger zone with refund modal)
+- `/admin/requests` — CYO pipeline (kanban view with 7 status columns + list view toggle)
+- `/admin/requests/:id` — CYO request detail (customer request read-only, quote builder with line items/extras/total, Stripe payment link generation, activity log)
+- `/admin/fleet` — Fleet & availability (5 vehicle inventory cards with editable counts, availability calendar grid with color-coded cells and click popovers)
+- `/admin/settings` — Settings (5 tabs: Payments/Stripe keys, Currency display options, Policies/terms, Driver payouts, Notifications with email management and toggles)
 
 ### Shared Components (src/components/shared/)
 - SectionHeading — Overline + display heading with italic `*word*`

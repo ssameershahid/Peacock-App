@@ -56,9 +56,15 @@ function Router() {
 
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/tours" component={AdminDashboard} />
+      <Route path="/admin/tours/new" component={AdminDashboard} />
+      <Route path="/admin/tours/:slug/edit" component={AdminDashboard} />
       <Route path="/admin/bookings" component={AdminDashboard} />
+      <Route path="/admin/bookings/:id" component={AdminDashboard} />
       <Route path="/admin/drivers" component={AdminDashboard} />
+      <Route path="/admin/drivers/new" component={AdminDashboard} />
+      <Route path="/admin/drivers/:id/edit" component={AdminDashboard} />
       <Route path="/admin/requests" component={AdminDashboard} />
+      <Route path="/admin/requests/:id" component={AdminDashboard} />
       <Route path="/admin/fleet" component={AdminDashboard} />
       <Route path="/admin/settings" component={AdminDashboard} />
 
