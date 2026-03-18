@@ -53,8 +53,11 @@ Sri Lanka travel booking web app with mock data (high-fidelity prototype). Locat
 - `/tours` — Tour listing grid with category filters
 - `/tours/:slug` — Tour detail with itinerary & booking widget
 - `/tours/custom` — Create-your-own 5-step wizard
-- `/transfers` — Transfers page (placeholder, routes to Tours for now)
-- `/checkout` — 3-step checkout (contact → review → payment)
+- `/transfers` — Transfer booking (airport routes with per-vehicle pricing, custom route builder)
+- `/checkout` — 3-step checkout (contact → review → payment mock)
+- `/checkout/confirmation` — Booking confirmation with reference number + next steps
+- `/login` — Login form with Google SSO mock
+- `/register` — Registration form with Google SSO mock
 - `/account` — Tourist portal (bookings, invoices, profile)
 - `/driver` — Driver dashboard (mobile-first design)
 - `/admin` — Admin panel (KPI dashboard, tours, bookings, drivers, fleet, CYO pipeline)

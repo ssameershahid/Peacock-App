@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { TOURS, VEHICLES, TRANSFERS, BOOKINGS, CYO_REQUESTS } from "@/lib/mock-data";
+import { TOURS, VEHICLES, TRANSFERS, POPULAR_ROUTES, BOOKINGS, CYO_REQUESTS } from "@/lib/mock-data";
 
 // Simulated network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -42,6 +42,16 @@ export function useTransfers() {
     queryFn: async () => {
       await delay(300);
       return TRANSFERS;
+    }
+  });
+}
+
+export function usePopularRoutes() {
+  return useQuery({
+    queryKey: ["popular-routes"],
+    queryFn: async () => {
+      await delay(200);
+      return POPULAR_ROUTES;
     }
   });
 }

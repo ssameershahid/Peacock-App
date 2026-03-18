@@ -63,7 +63,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
           <div className="hidden md:flex items-center gap-2">
             <CurrencySelector variant={solidHeader ? 'light' : 'dark'} />
-            <Link href="/account">
+            <Link href="/login">
               <Button
                 variant="ghost"
                 size="sm"
@@ -135,7 +135,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <Link href="/tours" onClick={() => setMobileMenuOpen(false)}>
               <Button className="w-full h-14 text-lg font-body">Book a journey</Button>
             </Link>
-            <Link href="/account" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" className="w-full h-12 font-body">
                 <User className="w-4 h-4 mr-2" /> Login / Register
               </Button>

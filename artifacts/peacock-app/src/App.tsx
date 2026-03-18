@@ -9,7 +9,11 @@ import Home from "@/pages/Home";
 import Tours from "@/pages/Tours";
 import TourDetail from "@/pages/TourDetail";
 import CYOWizard from "@/pages/CYOWizard";
+import Transfers from "@/pages/Transfers";
 import Checkout from "@/pages/Checkout";
+import Confirmation from "@/pages/Confirmation";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import TouristPortal from "@/pages/TouristPortal";
 import DriverDashboard from "@/pages/DriverDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
@@ -32,9 +36,11 @@ function Router() {
       <Route path="/tours" component={() => <PublicRoute component={Tours} />} />
       <Route path="/tours/custom" component={() => <PublicRoute component={CYOWizard} />} />
       <Route path="/tours/:slug" component={() => <PublicRoute component={TourDetail} />} />
-      <Route path="/transfers" component={() => <PublicRoute component={Tours} />} />
+      <Route path="/transfers" component={() => <PublicRoute component={Transfers} />} />
       <Route path="/checkout" component={() => <PublicRoute component={Checkout} />} />
-      <Route path="/checkout/confirmation" component={() => <PublicRoute component={Checkout} />} />
+      <Route path="/checkout/confirmation" component={() => <PublicRoute component={Confirmation} />} />
+      <Route path="/login" component={() => <PublicRoute component={Login} />} />
+      <Route path="/register" component={() => <PublicRoute component={Register} />} />
 
       <Route path="/account" component={TouristPortal} />
       <Route path="/account/bookings" component={TouristPortal} />

@@ -1,0 +1,89 @@
+# SPRINT 3 — Tourist Portal (Authenticated)
+
+## Prompt for Replit:
+
+Build the authenticated tourist portal pages. Mock the logged-in state — assume the user is logged in as "James Mitchell" from the UK. Load booking data from /data/bookings.json. Use shared components from Sprint 1.
+
+### 1. Account Overview (/app/account)
+- Greeting: "Welcome back, James" (font-display)
+- Quick stats row: X upcoming trips, X past trips, X invoices
+- Quick action cards:
+  - "My trips" → /app/account/bookings
+  - "Invoices" → /app/account/invoices
+  - "Profile" → /app/account/profile
+  - "Book a new trip" → /app/tours
+- Recent booking card (most recent from bookings.json)
+
+### 2. My Trips (/app/account/bookings)
+- SectionHeading: "My *trips*"
+- Tab navigation: **Upcoming** | **Past** (pill tabs, like product tabs from design system)
+- **Upcoming tab:** BookingCards for bookings with status confirmed or pending. Include the CYO request with status "quoted" showing as "Quote Ready — view & pay" with amber badge.
+- **Past tab:** BookingCards for completed and cancelled bookings.
+- **Empty state** (if a tab has no results): Illustration placeholder + "No upcoming trips yet" + "Browse tours →" CTA
+- Each card clickable → /app/account/bookings/[id]
+
+### 3. Trip Detail (/app/account/bookings/[id])
+Load booking BK-2026-001 as the default view.
+
+- **Status timeline** at top: Horizontal stepper showing: Booked → Confirmed → Upcoming → In Progress → Completed. Current status highlighted. Use dates under each step.
+
+- **Trip info card:** bg-white, rounded-2xl, shadow-card.
+  - Tour name (font-display), dates, duration
+  - Vehicle type with image
+  - Passengers count
+  - MapPlaceholder showing tour route
+  - Itinerary summary (collapsed, expandable): day titles as a compact list
+
+- **Driver card** (show for confirmed bookings): 
+  - Placeholder profile photo (circle), driver name "Dudley", languages "English, Sinhala", phone number
+  - "Contact driver" button (phone icon)
+  - Note: "Your driver will be assigned closer to your trip date" if no driver yet
+
+- **Add trip details** expandable section:
+  - Passport number input
+  - Hotel names textarea ("List the hotels you've booked along the route")
+  - Flight number input (arrival flight)
+  - "Save details" button
+  - Note: "These details help your driver prepare for your arrival"
+
+- **Price summary:** PriceSummary component showing full breakdown + "Paid" green badge
+
+- **Action buttons row:**
+  - "Request reschedule" — secondary button. On click: modal explaining policy (free if >10 days, £50 fee if <10 days). Date picker + submit.
+  - "Cancel booking" — ghost button, red text. On click: modal with cancellation policy, refund amount shown, confirm button.
+  - "Download invoice" — secondary button, download icon
+  - "Download itinerary" — secondary button, file icon
+  - "Contact support" — ghost button, links to WhatsApp/email
+
+- **For CYO requests** (CTR-2026-002 "quoted" status): Show the quote summary instead of itinerary. Display line items, extras, total. "Pay now — £495" amber CTA button.
+
+### 4. Invoices (/app/account/invoices)
+- SectionHeading: "My *invoices*"
+- Table/list view:
+  - Columns: Invoice number, Date issued, Booking reference, Amount, Action
+  - "Download PDF" button on each row (mock download)
+  - 2-3 sample invoice rows matching the confirmed/completed bookings
+- Sorted by date, newest first
+
+### 5. Profile (/app/account/profile)
+- SectionHeading: "My *profile*"
+- **Personal info section:**
+  - Profile photo placeholder with "Change photo" button
+  - First name, last name (side by side inputs)
+  - Email (shown but not editable, note: "Contact support to change email")
+  - Phone number with country code
+  - Country dropdown
+  - "Save changes" primary button
+
+- **Password section** (separate card):
+  - Current password input
+  - New password input
+  - Confirm new password input
+  - "Update password" button
+
+- **Connected accounts section** (separate card):
+  - Google: "Connected as james.m@gmail.com" with "Disconnect" button
+  - Or "Connect Google account" button if not connected
+
+- **Danger zone** (separate card, red-tinted border):
+  - "Delete account" — red text button with confirmation modal
