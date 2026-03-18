@@ -1,0 +1,267 @@
+# SPRINT 5 — Admin Panel
+
+## Prompt for Replit:
+
+Build the complete admin panel. This uses a sidebar layout (not the public site header). Mock the logged-in state as admin "Sameer Shahid". Load all data from /data/ JSON files. The admin panel should feel professional and efficient — more utilitarian than the tourist-facing pages, but still using the same Peacock color palette and fonts.
+
+### Admin layout:
+- **Sidebar** (fixed left, 260px wide on desktop, collapsible to icons on tablet, hidden behind hamburger on mobile):
+  - Peacock Drivers logo at top
+  - Nav sections with icons:
+    - Dashboard (grid icon)
+    - Tours (map icon)
+    - Drivers (users icon)
+    - Bookings (calendar icon)
+    - Custom Requests (message-square icon)
+    - Fleet (truck icon)
+    - Settings (settings icon)
+  - Active item: bg-forest-500/10 text-forest-500 font-medium with left border accent
+  - User info at bottom: avatar + "Sameer Shahid" + "Admin" badge + logout button
+- **Main content area:** bg-warm-50, with white content cards. Generous padding.
+- **Top bar** (inside main area): Page title (font-display) + breadcrumbs + "Search" input on the right
+
+### 1. Admin Dashboard (/app/admin)
+- Page title: "Dashboard"
+- **KPI cards row** (4 across on desktop, 2x2 on mobile):
+  - "Bookings this month" — 12 — blue icon
+  - "Revenue" — £4,280 — green icon
+  - "Pending requests" — 3 — amber icon (red dot badge if > 0)
+  - "Active drivers" — 8 — forest icon
+- **Revenue chart placeholder:** Styled box labeled "Monthly revenue chart — last 6 months" with a simple bar chart mock using colored divs
+- **Recent bookings table:** Last 10 bookings from bookings.json. Columns: Reference, Customer, Type badge, Tour/Route, Date, Status badge, Amount. Each row clickable → /app/admin/bookings/[id]
+- **CYO requests alert:** If any requests with status "new": amber banner card "3 custom tour requests need your attention" with "View requests →" button
+
+### 2. Tours Management (/app/admin/tours)
+- Page title: "Tours"
+- **"Create new tour"** button (primary) top right
+- **DataTable:**
+  - Search input (searches tour names)
+  - Filters: Type dropdown (All, Ready-made), Region dropdown (All, Cultural Triangle, South Coast, Hill Country, Wildlife), Status dropdown (All, Active, Inactive)
+  - Columns: Name, Type badge, Duration, Regions (chips), Base price (cheapest vehicle), Status toggle (on/off), Actions (Edit button, kebab menu with Delete)
+  - Load all 4 tours from tours.json
+  - Pagination (mock, showing "1-4 of 4")
+
+### 3. Tour Create (/app/admin/tours/new) & Edit (/app/admin/tours/[id]/edit)
+Full-page form with sections in cards. Same form for create and edit (edit pre-fills data).
+
+**Basic Info card:**
+- Title input
+- Slug input (auto-generates from title)
+- Tagline input
+- Description textarea (rich-ish: just a tall textarea)
+- Type dropdown: Ready-made
+
+**Duration card:**
+- Days input (number)
+- Nights input (number, auto = days - 1)
+
+**Classification card:**
+- Regions: multi-select chips from list (Colombo, Cultural Triangle, Kandy, Hill Country, South Coast, Ella, Sigiriya, Yala, Trincomalee, Negombo, Galle)
+- Difficulty: radio group (Easy, Moderate, Challenging)
+- Best months: multi-select pills (Jan–Dec)
+- Highlights: tag input (type + enter to add chip, x to remove)
+
+**Included / Not included card:**
+- Two side-by-side lists with "Add item" button on each. Each item = text input + delete button.
+
+**Itinerary builder card:**
+- "Add day" button
+- Each day as a bordered card:
+  - Day number (auto-incremented, shown as circle badge)
+  - Title input (e.g., "Colombo to Sigiriya")
+  - Location input
+  - Latitude + Longitude inputs (or note "Map picker in production")
+  - Description textarea
+  - Driving time input (e.g., "4–5 hours")
+  - Key stops: tag input
+  - Drag handle on left for reordering (or up/down arrow buttons)
+  - Delete day button (red, with confirmation)
+- For edit mode: pre-populate from tour data
+
+**Pricing card:**
+- Vehicle rates table: 5 rows (one per vehicle type), columns: Vehicle name, Price per day (£ input)
+- Add-ons section: "Add add-on" button. Each row: Name input, Description input, Price (£) input, Delete button.
+- Seasonal pricing: "Add season" button. Each row: Start date picker, End date picker, Multiplier input (e.g., 1.3), Delete button.
+
+**Settings card:**
+- Minimum lead time (days input)
+- Maximum extra days (+/- days input)
+- Active/inactive toggle (large, prominent)
+
+**Images card:**
+- File upload area with dashed border: "Drag images here or click to upload"
+- Uploaded images shown as thumbnails (mock with placeholder squares)
+- Drag to reorder
+
+**Form actions (sticky bottom bar):**
+- "Save as draft" secondary button
+- "Publish tour" primary button
+- "Cancel" ghost button
+
+### 4. Drivers Management (/app/admin/drivers)
+- Page title: "Drivers"
+- "Add new driver" button (primary) top right
+- **DataTable:**
+  - Search input
+  - Filters: Status (All, Active, Inactive), Region (All, Colombo, Kandy, South Coast, etc.)
+  - Columns: Photo (small circle), Name, Phone, Languages (chips), Vehicles (count), Trips completed, Status toggle, Actions (Edit)
+  - Mock 3-4 driver rows
+
+### 5. Driver Create/Edit (/app/admin/drivers/new, /app/admin/drivers/[id]/edit)
+**Account card:**
+- Email input (used for login)
+- "When you create this driver, they'll receive a welcome email with login instructions."
+- Generate temporary password toggle
+
+**Personal info card:**
+- First name, last name
+- Phone
+- Profile photo upload placeholder
+- Bio textarea
+- Languages: tag input
+- Experience years: number input
+- Region preferences: multi-select chips
+
+**Vehicles card:**
+- List of vehicle assignments. Each:
+  - Vehicle type dropdown (Car, Minivan, Large Van, Small Bus, Medium Bus)
+  - Plate number input
+  - Year input
+  - Features: checkboxes (AC, WiFi, Cooler box, USB charging, Overhead storage)
+  - Photo upload placeholder
+  - Delete button
+- "Add vehicle" button
+
+**Payout rates card:**
+- Tour daily fee: £ input per vehicle type (table)
+- Transfer commission: % input
+- Note: "Commission applies to the full booking total including add-ons"
+
+**Status card:**
+- Active/inactive toggle
+- "Deactivating removes this driver from trip assignments"
+
+### 6. Bookings Management (/app/admin/bookings)
+- Page title: "Bookings"
+- "Export CSV" button top right
+- **DataTable:**
+  - Search input (by reference code or customer name)
+  - Filters: Date range (date pickers), Type (All, Ready-made tour, Custom tour, Transfer), Status (All, Pending, Confirmed, In Progress, Completed, Cancelled), Driver (All + driver name dropdown)
+  - Columns: Reference, Customer, Type badge, Tour/Route name, Dates, Vehicle, Driver (name or "Unassigned"), Status badge, Amount (£), Actions (View)
+  - Load from bookings.json
+
+### 7. Booking Detail (/app/admin/bookings/[id])
+- **Header:** Booking reference large, status badge, date created
+
+- **Customer card:** Name, email (clickable mailto), phone (clickable tel), country. "Contact customer" button.
+
+- **Trip details card:** Tour/transfer name, dates, vehicle type + image, passengers, special requests (highlighted if present), add-ons list.
+
+- **Management card:**
+  - **Status dropdown:** Select from Pending, Confirmed, In Progress, Completed, Cancelled. "Update status" button.
+  - **Driver assignment:** Dropdown of active drivers (filtered by vehicle type match). Currently assigned driver shown. "Assign driver" button. Note: "Driver will be notified by email."
+  - **Internal notes:** Textarea for admin notes (not visible to tourist/driver).
+
+- **Payment card:** Stripe payment ID (monospace), amount paid, payment status badge, invoice number + download link.
+
+- **Cancellation section** (if applicable, or as a collapsible "danger zone"):
+  - "Cancel booking" button (red outline)
+  - On click: modal with refund amount calculator (full refund if >10 days, no refund if ≤10 days), reason textarea, "Confirm cancellation" button
+
+### 8. CYO Pipeline (/app/admin/requests)
+- Page title: "Custom tour requests"
+- **View toggle:** Kanban | List (pill toggle)
+
+- **Kanban view** (default):
+  - Horizontal scrollable columns: New | Reviewing | Quoted | Awaiting Payment | Paid | Confirmed | Abandoned
+  - Each column: colored header bar (New=blue, Reviewing=amber, Quoted=purple, Awaiting=amber, Paid=green, Confirmed=forest, Abandoned=gray)
+  - Cards in each column: customer name, locations (first 3 + "+X more"), preferred dates, vehicle preference badge, submitted date
+  - Cards clickable → /app/admin/requests/[id]
+  - Mock: CTR-2026-001 in "New", CTR-2026-002 in "Quoted", CTR-2026-003 in "Abandoned"
+
+- **List view:** DataTable with all requests, status filter, same columns as cards
+
+### 9. CYO Request Detail + Quote Builder (/app/admin/requests/[id])
+- **Status bar:** Current status as large badge + dropdown to change status
+
+- **Customer request card (read-only):**
+  - All submitted fields: trip type, locations (as chips), dates, duration, vehicle preference, passengers, budget, travel style, interests (as chips), special requests
+
+- **Customer info card:** Name, email, phone, country. Contact buttons.
+
+- **Quote builder card:**
+  - **Line items table:**
+    - Columns: Description, Rate (£), Quantity, Subtotal (auto-calculated)
+    - Pre-populated example row: "Minivan × 14 days" | £65 | 14 | £910
+    - "Add line item" button
+    - Each row has delete button
+  - **Extras table:**
+    - Columns: Description, Amount (£)
+    - "Add extra" button (e.g., "Peak season surcharge" | £45)
+  - **Quote total:** Auto-summed, displayed large: "Total: £955"
+  - **Actions:**
+    - "Generate Stripe Payment Link" button (primary) — on click: mock shows a generated URL
+    - "Send quote to customer" button (amber) — on click: mock confirmation "Quote sent to anna.b@example.com"
+    - "Copy payment link" button (secondary)
+
+- **If status = Abandoned:**
+  - Reason field (textarea, editable)
+
+- **Activity log:** Timeline of status changes with timestamps (mock 2-3 entries)
+
+### 10. Fleet Management (/app/admin/fleet)
+- Page title: "Fleet & availability"
+
+- **Vehicle inventory cards** (top section):
+  - 5 cards (one per vehicle type): image, name, model
+  - "In fleet:" editable number input (e.g., 2)
+  - Daily rate: £XX shown
+  - Per-km rate: £XX shown
+  - "Edit" link
+
+- **Availability calendar** (main section):
+  - Month/week view toggle
+  - Month navigation (← March 2026 →)
+  - Calendar grid: rows = vehicle types, columns = days
+  - Each cell: colored indicator
+    - Green/empty = available
+    - Amber = partially booked (some vehicles of this type booked)
+    - Red = fully booked (all vehicles of this type booked)
+  - Clicking a cell shows a popover: which bookings occupy that vehicle type on that day, with booking reference links
+
+### 11. Settings (/app/admin/settings)
+- Page title: "Settings"
+- Organized in tabs or accordion sections:
+
+**Payments tab:**
+- Stripe publishable key: input (mock value shown)
+- Stripe secret key: masked input (••••••••)
+- Webhook signing secret: masked input
+- "Test connection" button (mock)
+- "Save" button
+
+**Currency tab:**
+- Base currency: GBP (displayed, not editable)
+- Display currencies: checkboxes for USD, EUR, CAD, AUD, LKR (all checked by default)
+- "Save" button
+
+**Policies tab:**
+- Cancellation policy for tours: textarea (pre-filled with "Cancellations made less than 10 days before start date will not be refunded")
+- Cancellation policy for transfers: textarea
+- Reschedule policy: textarea
+- No-show policy: textarea
+- Terms & conditions: large textarea
+- "Save" button
+
+**Driver payouts tab:**
+- Tour daily fees table: 5 rows (vehicle types), £ input each
+- Transfer commission: % input (e.g., 15%)
+- "Commission includes add-ons" checkbox (checked)
+- "Save" button
+
+**Notifications tab:**
+- Admin notification emails: tag input (add multiple emails)
+- "New booking" toggle: on/off
+- "New CYO request" toggle: on/off
+- "Cancellation" toggle: on/off
+- "Save" button

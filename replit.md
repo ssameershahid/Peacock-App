@@ -63,7 +63,11 @@ Sri Lanka travel booking web app with mock data (high-fidelity prototype). Locat
 - `/account/bookings/:id` — Trip detail (status timeline, trip info, driver card, trip details form, price summary, reschedule/cancel modals, CYO quote view)
 - `/account/invoices` — Invoice table with download PDF buttons
 - `/account/profile` — Profile settings (personal info, password, connected accounts, danger zone)
-- `/driver` — Driver dashboard (mobile-first design)
+- `/driver` — Driver dashboard (mobile-first: today's trip card, weekly stats, quick actions, recent activity)
+- `/driver/trips` — Trip list with Upcoming/Past tabs, trip cards with status/pickup/tourist info
+- `/driver/trips/:id` — Trip detail (status banner, tourist contact buttons, trip info grid, special requests, admin notes, itinerary accordion, earnings, status action buttons)
+- `/driver/earnings` — Earnings summary cards (this month/last/all time), period filter, trip-by-trip breakdown, pending payout, export button
+- `/driver/profile` — Profile editor (photo, bio, languages, experience), availability toggle, vehicle cards with add/edit forms
 - `/admin` — Admin panel (KPI dashboard, tours, bookings, drivers, fleet, CYO pipeline)
 
 ### Shared Components (src/components/shared/)

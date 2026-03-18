@@ -14,6 +14,8 @@ const STATUS_STYLES: Record<string, string> = {
   new: 'bg-blue-100 text-blue-700',
   quoted: 'bg-amber-100 text-amber-700',
   abandoned: 'bg-warm-100 text-warm-500',
+  assigned: 'bg-blue-100 text-blue-700',
+  accepted: 'bg-amber-100 text-amber-700',
 };
 
 interface StatusBadgeProps {

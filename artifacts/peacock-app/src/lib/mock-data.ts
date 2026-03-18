@@ -72,6 +72,15 @@ export const BOOKINGS = bookingsData.bookings.map(b => ({
   customer: b.customer,
   pricing: b.pricing,
   createdAt: b.createdAt,
+  pickupTime: (b as any).pickupTime || null,
+  pickupLocation: (b as any).pickupLocation || null,
+  dropoffLocation: (b as any).dropoffLocation || null,
+  specialRequests: (b as any).specialRequests || null,
+  adminNotes: (b as any).adminNotes || null,
+  driverStatus: (b as any).driverStatus || null,
+  driverEarnings: (b as any).driverEarnings || 0,
+  plateNumber: (b as any).plateNumber || null,
+  rating: (b as any).rating || null,
 }));
 
 export const CYO_REQUESTS = bookingsData.cyoRequests.map(r => ({
@@ -95,3 +104,40 @@ export const CYO_REQUESTS = bookingsData.cyoRequests.map(r => ({
   quotedAmount: (r as any).quotedAmount,
   quotedItems: (r as any).quotedItems || [],
 }));
+
+export const DRIVER_PROFILE = {
+  id: 'DRV-001',
+  name: 'Dudley Perera',
+  phone: '+94 77 123 4567',
+  email: 'dudley.p@peacockdrivers.lk',
+  photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+  bio: 'Experienced driver with 8 years of touring across Sri Lanka. I know every hidden gem, the best local restaurants, and the safest mountain roads. My guests always leave with unforgettable memories.',
+  languages: ['English', 'Sinhala'],
+  experience: '8 years',
+  available: true,
+  joinedDate: '2018-06-15',
+  totalTrips: 342,
+  avgRating: 4.9,
+  vehicles: [
+    {
+      id: 'v1',
+      type: 'Minivan',
+      model: 'Toyota HiAce',
+      plate: 'WP-CAB-1234',
+      year: '2022',
+      image: '/vehicles/minivan.jpg',
+      features: ['AC', 'WiFi', 'Cooler box', 'USB charging'],
+    },
+    {
+      id: 'v2',
+      type: 'Car',
+      model: 'Toyota Prius',
+      plate: 'WP-CAB-5678',
+      year: '2023',
+      image: '/vehicles/car.jpg',
+      features: ['AC', 'USB charging', 'Bluetooth'],
+    },
+  ],
+};
+
+export const DRIVER_BOOKINGS = BOOKINGS.filter(b => b.driver?.name === 'Dudley Perera');

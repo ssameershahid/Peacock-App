@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { TOURS, VEHICLES, TRANSFERS, POPULAR_ROUTES, BOOKINGS, CYO_REQUESTS } from "@/lib/mock-data";
+import { TOURS, VEHICLES, TRANSFERS, POPULAR_ROUTES, BOOKINGS, CYO_REQUESTS, DRIVER_BOOKINGS, DRIVER_PROFILE } from "@/lib/mock-data";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms / 10));
 
@@ -110,6 +110,56 @@ export function useUpdateCYOStatus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "cyo"] });
+    }
+  });
+}
+
+export function useDriverProfile() {
+  return useQuery({
+    queryKey: ["driver", "profile"],
+    queryFn: async () => {
+      await delay(200);
+      return DRIVER_PROFILE;
+    }
+  });
+}
+
+export function useDriverBookings() {
+  return useQuery({
+    queryKey: ["driver", "bookings"],
+    queryFn: async () => {
+      await delay(300);
+      return DRIVER_BOOKINGS;
+    }
+  });
+}
+
+export function useDriverBooking(id: string) {
+  return useQuery({
+    queryKey: ["driver", "bookings", id],
+    queryFn: async () => {
+      await delay(200);
+      const booking = DRIVER_BOOKINGS.find(b => b.id === id);
+      if (!booking) throw new Error("Trip not found");
+      return booking;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useUpdateDriverStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      await delay(500);
+      const booking = DRIVER_BOOKINGS.find(b => b.id === id);
+      if (booking) {
+        (booking as any).driverStatus = status;
+      }
+      return { id, status };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "bookings"] });
     }
   });
 }
