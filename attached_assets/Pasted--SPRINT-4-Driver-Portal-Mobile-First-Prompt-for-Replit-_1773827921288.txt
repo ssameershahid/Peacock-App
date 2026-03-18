@@ -1,0 +1,135 @@
+# SPRINT 4 — Driver Portal (Mobile-First)
+
+## Prompt for Replit:
+
+Build the driver portal. This is MOBILE-FIRST — design for phone screens first, then scale up for desktop. Mock the logged-in state as driver "Dudley Perera". Use booking data from /data/bookings.json. The driver portal should feel like a clean, easy-to-use mobile app.
+
+### Important design notes for driver portal:
+- Large touch targets (minimum 48px height for buttons)
+- Single-column layout on mobile
+- Bottom navigation bar on mobile (Dashboard, Trips, Earnings, Profile)
+- Top header: "Peacock Drivers" logo + driver avatar
+- Cards should be full-width on mobile with generous padding
+- All status action buttons should be LARGE and prominent
+
+### 1. Driver Dashboard (/app/driver)
+- **Greeting header:** "Good morning, Dudley" with profile photo circle (64px). Current date shown.
+
+- **Today's trip card** (large, prominent, bg-white shadow-card rounded-2xl):
+  - If trip today: "Next pickup" label, time "2:30 PM", tourist name "James Mitchell", pickup location "Bandaranaike Airport", vehicle "Minivan". Large "View trip →" button.
+  - If no trip today: "No trips today" with relaxed illustration placeholder. "View upcoming trips →" link.
+
+- **This week stats** (two cards side by side):
+  - "Trips this week" — number "3" large, "2 remaining" below
+  - "Estimated earnings" — "£195" large
+
+- **Quick actions** (two large buttons):
+  - "View all trips" → /app/driver/trips
+  - "Update profile" → /app/driver/profile
+
+- **Recent activity** (compact list):
+  - Last 3 completed trips with date, tourist name, earnings amount
+
+### 2. Trip List (/app/driver/trips)
+- Tab navigation: **Upcoming** | **Past** (pill tabs)
+
+- **Upcoming tab:** Cards for each assigned trip:
+  - Date (prominent, e.g., "15 Apr 2026")
+  - Tour/transfer name
+  - Tourist name + passenger count
+  - Pickup time + location
+  - Vehicle type badge
+  - Status badge (Assigned / Accepted / In Progress)
+  - Tap → /app/driver/trips/[id]
+
+- **Past tab:** Same card format but with:
+  - Completion date
+  - Earnings amount (green text)
+  - Rating (if available, star icons)
+
+### 3. Trip Detail (/app/driver/trips/[id])
+- **Status banner at top:** Current status in large text with colored background (Assigned=blue, Accepted=amber, In Progress=forest, Completed=gray)
+
+- **Tourist info card:**
+  - Name: "James Mitchell"
+  - Phone: "+44 7700 900123" (tappable link)
+  - Passengers: "4"
+  - Country flag + "United Kingdom"
+  - "Call tourist" button (large, phone icon)
+  - "WhatsApp" button (large, message icon)
+
+- **Trip details card:**
+  - Tour/transfer name (font-display)
+  - Dates: "15 Apr – 24 Apr 2026"
+  - Pickup: time + location
+  - Drop-off: location (for transfers)
+  - Vehicle: type + plate number
+  - MapPlaceholder showing route
+
+- **Special requests** (highlighted box, amber-50 background):
+  - "We have a child (age 8) — would appreciate a car seat if possible."
+
+- **Admin notes** (if any, separate card):
+  - Notes from Peacock Drivers admin
+
+- **Day-by-day itinerary** (for tours, expandable accordion):
+  - Compact version of the tour itinerary
+
+- **STATUS ACTION BUTTONS** (large, full-width, bottom of page):
+  - If status = Assigned: "Accept trip" (large green button, full width, 56px tall)
+  - If status = Accepted: "Start trip" (large amber button). Shows only on the trip start date.
+  - If status = In Progress: "Complete trip" (large forest button)
+  - If status = Completed: "Trip completed ✓" (disabled gray button)
+
+  These buttons should be the most prominent element on the page. Mobile users will reach for them.
+
+### 4. Earnings (/app/driver/earnings)
+- **Summary cards row** (horizontal scroll on mobile):
+  - "This month" — £320 (large number, font-display)
+  - "Last month" — £485
+  - "All time" — £2,840
+
+- **Period filter:** Dropdown or pill tabs: This month | Last month | Last 3 months | Custom range
+
+- **Trip-by-trip earnings table/list:**
+  - Each row: Date, trip name (tour name or transfer route), type badge (Tour/Transfer), amount earned
+  - Sorted newest first
+  - Running total at bottom of visible list
+
+- **Export button:** "Export earnings report" secondary button (download icon). Mock download.
+
+- **Pending payout indicator:** Card showing "Pending payout: £195" with note "Payouts are processed weekly"
+
+### 5. Driver Profile (/app/driver/profile)
+- **Profile section:**
+  - Large profile photo (96px circle) with "Change photo" button
+  - Name: "Dudley Perera" (display, not editable by driver — admin manages)
+  - Phone: editable input
+  - Bio textarea: "Experienced driver with 8 years of touring across Sri Lanka..."
+  - Languages: tag input (English, Sinhala, Tamil)
+  - Experience: "8 years" input
+  - "Save profile" button
+
+- **Availability toggle** (prominent):
+  - Large toggle switch: "Available for trips" ON/OFF
+  - When OFF: amber warning banner "You won't receive new trip assignments while unavailable"
+
+- **My vehicles section:**
+  - Cards for each vehicle assigned to this driver:
+    - Vehicle image (from /public/vehicles/)
+    - Type: "Minivan"
+    - Model: "Toyota HiAce"
+    - Plate: "WP-CAB-1234"
+    - Year: "2022"
+    - Features: chips (AC, WiFi, Cooler box)
+    - "Edit" button on each
+  - "Add vehicle" button (secondary) — opens form: type dropdown, plate number, year, features checkboxes, photo upload placeholder
+
+### Mobile bottom navigation bar:
+Fixed at bottom, 4 items with icons:
+- Dashboard (home icon) → /app/driver
+- Trips (calendar icon) → /app/driver/trips
+- Earnings (wallet icon) → /app/driver/earnings
+- Profile (user icon) → /app/driver/profile
+
+Active item: forest-500 text + icon. Inactive: warm-400.

@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TOURS, VEHICLES, TRANSFERS, POPULAR_ROUTES, BOOKINGS, CYO_REQUESTS } from "@/lib/mock-data";
 
-// Simulated network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms / 10));
 
 export function useTours() {
   return useQuery({
@@ -22,7 +21,8 @@ export function useTour(slug: string) {
       const tour = TOURS.find(t => t.slug === slug);
       if (!tour) throw new Error("Tour not found");
       return tour;
-    }
+    },
+    enabled: !!slug,
   });
 }
 
@@ -62,6 +62,30 @@ export function useUserBookings() {
     queryFn: async () => {
       await delay(600);
       return BOOKINGS;
+    }
+  });
+}
+
+export function useBooking(id: string) {
+  const isCYO = id.startsWith('CTR') || id.startsWith('CYO');
+  return useQuery({
+    queryKey: ["bookings", id],
+    queryFn: async () => {
+      await delay(300);
+      const booking = BOOKINGS.find(b => b.id === id);
+      if (!booking) throw new Error("Booking not found");
+      return booking;
+    },
+    enabled: !isCYO,
+  });
+}
+
+export function useCYORequests() {
+  return useQuery({
+    queryKey: ["cyo-requests", "me"],
+    queryFn: async () => {
+      await delay(400);
+      return CYO_REQUESTS;
     }
   });
 }

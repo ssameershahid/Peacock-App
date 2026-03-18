@@ -1,8 +1,8 @@
-import vehiclesData from '@/data/vehicles.json';
-import toursData from '@/data/tours.json';
-import transfersData from '@/data/transfers.json';
-import currenciesData from '@/data/currencies.json';
-import bookingsData from '@/data/bookings.json';
+import vehiclesData from '../data/vehicles.json';
+import toursData from '../data/tours.json';
+import transfersData from '../data/transfers.json';
+import currenciesData from '../data/currencies.json';
+import bookingsData from '../data/bookings.json';
 
 export const VEHICLES = vehiclesData;
 
@@ -57,21 +57,31 @@ export const BOOKINGS = bookingsData.bookings.map(b => ({
   id: b.id,
   type: b.type === 'custom' ? 'cyo' : b.type,
   title: b.tourName,
-  date: `${b.dates.start} – ${b.dates.end}`,
-  status: b.status === 'confirmed' ? 'Upcoming' : b.status === 'completed' ? 'Completed' : b.status === 'pending' ? 'Pending' : b.status === 'in-progress' ? 'In Progress' : b.status === 'quote-paid' ? 'Quote Paid' : b.status,
+  tourId: (b as any).tourId || null,
+  date: `${b.dates.start} \u2013 ${b.dates.end}`,
+  startDate: b.dates.start,
+  endDate: b.dates.end,
+  rawStatus: b.status,
+  status: b.status === 'confirmed' ? 'Upcoming' : b.status === 'completed' ? 'Completed' : b.status === 'pending' ? 'Pending' : b.status === 'in-progress' ? 'In Progress' : b.status === 'quote-paid' ? 'Quote Paid' : b.status === 'cancelled' ? 'Cancelled' : b.status,
   vehicle: b.vehicleName,
+  vehicleId: b.vehicleId,
   price: b.pricing.total,
   passengers: b.passengers,
   addOns: b.addOns,
   driver: b.driver,
   customer: b.customer,
   pricing: b.pricing,
+  createdAt: b.createdAt,
 }));
 
 export const CYO_REQUESTS = bookingsData.cyoRequests.map(r => ({
   id: r.id,
   customer: r.customer.name,
+  customerData: r.customer,
   locations: r.destinations,
+  startDate: r.dates.start,
+  duration: r.dates.duration,
+  flexible: r.dates.flexible,
   dates: `${r.dates.start} (${r.dates.duration} days)`,
   status: r.status === 'new' ? 'New' : r.status === 'quoted' ? 'Quoted' : r.status === 'abandoned' ? 'Abandoned' : r.status,
   submittedAt: r.submittedAt,
@@ -83,4 +93,5 @@ export const CYO_REQUESTS = bookingsData.cyoRequests.map(r => ({
   interests: r.interests,
   specialRequests: r.specialRequests,
   quotedAmount: (r as any).quotedAmount,
+  quotedItems: (r as any).quotedItems || [],
 }));

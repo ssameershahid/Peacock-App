@@ -58,7 +58,11 @@ Sri Lanka travel booking web app with mock data (high-fidelity prototype). Locat
 - `/checkout/confirmation` — Booking confirmation with reference number + next steps
 - `/login` — Login form with Google SSO mock
 - `/register` — Registration form with Google SSO mock
-- `/account` — Tourist portal (bookings, invoices, profile)
+- `/account` — Tourist portal overview (quick stats, action cards, recent booking, pending CYO quote)
+- `/account/bookings` — My Trips with Upcoming/Past tabs, BookingCards, CYO quote banner
+- `/account/bookings/:id` — Trip detail (status timeline, trip info, driver card, trip details form, price summary, reschedule/cancel modals, CYO quote view)
+- `/account/invoices` — Invoice table with download PDF buttons
+- `/account/profile` — Profile settings (personal info, password, connected accounts, danger zone)
 - `/driver` — Driver dashboard (mobile-first design)
 - `/admin` — Admin panel (KPI dashboard, tours, bookings, drivers, fleet, CYO pipeline)
 
