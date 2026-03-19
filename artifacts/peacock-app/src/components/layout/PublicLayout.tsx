@@ -22,9 +22,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const solidHeader = isScrolled || !isHome;
 
   const navLinks = [
-    { href: '/tours', label: 'Tours' },
-    { href: '/transfers', label: 'Transfers' },
-    { href: '/account/bookings', label: 'My Trips' },
+    { href: '/tours', label: 'Ready Tours' },
+    { href: '/transfers', label: 'Island Transfers' },
+    { href: '/tours/custom', label: 'Trip Wizard' },
   ];
 
   return (
@@ -147,13 +147,15 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/tours/custom"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-2xl font-display text-forest-600 border-b border-warm-100 py-5 hover:text-amber-500 transition-colors"
-            >
-              Create Your Own
-            </Link>
+            {user && (
+              <Link
+                href="/account/bookings"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-2xl font-display text-forest-600 border-b border-warm-100 py-5 hover:text-amber-500 transition-colors"
+              >
+                My Trips
+              </Link>
+            )}
             <Link
               href="/account"
               onClick={() => setMobileMenuOpen(false)}
