@@ -137,9 +137,10 @@ export function useTours() {
     queryFn: async () => {
       try {
         const tours = await api.get<any[]>("/tours");
-        return normalizeTourList(tours);
+        const normalized = normalizeTourList(tours);
+        return normalized.length > 0 ? normalized : normalizeTourList(MOCK_TOURS);
       } catch {
-        return MOCK_TOURS;
+        return normalizeTourList(MOCK_TOURS);
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -169,7 +170,8 @@ export function useVehicles() {
     queryFn: async () => {
       try {
         const vehicles = await api.get<any[]>("/vehicles");
-        return normalizeVehicles(vehicles);
+        const normalized = normalizeVehicles(vehicles);
+        return normalized.length > 0 ? normalized : MOCK_VEHICLES;
       } catch {
         return MOCK_VEHICLES;
       }
@@ -184,7 +186,8 @@ export function useTransfers() {
     queryFn: async () => {
       try {
         const routes = await api.get<any[]>("/transfers");
-        return normalizeTransferRoutes(routes);
+        const normalized = normalizeTransferRoutes(routes);
+        return normalized.length > 0 ? normalized : normalizeTransferRoutes(MOCK_TRANSFERS);
       } catch {
         return normalizeTransferRoutes(MOCK_TRANSFERS);
       }

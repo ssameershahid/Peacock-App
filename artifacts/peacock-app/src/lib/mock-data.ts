@@ -1,8 +1,193 @@
-// Mock data fallbacks — all empty, API is the source of truth
-export const VEHICLES: any[] = [];
-export const TOURS: any[] = [];
-export const TRANSFERS: any[] = [];
-export const POPULAR_ROUTES: any[] = [];
+// Mock data fallbacks — used when API returns empty or fails
+export const VEHICLES: any[] = [
+  { id: 'car', name: 'Car', model: 'Toyota Prius', image: '/vehicles/car-new.png', capacity: '1–3 pax', maxPassengers: 3, pricePerDay: 45 },
+  { id: 'minivan', name: 'Minivan', model: 'Toyota HiAce', image: '/vehicles/minivan-new.png', capacity: '1–6 pax', maxPassengers: 6, pricePerDay: 65 },
+  { id: 'large-van', name: 'Large Minivan', model: 'Toyota HiAce HR', image: '/vehicles/large-minivan-new.png', capacity: '1–10 pax', maxPassengers: 10, pricePerDay: 85 },
+  { id: 'small-bus', name: 'Small Bus', model: 'Toyota Coaster', image: '/vehicles/small-bus-new.png', capacity: '1–20 pax', maxPassengers: 20, pricePerDay: 120 },
+  { id: 'medium-bus', name: 'Medium Bus', model: 'King Long', image: '/vehicles/medium-bus-new.png', capacity: '1–35 pax', maxPassengers: 35, pricePerDay: 175 },
+];
+
+export const TOURS: any[] = [
+  {
+    id: 'classic-sri-lanka',
+    slug: 'classic-sri-lanka',
+    name: 'Classic Sri Lanka',
+    tagline: 'The perfect introduction to the island\'s highlights.',
+    description: 'Discover the very best of Sri Lanka on this comprehensive 10-day journey. From the ancient cities of the Cultural Triangle to the misty tea plantations of the Hill Country and the golden beaches of the south coast, this tour covers the island\'s most iconic destinations with the comfort of a private driver.',
+    duration: 10,
+    nights: 9,
+    type: 'Cultural',
+    difficulty: 'Easy',
+    regions: ['Cultural Triangle', 'Hill Country', 'South Coast'],
+    startEnd: 'Colombo (CMB)',
+    highlights: ['Sigiriya Rock Fortress', 'Temple of the Tooth', 'Tea plantation visit', 'Yala National Park safari', 'Galle Fort', 'Nine Arches Bridge'],
+    images: [
+      'https://images.unsplash.com/photo-1586523969032-b4d0db38124f?w=800&q=80',
+      'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=800&q=80',
+      'https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80',
+    ],
+    included: ['Private vehicle & driver for 10 days', 'All fuel & tolls', 'Driver accommodation & meals', 'Airport pickup & drop-off', 'Bottled water daily'],
+    notIncluded: ['Hotel accommodation', 'Meals for travellers', 'Entrance fees to sites', 'Tips for driver', 'Travel insurance'],
+    vehicleRates: { car: 45, minivan: 65, 'large-van': 85, 'small-bus': 120, 'medium-bus': 175 },
+    addOns: [
+      { id: 'airport-pickup', name: 'Airport Pickup', description: 'Meet & greet at Bandaranaike International Airport', price: 28 },
+      { id: 'welcome-pack', name: 'Welcome Pack', description: 'Local SIM card, bottled water, snacks & guidebook', price: 15 },
+      { id: 'safari-upgrade', name: 'Premium Safari Jeep', description: 'Upgrade to a private jeep for Yala safari', price: 45 },
+    ],
+    leadTimeDays: 3,
+    itinerary: [
+      { day: 1, title: 'Airport to Negombo', location: 'Negombo', description: 'Your driver meets you at Bandaranaike International Airport and transfers you to your beachside hotel in Negombo.', drivingTime: '30 minutes', stops: ['Bandaranaike Airport', 'Negombo Beach', 'Dutch Canal'] },
+      { day: 2, title: 'Negombo to Anuradhapura', location: 'Anuradhapura', description: 'Journey north to the ancient capital of Anuradhapura, a UNESCO World Heritage Site.', drivingTime: '4 hours', stops: ['Sri Maha Bodhi', 'Ruwanwelisaya Dagoba', 'Jetavanaramaya'] },
+      { day: 3, title: 'Anuradhapura to Sigiriya', location: 'Sigiriya', description: 'Climb the iconic Lion Rock fortress, a 5th-century palace perched atop a 200-metre rock column.', drivingTime: '2 hours', stops: ['Sigiriya Rock Fortress', 'Sigiriya Frescoes', 'Dambulla Cave Temple'] },
+      { day: 4, title: 'Sigiriya to Polonnaruwa & Minneriya', location: 'Sigiriya', description: 'Explore the medieval capital of Polonnaruwa. Afternoon jeep safari at Minneriya.', drivingTime: '1.5 hours', stops: ['Polonnaruwa Ancient City', 'Gal Vihara', 'Minneriya National Park'] },
+      { day: 5, title: 'Sigiriya to Kandy', location: 'Kandy', description: 'Wind through the lush countryside to Kandy. Kandyan dance performance and Temple of the Tooth.', drivingTime: '3 hours', stops: ['Matale Spice Garden', 'Temple of the Tooth', 'Kandy Lake'] },
+      { day: 6, title: 'Kandy to Nuwara Eliya', location: 'Nuwara Eliya', description: 'Drive into the misty highlands past emerald tea plantations. Visit a working tea factory.', drivingTime: '2.5 hours', stops: ['Ramboda Falls', 'Tea Factory Visit', 'Gregory Lake'] },
+      { day: 7, title: 'Nuwara Eliya to Ella', location: 'Ella', description: 'One of the most scenic drives in Sri Lanka. The famous Nine Arches Bridge.', drivingTime: '2 hours', stops: ['Nine Arches Bridge', 'Ella Gap Viewpoint', 'Ravana Falls'] },
+      { day: 8, title: 'Ella to Yala', location: 'Yala', description: 'Descend from the highlands to Yala, home to the highest density of leopards in the world.', drivingTime: '3 hours', stops: ['Buduruwagala Temple', 'Yala National Park Safari'] },
+      { day: 9, title: 'Yala to Galle', location: 'Galle', description: 'Drive along the stunning southern coast to the UNESCO-listed Galle Fort.', drivingTime: '3 hours', stops: ['Mirissa Beach', 'Galle Fort', 'Flag Rock Bastion'] },
+      { day: 10, title: 'Galle to Airport', location: 'Colombo', description: 'Scenic coastal road back to Colombo and the airport.', drivingTime: '2.5 hours', stops: ['Bentota Beach', 'Colombo (optional)', 'Bandaranaike Airport'] },
+    ],
+  },
+  {
+    id: 'wild-sri-lanka',
+    slug: 'wild-sri-lanka',
+    name: 'Wild Sri Lanka',
+    tagline: 'Leopards, elephants, and untouched wilderness.',
+    description: 'An 8-day wildlife-focused adventure across Sri Lanka\'s best national parks. Track leopards in Yala, watch elephants gather at Minneriya, explore the wetlands of Bundala, and discover the marine wonders of Mirissa.',
+    duration: 8,
+    nights: 7,
+    type: 'Wildlife',
+    difficulty: 'Moderate',
+    regions: ['Cultural Triangle', 'South Coast', 'East Coast'],
+    startEnd: 'Colombo (CMB)',
+    highlights: ['Yala leopard safari', 'Minneriya elephant gathering', 'Whale watching in Mirissa', 'Bundala bird sanctuary', 'Udawalawe elephant safari'],
+    images: [
+      'https://images.unsplash.com/photo-1535338454528-1b4ac38b083e?w=800&q=80',
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&q=80',
+    ],
+    included: ['Private vehicle & driver for 8 days', 'All fuel & tolls', 'Driver accommodation & meals', 'Airport pickup & drop-off', 'Bottled water daily'],
+    notIncluded: ['Hotel accommodation', 'Meals for travellers', 'National park entrance fees', 'Safari jeep hire', 'Tips for driver'],
+    vehicleRates: { car: 45, minivan: 65, 'large-van': 85, 'small-bus': 120, 'medium-bus': 175 },
+    addOns: [
+      { id: 'airport-pickup', name: 'Airport Pickup', description: 'Meet & greet at Bandaranaike International Airport', price: 28 },
+      { id: 'whale-watching', name: 'Whale Watching Trip', description: 'Early morning boat trip from Mirissa harbour', price: 55 },
+      { id: 'photo-guide', name: 'Photography Guide', description: 'Professional wildlife photography guide for one safari', price: 85 },
+    ],
+    leadTimeDays: 5,
+    itinerary: [
+      { day: 1, title: 'Airport to Habarana', location: 'Habarana', description: 'Transfer to Habarana, the gateway to the Cultural Triangle.', drivingTime: '4 hours', stops: ['Bandaranaike Airport', 'Habarana'] },
+      { day: 2, title: 'Minneriya Safari & Sigiriya', location: 'Habarana', description: 'Sigiriya Rock Fortress in the morning, Minneriya elephant gathering in the afternoon.', drivingTime: '1 hour', stops: ['Sigiriya Rock Fortress', 'Minneriya National Park'] },
+      { day: 3, title: 'Habarana to Knuckles Range', location: 'Kandy', description: 'Trek through UNESCO cloud forests with endemic birds and rare orchids.', drivingTime: '3 hours', stops: ['Knuckles Mountain Range', 'Cloud Forest Trek'] },
+      { day: 4, title: 'Kandy to Udawalawe', location: 'Udawalawe', description: 'Afternoon safari to see herds of wild elephants in Udawalawe.', drivingTime: '4 hours', stops: ['Udawalawe National Park Safari', 'Elephant Transit Home'] },
+      { day: 5, title: 'Udawalawe to Yala', location: 'Yala', description: 'Yala — world\'s highest leopard density, plus sloth bears and crocodiles.', drivingTime: '2 hours', stops: ['Yala National Park', 'Leopard Safari'] },
+      { day: 6, title: 'Yala & Bundala', location: 'Yala', description: 'Morning Yala safari, afternoon Bundala Ramsar wetland with flamingos.', drivingTime: '1 hour', stops: ['Yala Morning Safari', 'Bundala National Park'] },
+      { day: 7, title: 'Yala to Mirissa', location: 'Mirissa', description: 'South coast drive to Mirissa with optional whale watching.', drivingTime: '2.5 hours', stops: ['Mirissa Beach', 'Whale Watching (seasonal)', 'Coconut Tree Hill'] },
+      { day: 8, title: 'Mirissa to Airport', location: 'Colombo', description: 'Final coastal drive back to the airport.', drivingTime: '3.5 hours', stops: ['Turtle Hatchery', 'Madu River (optional)', 'Bandaranaike Airport'] },
+    ],
+  },
+  {
+    id: 'beaches-and-culture',
+    slug: 'beaches-and-culture',
+    name: 'Beaches & Culture',
+    tagline: 'Golden sands meet ancient wonders.',
+    description: 'A 12-day journey that perfectly balances Sri Lanka\'s rich cultural heritage with its stunning coastline. Explore ancient temples and colonial forts, then unwind on palm-fringed beaches.',
+    duration: 12,
+    nights: 11,
+    type: 'Mix',
+    difficulty: 'Easy',
+    regions: ['West Coast', 'Cultural Triangle', 'East Coast', 'South Coast'],
+    startEnd: 'Colombo (CMB)',
+    highlights: ['Galle Fort sunset walk', 'Trincomalee beaches', 'Sigiriya Rock', 'Mirissa whale watching', 'Unawatuna snorkelling', 'Polonnaruwa ruins'],
+    images: [
+      'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+    ],
+    included: ['Private vehicle & driver for 12 days', 'All fuel & tolls', 'Driver accommodation & meals', 'Airport pickup & drop-off', 'Bottled water daily'],
+    notIncluded: ['Hotel accommodation', 'Meals for travellers', 'Entrance fees to sites', 'Water sports', 'Tips for driver'],
+    vehicleRates: { car: 45, minivan: 65, 'large-van': 85, 'small-bus': 120, 'medium-bus': 175 },
+    addOns: [
+      { id: 'airport-pickup', name: 'Airport Pickup', description: 'Meet & greet at Bandaranaike International Airport', price: 28 },
+      { id: 'snorkelling', name: 'Snorkelling Trip', description: 'Guided snorkelling at Pigeon Island or Unawatuna', price: 35 },
+      { id: 'cooking-class', name: 'Sri Lankan Cooking Class', description: 'Half-day cooking class with local family', price: 40 },
+    ],
+    leadTimeDays: 3,
+    itinerary: [
+      { day: 1, title: 'Airport to Negombo', location: 'Negombo', description: 'Arrive and transfer to your beach hotel. Explore the fishing village at sunset.', drivingTime: '30 minutes', stops: ['Negombo Beach', 'Fish Market'] },
+      { day: 2, title: 'Negombo to Sigiriya', location: 'Sigiriya', description: 'Climb the iconic Sigiriya Rock Fortress and explore the ancient water gardens.', drivingTime: '4 hours', stops: ['Sigiriya Rock Fortress', 'Water Gardens'] },
+      { day: 3, title: 'Polonnaruwa & Village Tour', location: 'Sigiriya', description: 'Medieval capital ruins and a village life catamaran experience.', drivingTime: '1.5 hours', stops: ['Polonnaruwa Ruins', 'Village Life Experience'] },
+      { day: 4, title: 'Sigiriya to Trincomalee', location: 'Trincomalee', description: 'Head to the stunning east coast and Nilaveli beach.', drivingTime: '3.5 hours', stops: ['Nilaveli Beach', 'Fort Frederick'] },
+      { day: 5, title: 'Trincomalee Beach Day', location: 'Trincomalee', description: 'Pigeon Island snorkelling or the historic Koneswaram Temple on Swami Rock.', drivingTime: '30 minutes', stops: ['Pigeon Island', 'Koneswaram Temple', 'Marble Beach'] },
+      { day: 6, title: 'Trincomalee to Kandy', location: 'Kandy', description: 'Cross the island to the hill capital. Temple of the Tooth and Kandyan dance.', drivingTime: '4.5 hours', stops: ['Temple of the Tooth', 'Kandy Lake', 'Kandyan Dance Show'] },
+      { day: 7, title: 'Kandy & Surrounds', location: 'Kandy', description: 'Royal Botanical Gardens, tea plantation, and Kandy\'s vibrant market.', drivingTime: '1 hour', stops: ['Peradeniya Botanical Gardens', 'Tea Plantation', 'Kandy Market'] },
+      { day: 8, title: 'Kandy to Ella', location: 'Ella', description: 'Scenic mountain drive through tea country to the charming hill station.', drivingTime: '3.5 hours', stops: ['Nine Arches Bridge', 'Ella Gap', 'Little Adam\'s Peak'] },
+      { day: 9, title: 'Ella to South Coast', location: 'Tangalle', description: 'Descend to the tranquil south coast and Tangalle\'s secluded beaches.', drivingTime: '3 hours', stops: ['Ravana Falls', 'Tangalle Beach'] },
+      { day: 10, title: 'Mirissa & Whale Watching', location: 'Mirissa', description: 'Optional whale watching trip. Day on Mirissa\'s crescent beach.', drivingTime: '1 hour', stops: ['Mirissa Beach', 'Whale Watching', 'Coconut Tree Hill'] },
+      { day: 11, title: 'Galle Fort', location: 'Galle', description: 'UNESCO Galle Fort, boutique shops, galleries, and sunset on the ramparts.', drivingTime: '45 minutes', stops: ['Galle Fort', 'Dutch Reformed Church', 'Flag Rock', 'Unawatuna Beach'] },
+      { day: 12, title: 'Galle to Airport', location: 'Colombo', description: 'Scenic coastal drive to the airport.', drivingTime: '2.5 hours', stops: ['Turtle Hatchery', 'Bandaranaike Airport'] },
+    ],
+  },
+  {
+    id: 'hill-country-explorer',
+    slug: 'hill-country-explorer',
+    name: 'Hill Country Explorer',
+    tagline: 'Rolling tea estates and misty mountain peaks.',
+    description: 'A focused 7-day journey through Sri Lanka\'s breathtaking hill country. Wind through emerald tea plantations, hike to stunning viewpoints, ride the world-famous hill country train, and discover charming colonial towns.',
+    duration: 7,
+    nights: 6,
+    type: 'Scenic',
+    difficulty: 'Moderate',
+    regions: ['Hill Country'],
+    startEnd: 'Colombo (CMB)',
+    highlights: ['Scenic train ride', 'Tea plantation tours', 'Horton Plains World\'s End', 'Adam\'s Peak sunrise', 'Knuckles Range trek', 'Nine Arches Bridge'],
+    images: [
+      'https://images.unsplash.com/photo-1566296440244-0e3e7b3e22ad?w=800&q=80',
+      'https://images.unsplash.com/photo-1580715911453-35e13f8b3ff5?w=800&q=80',
+    ],
+    included: ['Private vehicle & driver for 7 days', 'All fuel & tolls', 'Driver accommodation & meals', 'Airport pickup & drop-off', 'Bottled water daily'],
+    notIncluded: ['Hotel accommodation', 'Meals for travellers', 'Entrance fees to sites', 'Train tickets', 'Tips for driver'],
+    vehicleRates: { car: 45, minivan: 65, 'large-van': 85, 'small-bus': 120, 'medium-bus': 175 },
+    addOns: [
+      { id: 'airport-pickup', name: 'Airport Pickup', description: 'Meet & greet at Bandaranaike International Airport', price: 28 },
+      { id: 'train-tickets', name: 'Train Tickets', description: 'Reserved observation car seats for scenic train ride', price: 25 },
+      { id: 'adams-peak-guide', name: 'Adam\'s Peak Guide', description: 'Local guide for the sunrise pilgrimage hike', price: 30 },
+    ],
+    leadTimeDays: 3,
+    itinerary: [
+      { day: 1, title: 'Airport to Kandy', location: 'Kandy', description: 'Transfer to Kandy. Temple of the Tooth in the evening.', drivingTime: '3.5 hours', stops: ['Temple of the Tooth', 'Kandy Lake'] },
+      { day: 2, title: 'Kandy & Knuckles Range', location: 'Kandy', description: 'Peradeniya Botanical Gardens then afternoon trek in the Knuckles cloud forest.', drivingTime: '1.5 hours', stops: ['Peradeniya Gardens', 'Knuckles Mountain Range'] },
+      { day: 3, title: 'Kandy to Nuwara Eliya', location: 'Nuwara Eliya', description: 'Drive through rolling tea estates, visiting a tea factory.', drivingTime: '2.5 hours', stops: ['Tea Factory Visit', 'Ramboda Falls', 'Gregory Lake'] },
+      { day: 4, title: 'Horton Plains', location: 'Nuwara Eliya', description: 'Pre-dawn hike to World\'s End — a sheer cliff with 880m panoramic views.', drivingTime: '1 hour', stops: ['Horton Plains', 'World\'s End', 'Baker\'s Falls'] },
+      { day: 5, title: 'Nuwara Eliya to Ella (Train)', location: 'Ella', description: 'The world-famous scenic train ride. Nine Arches Bridge at sunset.', drivingTime: 'Train: 3 hours', stops: ['Scenic Train Ride', 'Nine Arches Bridge', 'Ella Town'] },
+      { day: 6, title: 'Ella Adventures', location: 'Ella', description: 'Little Adam\'s Peak hike, Ravana Falls, and Ella\'s charming cafés.', drivingTime: '30 minutes', stops: ['Little Adam\'s Peak', 'Ravana Falls', 'Ella Rock (optional)'] },
+      { day: 7, title: 'Ella to Airport', location: 'Colombo', description: 'Drive back through the highlands to the airport.', drivingTime: '5 hours', stops: ['Buduruwagala Temple', 'Bandaranaike Airport'] },
+    ],
+  },
+];
+
+export const TRANSFERS: any[] = [
+  // Airport routes
+  { id: 'cmb-colombo', from: 'Bandaranaike Int. Airport (CMB)', to: 'Colombo City', distance: '35 km', time: '1–1.5 hours', prices: { car: 28, minivan: 38, 'large-van': 48, 'small-bus': 65, 'medium-bus': 95 } },
+  { id: 'cmb-kandy', from: 'Bandaranaike Int. Airport (CMB)', to: 'Kandy', distance: '120 km', time: '3–3.5 hours', prices: { car: 66, minivan: 90, 'large-van': 114, 'small-bus': 144, 'medium-bus': 180 } },
+  { id: 'cmb-galle', from: 'Bandaranaike Int. Airport (CMB)', to: 'Galle', distance: '165 km', time: '3–4 hours', prices: { car: 91, minivan: 124, 'large-van': 157, 'small-bus': 198, 'medium-bus': 248 } },
+  { id: 'cmb-sigiriya', from: 'Bandaranaike Int. Airport (CMB)', to: 'Sigiriya', distance: '175 km', time: '4–4.5 hours', prices: { car: 96, minivan: 131, 'large-van': 166, 'small-bus': 210, 'medium-bus': 263 } },
+  { id: 'cmb-ella', from: 'Bandaranaike Int. Airport (CMB)', to: 'Ella', distance: '270 km', time: '6–7 hours', prices: { car: 149, minivan: 203, 'large-van': 257, 'small-bus': 324, 'medium-bus': 405 } },
+  { id: 'cmb-negombo', from: 'Bandaranaike Int. Airport (CMB)', to: 'Negombo', distance: '10 km', time: '20–30 minutes', prices: { car: 12, minivan: 16, 'large-van': 20, 'small-bus': 28, 'medium-bus': 38 } },
+  // Popular inter-city routes
+  { id: 'colombo-galle', from: 'Colombo', to: 'Galle', distance: '130 km', time: '2.5–3 hours', prices: { car: 72, minivan: 98, 'large-van': 124, 'small-bus': 156, 'medium-bus': 195 } },
+  { id: 'colombo-kandy', from: 'Colombo', to: 'Kandy', distance: '120 km', time: '3–3.5 hours', prices: { car: 66, minivan: 90, 'large-van': 114, 'small-bus': 144, 'medium-bus': 180 } },
+  { id: 'colombo-sigiriya', from: 'Colombo', to: 'Sigiriya', distance: '170 km', time: '4–4.5 hours', prices: { car: 94, minivan: 128, 'large-van': 162, 'small-bus': 204, 'medium-bus': 255 } },
+  { id: 'kandy-ella', from: 'Kandy', to: 'Ella', distance: '140 km', time: '4–5 hours', prices: { car: 77, minivan: 105, 'large-van': 133, 'small-bus': 168, 'medium-bus': 210 } },
+  { id: 'galle-ella', from: 'Galle', to: 'Ella', distance: '200 km', time: '5–6 hours', prices: { car: 110, minivan: 150, 'large-van': 190, 'small-bus': 240, 'medium-bus': 300 } },
+];
+
+export const POPULAR_ROUTES: any[] = [
+  { id: 'colombo-galle', from: 'Colombo', to: 'Galle', description: 'Scenic coastal drive along the southern expressway to the historic Dutch fort city.' },
+  { id: 'colombo-kandy', from: 'Colombo', to: 'Kandy', description: 'Journey through lush hill country to Sri Lanka\'s cultural capital and the Temple of the Tooth.' },
+  { id: 'colombo-sigiriya', from: 'Colombo', to: 'Sigiriya', description: 'Travel to the ancient rock fortress, a UNESCO World Heritage Site rising from the jungle.' },
+  { id: 'kandy-ella', from: 'Kandy', to: 'Ella', description: 'Wind through tea plantations and misty mountains to the charming hill station of Ella.' },
+  { id: 'galle-ella', from: 'Galle', to: 'Ella', description: 'From the coastal fort town, climb into the highlands past waterfalls and paddy fields.' },
+];
+
 export const CURRENCIES: any[] = [];
 export const BOOKINGS: any[] = [];
 export const CYO_REQUESTS: any[] = [];

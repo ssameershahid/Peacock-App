@@ -155,7 +155,7 @@ async function seed() {
         name: "Car",
         model: "Toyota Prius",
         slug: "car",
-        imageUrl: "/vehicles/car-v2.png",
+        imageUrl: "/vehicles/car-new.png",
         capacityMin: 1,
         capacityMax: 3,
         description:
@@ -171,7 +171,7 @@ async function seed() {
         name: "Minivan",
         model: "Toyota HiAce",
         slug: "minivan",
-        imageUrl: "/vehicles/minivan-v2.png",
+        imageUrl: "/vehicles/minivan-new.png",
         capacityMin: 4,
         capacityMax: 6,
         description:
@@ -187,7 +187,7 @@ async function seed() {
         name: "Large Van",
         model: "Toyota HiAce HR",
         slug: "large-van",
-        imageUrl: "/vehicles/large-van-v3.png",
+        imageUrl: "/vehicles/large-minivan-new.png",
         capacityMin: 7,
         capacityMax: 10,
         description:
@@ -203,7 +203,7 @@ async function seed() {
         name: "Small Bus",
         model: "Toyota Coaster",
         slug: "small-bus",
-        imageUrl: "/vehicles/small-bus-v2.png",
+        imageUrl: "/vehicles/small-bus-new.png",
         capacityMin: 11,
         capacityMax: 20,
         description:
@@ -219,7 +219,7 @@ async function seed() {
         name: "Medium Bus",
         model: "King Long",
         slug: "medium-bus",
-        imageUrl: "/vehicles/medium-bus-v2.png",
+        imageUrl: "/vehicles/medium-bus-new.png",
         capacityMin: 21,
         capacityMax: 35,
         description:
