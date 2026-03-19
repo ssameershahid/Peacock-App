@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { VehicleSelector } from '@/components/shared/VehicleSelector';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
 import { Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft, Briefcase, Palmtree, Star, Trophy } from 'lucide-react';
 import { useVehicles } from '@/hooks/use-app-data';
+import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 const DESTINATIONS = [
   { id: 'colombo', name: 'Colombo', desc: 'Vibrant capital city', lng: 79.8612, lat: 6.9271 },
@@ -33,6 +35,7 @@ const TRIP_TYPES = [
 export default function CYOWizard() {
   const [step, setStep] = useState(1);
   const { data: vehicles } = useVehicles();
+  const { user } = useAuth();
 
   const [selections, setSelections] = useState({
     tripType: '',
@@ -54,6 +57,21 @@ export default function CYOWizard() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [cyoRef, setCyoRef] = useState('');
+  const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setSelections(s => ({
+        ...s,
+        name: s.name || [user.firstName, user.lastName].filter(Boolean).join(' '),
+        email: s.email || user.email || '',
+        phone: s.phone || user.phone || '',
+        country: s.country || user.country || '',
+      }));
+    }
+  }, [user]);
 
   const toggleDest = (id: string) => {
     setSelections(s => ({
@@ -110,7 +128,7 @@ export default function CYOWizard() {
   }));
 
   if (submitted) {
-    const refId = `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+    const refId = cyoRef;
     return (
       <div className="min-h-screen bg-cream pt-24 pb-32">
         <div className="max-w-[600px] mx-auto px-6 text-center">
@@ -511,6 +529,10 @@ export default function CYOWizard() {
             </div>
           )}
 
+          {submitError && (
+            <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 font-body text-sm text-red-600">{submitError}</div>
+          )}
+
           <div className="flex justify-between mt-10 pt-6 border-t border-warm-100">
             {step > 1 ? (
               <Button variant="ghost" onClick={() => setStep(s => s - 1)} className="font-body">
@@ -531,11 +553,39 @@ export default function CYOWizard() {
             ) : (
               <Button
                 size="lg"
-                onClick={() => setSubmitted(true)}
-                disabled={!canProceed()}
+                onClick={async () => {
+                  setSubmitError('');
+                  setSubmitting(true);
+                  try {
+                    const locations = [
+                      ...selectedDestNames,
+                      ...(selections.otherPlaces ? [selections.otherPlaces] : []),
+                    ];
+                    const result = await api.post<any>('/custom-requests', {
+                      tripType: selections.tripType,
+                      locations,
+                      preferredDates: selections.startDate || undefined,
+                      durationDays: selections.days,
+                      flexibility: selections.flexibleDates,
+                      vehiclePreference: selections.vehicle,
+                      passengers: selections.pax,
+                      budgetRange: selections.budget,
+                      travelStyle: selections.travelStyle,
+                      interests: selections.interests,
+                      specialRequests: selections.specialRequests || undefined,
+                    });
+                    setCyoRef(result.referenceCode || result.id || `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`);
+                    setSubmitted(true);
+                  } catch (err: any) {
+                    setSubmitError(err.message || 'Failed to submit. Please try again.');
+                  } finally {
+                    setSubmitting(false);
+                  }
+                }}
+                disabled={!canProceed() || submitting}
                 className="h-14 px-10 text-lg bg-amber-400 text-forest-600 hover:bg-amber-300 font-body"
               >
-                Submit request
+                {submitting ? 'Submitting…' : 'Submit request'}
               </Button>
             )}
           </div>

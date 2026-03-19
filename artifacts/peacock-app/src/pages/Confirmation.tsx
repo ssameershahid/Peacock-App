@@ -1,12 +1,11 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { useCurrency } from '@/contexts/CurrencyContext';
 import { Check, Download, ArrowRight, Mail, ClipboardList, UserCheck } from 'lucide-react';
 
 export default function Confirmation() {
-  const { format } = useCurrency();
-  const refId = 'BK-2026-006';
+  const params = new URLSearchParams(window.location.search);
+  const refId = params.get('ref') || 'PKD-XXXXX';
 
   return (
     <div className="min-h-screen bg-cream pt-24 pb-32">
@@ -22,25 +21,10 @@ export default function Confirmation() {
         </p>
 
         <div className="bg-white rounded-[24px] p-8 border border-warm-200 mb-10 text-left shadow-sm">
-          <h3 className="font-display text-xl text-forest-600 mb-4">Summary</h3>
-          <div className="grid grid-cols-2 gap-4 font-body text-sm">
-            <div>
-              <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Tour</span>
-              <span className="text-forest-600 font-medium">Classic Sri Lanka</span>
-            </div>
-            <div>
-              <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Dates</span>
-              <span className="text-forest-600 font-medium">Oct 12 – Oct 22, 2026</span>
-            </div>
-            <div>
-              <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Vehicle</span>
-              <span className="text-forest-600 font-medium">Minivan</span>
-            </div>
-            <div>
-              <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Total Paid</span>
-              <span className="text-forest-600 font-medium font-display text-xl">{format(715)}</span>
-            </div>
-          </div>
+          <h3 className="font-display text-xl text-forest-600 mb-4">What's next?</h3>
+          <p className="font-body text-sm text-warm-500">
+            Your booking has been confirmed and payment processed. Check your email for a full confirmation and invoice.
+          </p>
         </div>
 
         <div className="bg-sage rounded-[24px] p-8 mb-10 text-left">

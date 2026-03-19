@@ -270,15 +270,33 @@ export function useUpdateCYOStatus() {
   });
 }
 
+function normalizeDriverProfile(d: any) {
+  return {
+    ...d,
+    name: [d.user?.firstName, d.user?.lastName].filter(Boolean).join(' ') || 'Driver',
+    photo: d.user?.profileImageUrl || null,
+    phone: d.user?.phone || '',
+    experience: d.experienceYears ? `${d.experienceYears} years` : '',
+    languages: d.languages || [],
+    available: d.available ?? true,
+    vehicles: (d.vehicles || []).map((v: any) => ({
+      ...v,
+      image: v.photoUrl || '',
+      type: v.vehicleType || '',
+      model: v.model || '',
+      year: v.year || '',
+      plate: v.plateNumber || '',
+      features: v.features || [],
+    })),
+  };
+}
+
 export function useDriverProfile() {
   return useQuery({
     queryKey: ["driver", "profile"],
     queryFn: async () => {
-      try {
-        return await api.get<any>("/drivers/me");
-      } catch {
-        return DRIVER_PROFILE;
-      }
+      const d = await api.get<any>("/drivers/me");
+      return normalizeDriverProfile(d);
     },
   });
 }
@@ -286,31 +304,14 @@ export function useDriverProfile() {
 export function useDriverBookings() {
   return useQuery({
     queryKey: ["driver", "bookings"],
-    queryFn: async () => {
-      try {
-        return await api.get<any[]>("/drivers/trips/mine");
-      } catch {
-        return DRIVER_BOOKINGS;
-      }
-    },
+    queryFn: () => api.get<any[]>("/drivers/trips/mine"),
   });
 }
 
 export function useDriverBooking(id: string) {
   return useQuery({
     queryKey: ["driver", "bookings", id],
-    queryFn: async () => {
-      try {
-        const trips = await api.get<any[]>("/drivers/trips/mine");
-        const trip = trips.find(t => t.id === id);
-        if (!trip) throw new Error("Trip not found");
-        return trip;
-      } catch {
-        const mock = DRIVER_BOOKINGS.find(b => b.id === id);
-        if (!mock) throw new Error("Trip not found");
-        return mock;
-      }
-    },
+    queryFn: () => api.get<any>(`/drivers/trips/${id}`),
     enabled: !!id,
   });
 }
@@ -319,7 +320,7 @@ export function useUpdateDriverStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      api.put(`/drivers/trips/${id}`, { driverStatus: status }),
+      api.put(`/drivers/trips/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["driver", "bookings"] });
     },
@@ -355,5 +356,67 @@ export function useInvoice(id: string) {
     queryKey: ["invoices", id],
     queryFn: () => api.get<any>(`/invoices/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useAdminDrivers() {
+  return useQuery({
+    queryKey: ["admin", "drivers"],
+    queryFn: () => api.get<any[]>("/drivers"),
+  });
+}
+
+export function useAdminStats() {
+  return useQuery({
+    queryKey: ["admin", "stats"],
+    queryFn: () => api.get<any>("/admin/stats").catch(() => null),
+  });
+}
+
+export function useAdminBookings() {
+  return useQuery({
+    queryKey: ["admin", "bookings"],
+    queryFn: () => api.get<any[]>("/bookings").then(list => list.map(normalizeBooking)),
+  });
+}
+
+export function useUpdateBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      api.put<any>(`/bookings/${id}`, data),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["bookings", vars.id] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "bookings"] });
+    },
+  });
+}
+
+export function useCancelBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      api.put<any>(`/bookings/${id}/cancel`, { reason }),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["bookings", vars.id] });
+      queryClient.invalidateQueries({ queryKey: ["bookings", "me"] });
+    },
+  });
+}
+
+export function useEarningsSummary() {
+  return useQuery({
+    queryKey: ["driver", "earnings"],
+    queryFn: () => api.get<any>("/drivers/earnings/summary"),
+  });
+}
+
+export function useUpdateDriverProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => api.put<any>("/drivers/me", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "profile"] });
+    },
   });
 }

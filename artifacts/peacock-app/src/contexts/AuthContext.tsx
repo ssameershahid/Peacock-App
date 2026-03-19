@@ -5,7 +5,12 @@ export interface AuthUser {
   userId: string;
   email: string;
   role: 'TOURIST' | 'DRIVER' | 'ADMIN';
+  firstName?: string;
+  lastName?: string;
   name?: string;
+  phone?: string;
+  country?: string;
+  profileImageUrl?: string;
 }
 
 interface RegisterData {
@@ -22,6 +27,21 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  updateUser: (data: Partial<AuthUser>) => void;
+}
+
+function normalizeUser(raw: any): AuthUser {
+  return {
+    userId: raw.userId ?? raw.id,
+    email: raw.email,
+    role: raw.role,
+    firstName: raw.firstName,
+    lastName: raw.lastName,
+    name: (raw.name ?? [raw.firstName, raw.lastName].filter(Boolean).join(' ')) || raw.email,
+    phone: raw.phone,
+    country: raw.country,
+    profileImageUrl: raw.profileImageUrl,
+  };
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -37,28 +57,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
       return;
     }
-    api.get<{ user: AuthUser }>('/auth/me')
-      .then(data => setUser(data.user))
+    api.get<any>('/auth/me')
+      .then(data => setUser(normalizeUser(data)))
       .catch(() => clearToken())
       .finally(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await api.post<{ token: string; user: AuthUser }>('/auth/login', { email, password });
+    const data = await api.post<{ token: string; user: any }>('/auth/login', { email, password });
     setToken(data.token);
-    setUser(data.user);
+    setUser(normalizeUser(data.user));
   }, []);
 
   const register = useCallback(async (data: RegisterData) => {
-    const res = await api.post<{ token: string; user: AuthUser }>('/auth/register', {
+    const res = await api.post<{ token: string; user: any }>('/auth/register', {
       email: data.email,
       password: data.password,
-      name: `${data.firstName} ${data.lastName}`.trim(),
+      firstName: data.firstName,
+      lastName: data.lastName,
       country: data.country,
-      role: 'TOURIST',
     });
     setToken(res.token);
-    setUser(res.user);
+    setUser(normalizeUser(res.user));
   }, []);
 
   const logout = useCallback(() => {
@@ -66,8 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((data: Partial<AuthUser>) => {
+    setUser(prev => prev ? { ...prev, ...data } : prev);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

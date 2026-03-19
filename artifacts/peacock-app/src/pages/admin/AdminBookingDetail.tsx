@@ -1,18 +1,66 @@
 import { useState } from 'react';
 import { useParams } from 'wouter';
 import { Mail, Phone, AlertTriangle, Download } from 'lucide-react';
-import { useBooking } from '@/hooks/use-app-data';
+import { useBooking, useUpdateBooking, useCancelBooking, useAdminDrivers } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Modal } from '@/components/shared/Modal';
 import AdminLayout from './AdminLayout';
+import { useToast } from '@/hooks/use-toast';
+
+const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const;
 
 export default function AdminBookingDetail() {
   const params = useParams<{ id: string }>();
   const bookingId = params?.id || '';
   const { data: booking } = useBooking(bookingId);
+  const { data: drivers } = useAdminDrivers();
+  const updateBooking = useUpdateBooking();
+  const cancelBooking = useCancelBooking();
   const { format } = useCurrency();
+  const { toast } = useToast();
+
   const [showCancel, setShowCancel] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [adminNotes, setAdminNotes] = useState('');
+
+  // Initialise local state once booking loads
+  if (booking && !selectedStatus) {
+    setSelectedStatus(booking.status?.toUpperCase().replace(' ', '_') || 'PENDING');
+    setSelectedDriverId(booking.driverId || '');
+    setAdminNotes(booking.adminNotes || '');
+  }
+
+  const handleUpdateStatus = async () => {
+    try {
+      await updateBooking.mutateAsync({ id: bookingId, data: { status: selectedStatus as any, driverNotes: adminNotes } });
+      toast({ title: 'Booking updated' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
+  const handleAssignDriver = async () => {
+    if (!selectedDriverId) return;
+    try {
+      await updateBooking.mutateAsync({ id: bookingId, data: { driverId: selectedDriverId, status: 'CONFIRMED' as any } });
+      toast({ title: 'Driver assigned and booking confirmed' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
+  const handleCancel = async () => {
+    try {
+      await cancelBooking.mutateAsync({ id: bookingId, reason: cancelReason });
+      setShowCancel(false);
+      toast({ title: 'Booking cancelled' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
 
   if (!booking) {
     return (
@@ -24,50 +72,48 @@ export default function AdminBookingDetail() {
     );
   }
 
+  const customer = booking.customer;
+
   return (
     <AdminLayout
-      title={booking.id}
-      breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Bookings', href: '/admin/bookings' }, { label: booking.id }]}
+      title={booking.referenceCode || booking.id}
+      breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Bookings', href: '/admin/bookings' }, { label: booking.referenceCode || booking.id }]}
     >
       <div className="flex items-center gap-4 mb-6">
         <StatusBadge status={booking.status} />
-        <span className="font-body text-sm text-warm-400">Created {new Date(booking.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+        {booking.createdAt && (
+          <span className="font-body text-sm text-warm-400">Created {new Date(booking.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Customer</h2>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-body font-semibold text-forest-600 text-lg">{booking.customer.name}</p>
-                <a href={`mailto:${booking.customer.email}`} className="font-body text-sm text-forest-500 hover:text-amber-500 flex items-center gap-1.5 mt-1"><Mail className="w-3.5 h-3.5" /> {booking.customer.email}</a>
-                <a href={`tel:${booking.customer.phone}`} className="font-body text-sm text-warm-500 hover:text-forest-500 flex items-center gap-1.5 mt-1"><Phone className="w-3.5 h-3.5" /> {booking.customer.phone}</a>
-                <p className="font-body text-sm text-warm-400 mt-1">{booking.customer.country}</p>
+            {customer ? (
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-body font-semibold text-forest-600 text-lg">{customer.name}</p>
+                  {customer.email && <a href={`mailto:${customer.email}`} className="font-body text-sm text-forest-500 hover:text-amber-500 flex items-center gap-1.5 mt-1"><Mail className="w-3.5 h-3.5" /> {customer.email}</a>}
+                  {customer.phone && <a href={`tel:${customer.phone}`} className="font-body text-sm text-warm-500 hover:text-forest-500 flex items-center gap-1.5 mt-1"><Phone className="w-3.5 h-3.5" /> {customer.phone}</a>}
+                  {customer.country && <p className="font-body text-sm text-warm-400 mt-1">{customer.country}</p>}
+                </div>
+                <button className="px-4 py-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium rounded-xl transition-colors">Contact customer</button>
               </div>
-              <button className="px-4 py-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium rounded-xl transition-colors">Contact customer</button>
-            </div>
+            ) : (
+              <p className="font-body text-sm text-warm-400">Customer ID: {booking.customerId}</p>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Trip details</h2>
-            <h3 className="font-display text-xl text-forest-600 mb-3">{booking.title}</h3>
+            <h3 className="font-display text-xl text-forest-600 mb-3">{booking.title || booking.referenceCode}</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div><p className="font-body text-xs text-warm-400">Dates</p><p className="font-body text-sm text-forest-600">{booking.date}</p></div>
-              <div><p className="font-body text-xs text-warm-400">Vehicle</p><p className="font-body text-sm text-forest-600">{booking.vehicle}</p></div>
-              <div><p className="font-body text-xs text-warm-400">Passengers</p><p className="font-body text-sm text-forest-600">{booking.passengers}</p></div>
+              <div><p className="font-body text-xs text-warm-400">Start date</p><p className="font-body text-sm text-forest-600">{booking.startDate}</p></div>
+              <div><p className="font-body text-xs text-warm-400">Vehicle</p><p className="font-body text-sm text-forest-600">{booking.vehicle || booking.vehicleType}</p></div>
+              <div><p className="font-body text-xs text-warm-400">Passengers</p><p className="font-body text-sm text-forest-600">{booking.passengers || booking.numPassengers}</p></div>
               <div><p className="font-body text-xs text-warm-400">Type</p><p className="font-body text-sm text-forest-600 capitalize">{booking.type}</p></div>
             </div>
-            {booking.addOns && booking.addOns.length > 0 && (
-              <div className="mb-4">
-                <p className="font-body text-xs text-warm-400 mb-2">Add-ons</p>
-                <div className="flex flex-wrap gap-2">
-                  {booking.addOns.map((a: string) => (
-                    <span key={a} className="bg-warm-50 text-warm-600 font-body text-xs px-3 py-1 rounded-pill">{a}</span>
-                  ))}
-                </div>
-              </div>
-            )}
             {booking.specialRequests && (
               <div className="bg-amber-50 rounded-xl p-4 flex items-start gap-3">
                 <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
@@ -86,25 +132,53 @@ export default function AdminBookingDetail() {
             <div className="space-y-4">
               <div>
                 <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Status</label>
-                <select defaultValue={booking.status} className="w-full border border-warm-200 rounded-xl px-3 py-2.5 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300">
-                  {['Pending', 'Upcoming', 'In Progress', 'Completed', 'Cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
+                <select
+                  value={selectedStatus}
+                  onChange={e => setSelectedStatus(e.target.value)}
+                  className="w-full border border-warm-200 rounded-xl px-3 py-2.5 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300"
+                >
+                  {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
                 </select>
-                <button className="mt-2 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium py-2 rounded-xl transition-colors">Update status</button>
+                <button
+                  onClick={handleUpdateStatus}
+                  disabled={updateBooking.isPending}
+                  className="mt-2 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium py-2 rounded-xl transition-colors disabled:opacity-60"
+                >
+                  {updateBooking.isPending ? 'Updating…' : 'Update status'}
+                </button>
               </div>
               <div className="border-t border-warm-100 pt-4">
                 <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Assign driver</label>
-                <select className="w-full border border-warm-200 rounded-xl px-3 py-2.5 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300">
-                  <option value="">{booking.driver ? booking.driver.name : 'Select driver...'}</option>
-                  <option>Dudley Perera</option>
-                  <option>Priyantha Fernando</option>
-                  <option>Kasun Rajapaksa</option>
+                <select
+                  value={selectedDriverId}
+                  onChange={e => setSelectedDriverId(e.target.value)}
+                  className="w-full border border-warm-200 rounded-xl px-3 py-2.5 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300"
+                >
+                  <option value="">Select driver…</option>
+                  {(drivers || []).map((d: any) => (
+                    <option key={d.id} value={d.id}>
+                      {[d.user?.firstName, d.user?.lastName].filter(Boolean).join(' ') || d.id}
+                    </option>
+                  ))}
                 </select>
-                <button className="mt-2 w-full bg-white border border-warm-200 text-forest-600 font-body text-xs font-medium py-2 rounded-xl hover:bg-warm-50 transition-colors">Assign driver</button>
+                <button
+                  onClick={handleAssignDriver}
+                  disabled={!selectedDriverId || updateBooking.isPending}
+                  className="mt-2 w-full bg-white border border-warm-200 text-forest-600 font-body text-xs font-medium py-2 rounded-xl hover:bg-warm-50 transition-colors disabled:opacity-60"
+                >
+                  Assign & confirm
+                </button>
                 <p className="font-body text-[10px] text-warm-400 mt-1">Driver will be notified by email</p>
               </div>
               <div className="border-t border-warm-100 pt-4">
                 <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Internal notes</label>
-                <textarea rows={3} defaultValue={booking.adminNotes || ''} placeholder="Notes visible only to admin..." className="w-full border border-warm-200 rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none" />
+                <textarea
+                  rows={3}
+                  value={adminNotes}
+                  onChange={e => setAdminNotes(e.target.value)}
+                  placeholder="Notes visible only to admin..."
+                  className="w-full border border-warm-200 rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none"
+                />
               </div>
             </div>
           </div>
@@ -113,16 +187,14 @@ export default function AdminBookingDetail() {
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Payment</h2>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-body text-xs text-warm-400">Payment ID</span>
-                <span className="font-mono text-xs text-warm-600">pi_3N...xK4q</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-body text-xs text-warm-400">Amount paid</span>
-                <span className="font-body text-sm font-semibold text-forest-600">{format(booking.price)}</span>
+                <span className="font-body text-xs text-warm-400">Amount</span>
+                <span className="font-body text-sm font-semibold text-forest-600">{format(booking.price || booking.totalAmountGBP || 0)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-body text-xs text-warm-400">Status</span>
-                <span className="bg-emerald-100 text-emerald-700 font-body text-[10px] font-medium px-2 py-0.5 rounded-pill">Paid</span>
+                <span className={`font-body text-[10px] font-medium px-2 py-0.5 rounded-pill ${
+                  booking.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                }`}>{booking.paymentStatus || 'PENDING'}</span>
               </div>
               <button className="w-full flex items-center justify-center gap-1.5 border border-warm-200 text-forest-600 font-body text-xs font-medium py-2 rounded-xl hover:bg-warm-50 transition-colors">
                 <Download className="w-3.5 h-3.5" /> Download invoice
@@ -137,14 +209,20 @@ export default function AdminBookingDetail() {
         </div>
       </div>
 
-      <Modal open={showCancel} onClose={() => setShowCancel(false)} title="Cancel Booking" confirmLabel="Confirm cancellation" onConfirm={() => setShowCancel(false)} confirmVariant="destructive">
+      <Modal open={showCancel} onClose={() => setShowCancel(false)} title="Cancel Booking" confirmLabel="Confirm cancellation" onConfirm={handleCancel} confirmVariant="destructive">
         <div className="space-y-4">
           <div className="bg-red-50 rounded-xl p-4">
             <p className="font-body text-sm text-red-700">Refund: Full refund if more than 10 days before departure. No refund within 10 days.</p>
           </div>
           <div>
             <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Cancellation reason</label>
-            <textarea rows={3} placeholder="Reason for cancellation..." className="w-full border border-warm-200 rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none" />
+            <textarea
+              rows={3}
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+              placeholder="Reason for cancellation..."
+              className="w-full border border-warm-200 rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none"
+            />
           </div>
         </div>
       </Modal>

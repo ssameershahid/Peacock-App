@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import currenciesData from '@/data/currencies.json';
 
 export type Currency = {
   code: string;
@@ -18,7 +17,14 @@ type CurrencyContextType = {
 };
 
 const STORAGE_KEY = 'peacock_currency';
-const BASE_CURRENCIES: Currency[] = currenciesData as Currency[];
+const BASE_CURRENCIES: Currency[] = [
+  { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'British Pound', rate: 1 },
+  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'US Dollar', rate: 1.27 },
+  { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'Euro', rate: 1.17 },
+  { code: 'CAD', symbol: 'CA$', flag: '🇨🇦', name: 'Canadian Dollar', rate: 1.71 },
+  { code: 'AUD', symbol: 'A$', flag: '🇦🇺', name: 'Australian Dollar', rate: 1.95 },
+  { code: 'LKR', symbol: 'Rs', flag: '🇱🇰', name: 'Sri Lankan Rupee', rate: 380 },
+];
 
 const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
@@ -42,18 +48,19 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   // Fetch live exchange rates from API on mount
   useEffect(() => {
     const apiBase = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000') + '/api';
-    fetch(`${apiBase}/currencies/rates`)
+    fetch(`${apiBase}/currencies`)
       .then(r => r.ok ? r.json() : null)
-      .then((data: Record<string, number> | null) => {
-        if (!data) return;
-        // data = { GBP: 1, USD: 1.27, EUR: 1.17, ... }
+      .then((data: { rates: Record<string, number> } | null) => {
+        if (!data?.rates) return;
+        const rates = data.rates;
+        // rates = { GBP: 1, USD: 1.27, EUR: 1.17, ... }
         setCurrencies(prev =>
-          prev.map(c => ({ ...c, rate: data[c.code] ?? c.rate }))
+          prev.map(c => ({ ...c, rate: rates[c.code] ?? c.rate }))
         );
         // Update current currency rate in place
         setCurrencyState(prev => ({
           ...prev,
-          rate: data[prev.code] ?? prev.rate,
+          rate: rates[prev.code] ?? prev.rate,
         }));
       })
       .catch(() => { /* use hardcoded fallback rates */ });

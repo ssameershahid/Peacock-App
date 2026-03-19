@@ -192,6 +192,43 @@ router.put("/profile", authenticate, async (req, res) => {
   }
 });
 
+// PUT /api/auth/change-password
+router.put("/change-password", authenticate, async (req, res) => {
+  const schema = z.object({
+    currentPassword: z.string(),
+    newPassword: z.string().min(8),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid input" });
+    return;
+  }
+  try {
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, req.user!.userId))
+      .limit(1);
+    if (!user || !user.passwordHash) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    const valid = await comparePassword(parsed.data.currentPassword, user.passwordHash);
+    if (!valid) {
+      res.status(401).json({ error: "Current password is incorrect" });
+      return;
+    }
+    const passwordHash = await hashPassword(parsed.data.newPassword);
+    await db
+      .update(usersTable)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(usersTable.id, req.user!.userId));
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Password update failed" });
+  }
+});
+
 // POST /api/auth/forgot-password
 router.post("/forgot-password", async (req, res) => {
   const { email } = z.object({ email: z.string().email() }).parse(req.body);

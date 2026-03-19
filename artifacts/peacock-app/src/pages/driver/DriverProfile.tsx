@@ -1,12 +1,59 @@
-import { useState } from 'react';
-import { Camera, Plus, X, AlertTriangle } from 'lucide-react';
-import { useDriverProfile } from '@/hooks/use-app-data';
+import { useState, useEffect, useRef } from 'react';
+import { Camera, Plus, X, AlertTriangle, Check } from 'lucide-react';
+import { useDriverProfile, useUpdateDriverProfile } from '@/hooks/use-app-data';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export default function DriverProfile() {
   const { data: profile, isLoading } = useDriverProfile();
-  const [available, setAvailable] = useState(profile?.available ?? true);
+  const updateProfile = useUpdateDriverProfile();
+  const { toast } = useToast();
+
+  const [available, setAvailable] = useState(true);
+  const [bio, setBio] = useState('');
+  const [phone, setPhone] = useState('');
+  const [experience, setExperience] = useState('');
   const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const initialised = useRef(false);
+
+  useEffect(() => {
+    if (profile && !initialised.current) {
+      initialised.current = true;
+      setAvailable(profile.available ?? true);
+      setBio(profile.bio || '');
+      setPhone(profile.phone || '');
+      setExperience(profile.experience || '');
+    }
+  }, [profile]);
+
+  const handleSave = async () => {
+    try {
+      const expYears = parseInt(experience) || undefined;
+      await updateProfile.mutateAsync({
+        bio: bio || undefined,
+        experienceYears: expYears,
+      });
+      setSaved(true);
+      toast({ title: 'Profile updated' });
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
+  const handleAvailabilityToggle = async () => {
+    const next = !available;
+    setAvailable(next);
+    try {
+      await updateProfile.mutateAsync({ available: next });
+      toast({ title: next ? 'Now available for trips' : 'Set to unavailable' });
+    } catch (err: any) {
+      setAvailable(!next); // revert
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
 
   if (isLoading || !profile) {
     return (
@@ -50,14 +97,16 @@ export default function DriverProfile() {
               <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Phone</label>
               <input
                 type="tel"
-                defaultValue={profile.phone}
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
                 className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 min-h-[48px]"
               />
             </div>
             <div>
               <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Bio</label>
               <textarea
-                defaultValue={profile.bio}
+                value={bio}
+                onChange={e => setBio(e.target.value)}
                 rows={4}
                 className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none"
               />
@@ -65,7 +114,7 @@ export default function DriverProfile() {
             <div>
               <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Languages</label>
               <div className="flex flex-wrap gap-2">
-                {profile.languages.map(lang => (
+                {profile.languages.map((lang: string) => (
                   <span key={lang} className="bg-forest-50 text-forest-600 font-body text-sm px-3 py-1.5 rounded-pill flex items-center gap-1.5">
                     {lang}
                     <button className="text-forest-400 hover:text-forest-600"><X className="w-3 h-3" /></button>
@@ -77,17 +126,23 @@ export default function DriverProfile() {
               </div>
             </div>
             <div>
-              <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Experience</label>
+              <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Experience (years)</label>
               <input
                 type="text"
-                defaultValue={profile.experience}
+                value={experience}
+                onChange={e => setExperience(e.target.value)}
                 className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 min-h-[48px]"
+                placeholder="e.g. 5"
               />
             </div>
           </div>
 
-          <button className="mt-5 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl min-h-[48px] transition-colors">
-            Save profile
+          <button
+            onClick={handleSave}
+            disabled={updateProfile.isPending}
+            className="mt-5 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl min-h-[48px] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {saved ? <><Check className="w-4 h-4" /> Saved</> : updateProfile.isPending ? 'Saving…' : 'Save profile'}
           </button>
         </div>
 
@@ -95,7 +150,7 @@ export default function DriverProfile() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-body text-sm font-semibold text-forest-600">Availability</h2>
             <button
-              onClick={() => setAvailable(!available)}
+              onClick={handleAvailabilityToggle}
               className={cn(
                 'relative w-14 h-8 rounded-full transition-colors',
                 available ? 'bg-emerald-500' : 'bg-warm-300'
@@ -130,23 +185,29 @@ export default function DriverProfile() {
           </div>
 
           <div className="space-y-4">
-            {profile.vehicles.map(vehicle => (
+            {profile.vehicles.map((vehicle: any) => (
               <div key={vehicle.id} className="border border-warm-100 rounded-xl p-4">
                 <div className="flex items-start gap-4">
                   <div className="w-16 h-16 rounded-xl bg-warm-50 overflow-hidden shrink-0">
-                    <img src={vehicle.image} alt={vehicle.type} className="w-full h-full object-cover" onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }} />
+                    {vehicle.image ? (
+                      <img src={vehicle.image} alt={vehicle.type} className="w-full h-full object-cover" onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-warm-300">
+                        <span className="font-body text-xs text-center px-1">{vehicle.type}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-body font-semibold text-forest-600 text-sm">{vehicle.type}</h3>
                       <button className="font-body text-xs text-amber-600 font-medium hover:underline">Edit</button>
                     </div>
-                    <p className="font-body text-xs text-warm-400 mt-0.5">{vehicle.model} {"\u00B7"} {vehicle.year}</p>
+                    <p className="font-body text-xs text-warm-400 mt-0.5">{vehicle.model} {vehicle.year ? `· ${vehicle.year}` : ''}</p>
                     <p className="font-body text-xs text-warm-500 mt-0.5">{vehicle.plate}</p>
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      {vehicle.features.map(f => (
+                      {vehicle.features.map((f: string) => (
                         <span key={f} className="bg-warm-50 text-warm-500 font-body text-[10px] px-2 py-0.5 rounded-pill">{f}</span>
                       ))}
                     </div>
@@ -154,6 +215,9 @@ export default function DriverProfile() {
                 </div>
               </div>
             ))}
+            {profile.vehicles.length === 0 && (
+              <p className="font-body text-sm text-warm-400 text-center py-4">No vehicles added yet.</p>
+            )}
           </div>
 
           {showAddVehicle && (
@@ -188,13 +252,6 @@ export default function DriverProfile() {
                       <span className="font-body text-xs">{f}</span>
                     </label>
                   ))}
-                </div>
-              </div>
-              <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Vehicle photo</label>
-                <div className="border-2 border-dashed border-warm-200 rounded-xl p-6 text-center hover:border-forest-300 transition-colors cursor-pointer">
-                  <Camera className="w-8 h-8 text-warm-300 mx-auto mb-2" />
-                  <p className="font-body text-xs text-warm-400">Tap to upload photo</p>
                 </div>
               </div>
               <div className="flex gap-3">

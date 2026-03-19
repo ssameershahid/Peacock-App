@@ -55,6 +55,67 @@ router.get("/", authenticate, requireAdmin, async (_req, res) => {
   }
 });
 
+// GET /api/drivers/me (driver's own profile)
+router.get("/me", authenticate, requireDriver, async (req, res) => {
+  try {
+    const [driver] = await db
+      .select()
+      .from(driversTable)
+      .where(eq(driversTable.userId, req.user!.userId))
+      .limit(1);
+
+    if (!driver) {
+      res.status(404).json({ error: "Driver profile not found" });
+      return;
+    }
+
+    const [vehicles, driverUser] = await Promise.all([
+      db.select().from(driverVehiclesTable).where(eq(driverVehiclesTable.driverId, driver.id)),
+      db.select({
+        firstName: usersTable.firstName,
+        lastName: usersTable.lastName,
+        phone: usersTable.phone,
+        email: usersTable.email,
+        profileImageUrl: usersTable.profileImageUrl,
+      }).from(usersTable).where(eq(usersTable.id, driver.userId)).limit(1),
+    ]);
+
+    res.json({ ...driver, vehicles, user: driverUser[0] });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch driver profile" });
+  }
+});
+
+// PUT /api/drivers/me (driver updates own profile)
+router.put("/me", authenticate, requireDriver, async (req, res) => {
+  const schema = z.object({
+    bio: z.string().optional(),
+    languages: z.array(z.string()).optional(),
+    experienceYears: z.number().optional(),
+    regionPreferences: z.array(z.string()).optional(),
+    available: z.boolean().optional(),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid input" });
+    return;
+  }
+  try {
+    const [updated] = await db
+      .update(driversTable)
+      .set({ ...parsed.data, updatedAt: new Date() })
+      .where(eq(driversTable.userId, req.user!.userId))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Driver profile not found" });
+      return;
+    }
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update driver profile" });
+  }
+});
+
 // GET /api/drivers/:id (admin)
 router.get("/:id", authenticate, requireAdmin, async (req, res) => {
   try {

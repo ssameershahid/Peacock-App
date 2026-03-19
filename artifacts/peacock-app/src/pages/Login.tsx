@@ -19,7 +19,26 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      setLocation('/account');
+      // role is available on the auth context after login via the updated user state
+      // We read the token payload to determine the role for redirect
+      const token = localStorage.getItem('peacock_token');
+      let role = 'TOURIST';
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          role = payload.role;
+        } catch { /* ignore */ }
+      }
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      if (redirect) {
+        setLocation(redirect);
+      } else if (role === 'DRIVER') {
+        setLocation('/driver');
+      } else if (role === 'ADMIN') {
+        setLocation('/admin');
+      } else {
+        setLocation('/account');
+      }
     } catch (err: any) {
       setError(err.message || 'Invalid email or password.');
     } finally {

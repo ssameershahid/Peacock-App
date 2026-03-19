@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { useRoute, Link } from 'wouter';
+import { useRoute, useLocation } from 'wouter';
 import { useTour, useVehicles } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
 import { getCoords } from '@/lib/mapbox';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Calendar as CalendarIcon, Users, Check, X, ChevronDown, ChevronUp, Shield, Plus, Minus, ArrowRight } from 'lucide-react';
+import { MapPin, Clock, Calendar as CalendarIcon, Users, Check, X, ChevronDown, ChevronUp, Shield, Plus, Minus, ArrowRight, AlertCircle } from 'lucide-react';
 
 export default function TourDetail() {
   const [, params] = useRoute('/tours/:slug');
+  const [, setLocation] = useLocation();
   const slug = params?.slug;
   const { data: tour, isLoading } = useTour(slug || '');
   const { data: vehicles } = useVehicles();
@@ -44,6 +45,32 @@ export default function TourDetail() {
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + (tour.leadTimeDays || 3));
   const minDateStr = minDate.toISOString().split('T')[0];
+
+  const handleBooking = () => {
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + totalDays - 1);
+    const bookingData = {
+      type: 'READY_MADE',
+      tourId: tour.id,
+      tourName: tour.title,
+      tourImage: tour.images[0],
+      vehicleType: selectedVehicle,
+      vehicleName: vehicleDetails?.name || selectedVehicle,
+      startDate,
+      endDate: endDate.toISOString().split('T')[0],
+      numDays: totalDays,
+      passengers: pax,
+      vehicleRate,
+      vehicleTotal,
+      addOnsTotal,
+      selectedAddOns: (tour.addOns || [])
+        .filter((a: any) => selectedAddOns[a.id])
+        .map((a: any) => ({ id: a.id, name: a.name, price: a.price })),
+      totalPrice,
+    };
+    sessionStorage.setItem('peacock_booking', JSON.stringify(bookingData));
+    setLocation('/checkout');
+  };
 
   return (
     <div className="bg-white pb-32">
@@ -342,11 +369,18 @@ export default function TourDetail() {
               </div>
             </div>
 
-            <Link href="/checkout">
-              <Button className="w-full h-14 text-lg font-body bg-amber-400 hover:bg-amber-300 text-forest-600 shadow-md hover:shadow-lg transition-all">
-                Book this tour — {format(totalPrice)} <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
+            {!startDate && (
+              <p className="flex items-center gap-1.5 font-body text-xs text-amber-600">
+                <AlertCircle className="w-3.5 h-3.5" /> Please select a start date
+              </p>
+            )}
+            <Button
+              onClick={handleBooking}
+              disabled={!startDate}
+              className="w-full h-14 text-lg font-body bg-amber-400 hover:bg-amber-300 text-forest-600 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+            >
+              Book this tour — {format(totalPrice)} <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
 
             <p className="text-center text-xs text-emerald-600 font-body flex items-center justify-center gap-1.5">
               <Shield className="w-3.5 h-3.5" /> Free cancellation 10+ days before start.
