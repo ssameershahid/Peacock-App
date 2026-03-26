@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
+  return _resend;
+}
 const FROM = process.env.RESEND_FROM_EMAIL || "noreply@peacockdrivers.com";
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://peacockdrivers.com";
 
@@ -49,7 +53,7 @@ function baseTemplate(content: string) {
 }
 
 export async function sendWelcomeEmail(to: string, firstName: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: "Welcome to Peacock Drivers 🦚",
@@ -75,7 +79,7 @@ export async function sendBookingConfirmation(params: {
   totalGBP: number;
   pdfAttachment?: { content: Buffer; filename: string };
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: `Booking Confirmed — ${params.referenceCode}`,
@@ -111,7 +115,7 @@ export async function sendCYORequestReceived(params: {
   locations: string[];
   durationDays?: number;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: `Custom Tour Request Received — ${params.referenceCode}`,
@@ -137,7 +141,7 @@ export async function sendQuoteToCustomer(params: {
   paymentLink: string;
   expiresAt?: string;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: `Your Custom Tour Quote — ${params.referenceCode}`,
@@ -166,7 +170,7 @@ export async function sendDriverAssigned(params: {
   vehicleDetails: string;
   startDate: string;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: `Driver Assigned — ${params.referenceCode}`,
@@ -194,7 +198,7 @@ export async function sendTripAssignedToDriver(params: {
   pickupLocation?: string;
   passengers: number;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: `New Trip Assigned — ${params.referenceCode}`,
@@ -221,7 +225,7 @@ export async function sendPreTripReminder(params: {
   startDate: string;
   driverName?: string;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: `Trip Reminder — 7 days to go! 🦚`,
@@ -246,7 +250,7 @@ export async function sendCancellationConfirmation(params: {
   referenceCode: string;
   refundAmount?: number;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: `Booking Cancelled — ${params.referenceCode}`,
@@ -270,7 +274,7 @@ export async function sendPasswordReset(params: {
   resetToken: string;
 }) {
   const resetUrl = `${FRONTEND_URL}/reset-password?token=${params.resetToken}`;
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: params.to,
     subject: "Reset your Peacock Drivers password",
