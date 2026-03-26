@@ -121,7 +121,7 @@ export default function DriverTrips() {
                             {trip.rating && (
                               <div className="flex items-center gap-0.5">
                                 {Array.from({ length: trip.rating }).map((_, i) => (
-                                  <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                  <Star key={i} className="w-3 h-3 fill-amber-200 text-amber-200" />
                                 ))}
                               </div>
                             )}

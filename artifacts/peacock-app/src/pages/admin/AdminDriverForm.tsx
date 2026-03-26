@@ -16,11 +16,11 @@ export default function AdminDriverForm() {
       breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Drivers', href: '/admin/drivers' }, { label: isEdit ? 'Edit' : 'New' }]}
     >
       <div className="space-y-6 max-w-4xl">
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Account</h2>
           <div className="space-y-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Email (used for login)</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Email (used for login)</label>
               <input type="email" placeholder="driver@example.com" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div className="bg-blue-50 rounded-xl p-4">
@@ -33,7 +33,7 @@ export default function AdminDriverForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Personal Information</h2>
           <div className="space-y-4">
             <div className="flex items-center gap-4 mb-4">
@@ -44,32 +44,32 @@ export default function AdminDriverForm() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">First name</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">First name</label>
                 <input type="text" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
               </div>
               <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Last name</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Last name</label>
                 <input type="text" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
               </div>
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Phone</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Phone</label>
               <input type="tel" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Bio</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Bio</label>
               <textarea rows={3} className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Languages</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Languages</label>
               <input type="text" placeholder="Type and press Enter to add..." className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Experience (years)</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Experience (years)</label>
               <input type="number" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Region preferences</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Region preferences</label>
               <div className="flex flex-wrap gap-2">
                 {['Colombo', 'Kandy', 'South Coast', 'Hill Country', 'Cultural Triangle', 'East Coast'].map(r => (
                   <label key={r} className="flex items-center gap-1.5 bg-warm-50 border border-warm-200 rounded-pill px-3 py-1.5 cursor-pointer hover:bg-forest-50 transition-colors">
@@ -82,7 +82,7 @@ export default function AdminDriverForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-body text-sm font-semibold text-forest-600">Vehicles</h2>
             <button onClick={() => setVehicles([...vehicles, { type: 'Car', plate: '', year: '', features: [] }])} className="flex items-center gap-1 text-forest-500 hover:text-forest-600 font-body text-xs font-medium"><Plus className="w-3 h-3" /> Add vehicle</button>
@@ -114,10 +114,10 @@ export default function AdminDriverForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Payout Rates</h2>
           <div className="space-y-3 mb-4">
-            <label className="font-body text-xs font-medium text-forest-600 block">Tour daily fee by vehicle</label>
+            <label className="text-[13px] font-medium text-warm-600 block">Tour daily fee by vehicle</label>
             {[{ name: 'Car', fee: 15 }, { name: 'Minivan', fee: 20 }, { name: 'Large Van', fee: 25 }, { name: 'Small Bus', fee: 35 }, { name: 'Medium Bus', fee: 50 }].map(v => (
               <div key={v.name} className="flex items-center gap-3">
                 <span className="font-body text-sm text-warm-600 w-28">{v.name}</span>
@@ -138,7 +138,7 @@ export default function AdminDriverForm() {
           <p className="font-body text-xs text-warm-400 mt-2">Commission applies to the full booking total including add-ons</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Status</h2>
           <div className="flex items-center justify-between p-4 bg-warm-50 rounded-xl">
             <div>
@@ -153,9 +153,9 @@ export default function AdminDriverForm() {
 
         <div className="flex items-center justify-end gap-3 pb-8">
           <Link href="/admin/drivers">
-            <button className="px-6 py-2.5 font-body text-sm text-warm-500 hover:text-forest-600 transition-colors">Cancel</button>
+            <button className="px-6 py-2.5 font-body text-sm text-warm-500 hover:text-forest-600 transition-all duration-200">Cancel</button>
           </Link>
-          <button className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl transition-colors">
+          <button className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all duration-200">
             {isEdit ? 'Save changes' : 'Create driver'}
           </button>
         </div>

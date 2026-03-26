@@ -26,7 +26,7 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
       <div className="hidden md:flex min-h-screen">
         <aside className="w-64 bg-white border-r border-warm-100 p-6 sticky top-0 h-screen">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-full bg-amber-400 flex items-center justify-center text-forest-600 font-display text-2xl italic pr-1">P</div>
+            <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-forest-600 font-display text-2xl italic pr-1">P</div>
             <span className="font-display text-xl text-forest-600">Peacock Drivers</span>
           </div>
           <nav className="space-y-1">

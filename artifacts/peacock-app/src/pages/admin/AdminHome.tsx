@@ -46,7 +46,7 @@ export default function AdminHome() {
           trend={{ value: '+14%', positive: true }}
         />
         <KPICard
-          icon={<MessageSquare className="w-5 h-5 text-amber-500" />}
+          icon={<MessageSquare className="w-5 h-5 text-amber-200" />}
           label="Pending requests"
           value={String(pendingCYO.length)}
           className={pendingCYO.length > 0 ? 'ring-2 ring-amber-200' : ''}
@@ -59,7 +59,7 @@ export default function AdminHome() {
         />
       </div>
 
-      <div className="bg-white rounded-2xl border border-warm-100 p-6 mb-8">
+      <div className="bg-white rounded-xl border border-warm-100 p-6 mb-8">
         <h3 className="font-display text-lg text-forest-600 mb-4">Monthly revenue {"\u2014"} last 6 months</h3>
         <div className="flex items-end gap-3 h-40">
           {chartData.map(d => (
@@ -77,9 +77,9 @@ export default function AdminHome() {
 
       {pendingCYO.length > 0 && (
         <Link href="/admin/requests">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-center justify-between mb-8 cursor-pointer hover:bg-amber-100 transition-colors">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-center justify-between mb-8 cursor-pointer hover:bg-amber-100 transition-colors">
             <div className="flex items-center gap-3">
-              <MessageSquare className="w-5 h-5 text-amber-500" />
+              <MessageSquare className="w-5 h-5 text-amber-200" />
               <p className="font-body text-sm font-medium text-amber-800">{pendingCYO.length} custom tour request{pendingCYO.length > 1 ? 's' : ''} need{pendingCYO.length === 1 ? 's' : ''} your attention</p>
             </div>
             <span className="font-body text-sm text-amber-600 font-medium flex items-center gap-1">View requests <ArrowRight className="w-4 h-4" /></span>
@@ -87,10 +87,10 @@ export default function AdminHome() {
         </Link>
       )}
 
-      <div className="bg-white rounded-2xl border border-warm-100 overflow-hidden">
+      <div className="bg-white rounded-xl border border-warm-100 overflow-hidden">
         <div className="p-5 border-b border-warm-100 flex items-center justify-between">
           <h3 className="font-display text-lg text-forest-600">Recent bookings</h3>
-          <Link href="/admin/bookings" className="font-body text-sm text-forest-500 hover:text-amber-500 transition-colors">View all</Link>
+          <Link href="/admin/bookings" className="font-body text-sm text-forest-500 hover:text-amber-200 transition-colors">View all</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -103,7 +103,7 @@ export default function AdminHome() {
             </thead>
             <tbody className="divide-y divide-warm-50">
               {recentBookings.map(b => (
-                <tr key={b.id} className="hover:bg-warm-50/50 transition-colors cursor-pointer" onClick={() => window.location.href = `/admin/bookings/${b.id}`}>
+                <tr key={b.id} className="hover:bg-warm-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/admin/bookings/${b.id}`}>
                   <td className="px-4 py-3 font-body text-sm font-medium text-forest-600">{b.id}</td>
                   <td className="px-4 py-3 font-body text-sm text-warm-600">{b.customer.name}</td>
                   <td className="px-4 py-3">

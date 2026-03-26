@@ -56,7 +56,7 @@ export default function Tours() {
                 <p className="font-body text-sm text-warm-500">Tell us your dream trip and we'll create a bespoke itinerary just for you.</p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-2 font-body font-semibold text-forest-500 group-hover:text-amber-500 transition-colors whitespace-nowrap">
+            <span className="inline-flex items-center gap-2 font-body font-semibold text-forest-500 group-hover:text-amber-200 transition-colors whitespace-nowrap">
               Create your own tour <ArrowRight className="w-4 h-4" />
             </span>
           </div>
@@ -142,12 +142,12 @@ export default function Tours() {
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-5 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-200 via-transparent to-transparent" />
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
             <div className="max-w-xl text-center md:text-left">
-              <h3 className="font-display text-4xl text-white mb-4">Can't find exactly what you're <em className="italic text-amber-300">looking for?</em></h3>
+              <h3 className="font-display text-4xl text-white mb-4">Can't find exactly what you're <em className="italic text-amber-200">looking for?</em></h3>
               <p className="font-body text-lg text-white/80">Build your own itinerary. Select your destinations, preferences, and duration, and our experts will craft a bespoke quote for you within 24 hours.</p>
             </div>
             <div className="shrink-0">
               <Link href="/tours/custom">
-                <Button className="bg-amber-300 hover:bg-amber-400 text-forest-600 h-16 px-10 text-lg shadow-xl shadow-amber-900/20 font-body group">
+                <Button className="bg-amber-200 hover:bg-amber-300 text-forest-600 h-16 px-10 text-lg shadow-xl shadow-amber-900/20 font-body group">
                   <Map className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
                   Create Your Own
                 </Button>

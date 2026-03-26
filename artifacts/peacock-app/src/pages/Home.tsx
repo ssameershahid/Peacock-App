@@ -1,57 +1,109 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, Map, Star, Plane, Users, Shield } from 'lucide-react';
+import { Star, ArrowRight, CheckCircle2, ShieldCheck, Map, Plane, Users } from 'lucide-react';
+import { Container, Section } from '@/components/peacock/Container';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import TripSearchHero from '@/components/peacock/TripSearchHero';
+import MarqueeTestimonials from '@/components/peacock/MarqueeTestimonials';
+import DesignAdventureCTA from '@/components/peacock/DesignAdventureCTA';
+import HowItWorksSection from '@/components/home/HowItWorksSection';
+import FAQSection from '@/components/home/FAQSection';
+import { StoryIntroSection, StoryBlocksSection } from '@/components/home/StoryScrollSection';
+import SpreadCardsSection from '@/components/home/SpreadCardsSection';
+import ParallaxDestinationsSection from '@/components/home/ParallaxDestinationsSection';
+import HorizontalScrollSection from '@/components/home/HorizontalScrollSection';
+import OrbitShowcaseSection from '@/components/home/OrbitShowcaseSection';
+import TropicalParadiseSection from '@/components/home/TropicalParadiseSection';
+import ClimateGuideSection from '@/components/home/ClimateGuideSection';
+import { H2, P, Kicker } from '@/components/peacock/Type';
+import { reviews } from '@/content/reviews';
 import { SectionHeading } from '@/components/shared/SectionHeading';
-import { TourCard } from '@/components/shared/TourCard';
-import { useTours, useVehicles } from '@/hooks/use-app-data';
+import { useVehicles } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 export default function Home() {
-  const { data: tours, isLoading } = useTours();
   const { data: vehicles } = useVehicles();
   const { format } = useCurrency();
 
   return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] w-full flex items-center bg-cream">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1578637387939-43c525550085?w=1920&q=80"
-            alt="Sri Lanka landscape"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-forest-700/70 via-forest-700/40 to-transparent" />
+    <div className="min-h-screen bg-background text-foreground">
+
+      {/* 1. Cinematic Hero Section */}
+      <div className="relative h-screen w-full flex items-center justify-center">
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="h-full w-full object-cover animate-in fade-in duration-[2000ms]"
+          >
+            <source src="https://s3.amazonaws.com/webflow-prod-assets/68fe492bc39e0e661cce824d/6983912e334f06ffc3475dd8_Screen%20Recording%202026-02-04%20at%2011.30.50%E2%80%AFPM.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
         </div>
 
-        <div className="relative z-10 max-w-[1200px] mx-auto px-6 w-full pt-28 pb-32">
-          <div className="max-w-2xl">
-            <span className="inline-block py-1.5 px-4 bg-white/15 backdrop-blur-md rounded-pill text-white font-body text-sm font-medium tracking-wide mb-6 border border-white/20">
-              PREMIUM PRIVATE DRIVERS
-            </span>
-            <h1 className="font-display text-[56px] md:text-7xl lg:text-8xl text-white leading-[1.05] mb-6">
-              Explore Sri Lanka your <em className="italic text-amber-300">way</em>
+        <Container className="relative z-10 w-full pt-20 flex flex-col items-center">
+          <div className="text-center max-w-4xl mx-auto mb-12 animate-in slide-in-from-bottom-8 fade-in duration-1000">
+            <h1 className="text-4xl md:text-6xl lg:text-[56px] font-display font-normal text-white mb-6 tracking-tight leading-[1.1] drop-shadow-sm">
+              Experience Sri Lanka's <br /> beauty like a <em className="italic">true native</em>
             </h1>
-            <p className="font-body text-lg md:text-xl text-white/85 mb-10 max-w-xl leading-relaxed">
-              Private driver &amp; vehicle included. Choose a curated tour,
-              design your own journey, or book an instant transfer.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/tours">
-                <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg font-body">
-                  View our journeys
-                </Button>
-              </Link>
-              <Link href="/tours/custom">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-8 text-lg font-body text-white border-white/40 hover:bg-white hover:text-forest-600 backdrop-blur-sm">
-                  Create your own
-                </Button>
-              </Link>
+            <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
+              Plan a Sri Lanka trip with local experts. Custom itineraries, vetted drivers, transparent pricing.
+            </P>
+          </div>
+
+          <div className="w-full flex flex-col items-center gap-6">
+            <div className="w-full max-w-4xl relative">
+              <div className="hidden md:flex items-center justify-center gap-[10px] py-[5px] my-[5px] animate-in fade-in zoom-in duration-700 delay-500">
+                <div className="flex -space-x-2">
+                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-black/20" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop" alt="Traveler" />
+                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-black/20" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=64&h=64&fit=crop" alt="Traveler" />
+                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-black/20" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop" alt="Traveler" />
+                </div>
+                <div className="flex flex-col items-start leading-none">
+                  <div className="flex text-amber-200 mb-0.5">
+                    <Star className="h-3 w-3 fill-current" />
+                    <Star className="h-3 w-3 fill-current" />
+                    <Star className="h-3 w-3 fill-current" />
+                    <Star className="h-3 w-3 fill-current" />
+                    <Star className="h-3 w-3 fill-current" />
+                  </div>
+                  <span className="text-xs font-bold text-white drop-shadow-md">Join 12k+ happy travelers</span>
+                </div>
+              </div>
+
+              <TripSearchHero />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 animate-in slide-in-from-bottom-4 fade-in duration-1000 delay-300">
+              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-medium text-white">Free Cancellation</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
+                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-medium text-white">24/7 Support</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
+                <Star className="h-4 w-4 text-amber-200 fill-amber-200" />
+                <span className="text-sm font-medium text-white">4.9/5 Guest Rating</span>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </Container>
+      </div>
+
+      {/* About Peacock — Intro (word-by-word reveal) */}
+      <StoryIntroSection />
+
+      {/* Spread Cards Gallery (3 images) */}
+      <SpreadCardsSection />
+
+      {/* Our Philosophy (Tropical Paradise + Philosophy content) */}
+      <TropicalParadiseSection />
 
       {/* Three Product Cards */}
       <section className="py-24 px-6 bg-white relative -mt-16 z-20 rounded-t-[40px]">
@@ -62,79 +114,31 @@ export default function Home() {
                 <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
                   <Map className="w-6 h-6 text-forest-500" />
                 </div>
-                <h3 className="font-display text-3xl text-forest-600 mb-3">
-                  Ready-to-Go <em className="italic">Tours</em>
-                </h3>
-                <p className="font-body text-warm-600 mb-8 leading-relaxed">
-                  Expertly crafted itineraries covering the best of the island, from ancient ruins to pristine beaches.
-                </p>
-                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-500 transition-colors">
-                  Browse curated tours <ArrowRight className="w-4 h-4" />
-                </span>
+                <h3 className="font-display text-3xl text-forest-600 mb-3">Ready-to-Go <em className="italic">Tours</em></h3>
+                <p className="font-body text-warm-600 mb-8 leading-relaxed">Expertly crafted itineraries covering the best of the island, from ancient ruins to pristine beaches.</p>
+                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-200 transition-colors">Browse curated tours <ArrowRight className="w-4 h-4" /></span>
               </div>
             </Link>
-
             <Link href="/tours/custom" className="block">
               <div className="bg-cream rounded-3xl p-8 h-full hover:-translate-y-2 transition-transform duration-300 shadow-sm border border-warm-100 group cursor-pointer">
                 <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
-                  <Star className="w-6 h-6 text-amber-500" />
+                  <Star className="w-6 h-6 text-amber-200" />
                 </div>
-                <h3 className="font-display text-3xl text-forest-600 mb-3">
-                  Create Your <em className="italic">Own</em>
-                </h3>
-                <p className="font-body text-warm-600 mb-8 leading-relaxed">
-                  Tell us where you want to go and what you love. We'll build a completely bespoke itinerary just for you.
-                </p>
-                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-500 transition-colors">
-                  Design your perfect trip <ArrowRight className="w-4 h-4" />
-                </span>
+                <h3 className="font-display text-3xl text-forest-600 mb-3">Create Your <em className="italic">Own</em></h3>
+                <p className="font-body text-warm-600 mb-8 leading-relaxed">Tell us where you want to go and what you love. We'll build a completely bespoke itinerary just for you.</p>
+                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-200 transition-colors">Design your perfect trip <ArrowRight className="w-4 h-4" /></span>
               </div>
             </Link>
-
             <Link href="/transfers" className="block">
               <div className="bg-sage rounded-3xl p-8 h-full hover:-translate-y-2 transition-transform duration-300 shadow-sm border border-warm-100 group cursor-pointer">
                 <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
                   <Plane className="w-6 h-6 text-forest-500" />
                 </div>
-                <h3 className="font-display text-3xl text-forest-600 mb-3">
-                  Airport &amp; <em className="italic">Transfers</em>
-                </h3>
-                <p className="font-body text-warm-600 mb-8 leading-relaxed">
-                  Reliable, comfortable point-to-point transfers anywhere in Sri Lanka with our modern fleet.
-                </p>
-                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-500 transition-colors">
-                  Book a ride <ArrowRight className="w-4 h-4" />
-                </span>
+                <h3 className="font-display text-3xl text-forest-600 mb-3">Airport &amp; <em className="italic">Transfers</em></h3>
+                <p className="font-body text-warm-600 mb-8 leading-relaxed">Reliable, comfortable point-to-point transfers anywhere in Sri Lanka with our modern fleet.</p>
+                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-200 transition-colors">Book a ride <ArrowRight className="w-4 h-4" /></span>
               </div>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Tours */}
-      <section className="py-24 bg-white overflow-hidden">
-        <div className="max-w-[1200px] mx-auto px-6 mb-12 flex justify-between items-end">
-          <SectionHeading
-            overline="POPULAR JOURNEYS"
-            title="Tours we *love*"
-            className="mb-0"
-          />
-          <Link href="/tours" className="hidden sm:flex items-center gap-2 font-body font-semibold text-forest-500 hover:text-amber-500 transition-colors">
-            View all <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="pl-6 md:pl-[max(1.5rem,calc((100vw-1200px)/2+1.5rem))]">
-          <div className="flex gap-6 overflow-x-auto pb-12 pt-4 pr-6 hide-scrollbar snap-x snap-mandatory">
-            {isLoading ? (
-              [1, 2, 3, 4].map(i => <div key={i} className="min-w-[320px] h-[400px] bg-warm-100 rounded-2xl animate-pulse snap-center" />)
-            ) : (
-              tours?.map(tour => (
-                <div key={tour.id} className="snap-center">
-                  <TourCard tour={tour} />
-                </div>
-              ))
-            )}
           </div>
         </div>
       </section>
@@ -142,15 +146,9 @@ export default function Home() {
       {/* How It Works */}
       <section className="py-24 px-6 bg-cream">
         <div className="max-w-[1200px] mx-auto">
-          <SectionHeading
-            overline="HOW IT WORKS"
-            title="Three simple *steps*"
-            align="center"
-          />
-
+          <SectionHeading overline="HOW IT WORKS" title="Three simple *steps*" align="center" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-16 relative">
             <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-forest-100 border-dashed border-t-2 border-forest-200" />
-
             {[
               { num: 1, title: 'Choose your journey', desc: 'Browse ready-made tours, create your own, or book a simple transfer.' },
               { num: 2, title: 'Book & pay securely', desc: 'Select your vehicle, add extras, and pay securely online. Stripe-powered checkout.' },
@@ -171,20 +169,11 @@ export default function Home() {
       {/* Vehicle Fleet */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-[1200px] mx-auto">
-          <SectionHeading
-            overline="OUR FLEET"
-            title="Travel in *comfort*"
-            align="center"
-          />
-
+          <SectionHeading overline="OUR FLEET" title="Travel in *comfort*" align="center" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12">
             {vehicles?.map(v => (
               <div key={v.id} className="bg-warm-50 rounded-2xl p-6 flex flex-col items-center text-center border border-warm-100 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
-                <img
-                  src={v.image}
-                  alt={v.name}
-                  className="w-full h-28 object-contain mb-4"
-                />
+                <img src={v.image} alt={v.name} className="w-full h-28 object-contain mb-4" />
                 <h4 className="font-display text-xl text-forest-600 mb-1">{v.name}</h4>
                 <p className="font-body text-xs text-warm-400 mb-1">{v.model}</p>
                 <p className="font-body text-sm text-warm-500 flex items-center gap-1 mb-3">
@@ -199,35 +188,216 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="py-16 px-6 bg-cream border-y border-warm-100">
-        <div className="max-w-[1200px] mx-auto">
-          <p className="font-body text-xs text-warm-400 text-center uppercase tracking-widest mb-8">As featured in</p>
-          <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-6 opacity-30">
-            {['Travel+Leisure', 'Condé Nast Traveller', 'Lonely Planet', 'TripAdvisor', 'National Geographic'].map(name => (
-              <span key={name} className="font-display text-2xl text-warm-600 whitespace-nowrap">
-                {name}
-              </span>
+      {/* Why Sri Lanka — Rosewood Heritage Section */}
+      <section className="py-20 md:py-28 px-6 bg-[#7A2040] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%221%22/%3E%3C/svg%3E")' }} />
+        <div className="max-w-[1200px] mx-auto relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <span className="font-body text-[12px] font-medium tracking-[0.08em] uppercase text-[#E8A825] mb-4 block">Heritage & Culture</span>
+            <h2 className="font-display font-normal text-[28px] md:text-[40px] text-white leading-[1.15] mb-6">
+              Why <em className="italic">Sri Lanka?</em>
+            </h2>
+            <p className="text-lg text-white/75 leading-relaxed mb-12 max-w-2xl mx-auto font-body">
+              An island that holds 8 UNESCO World Heritage Sites, 2,500 years of documented history, and some of the
+              most biodiverse ecosystems on the planet. From misty tea plantations to sun-drenched coastlines —
+              this is a land that rewards the curious.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
+            {[
+              { stat: '8', label: 'UNESCO World Heritage Sites', desc: 'Ancient cities, rock temples, and colonial fortresses' },
+              { stat: '26', label: 'National Parks', desc: 'Home to leopards, elephants, and blue whales' },
+              { stat: '2,500+', label: 'Years of History', desc: 'One of the oldest continuously documented civilizations' },
+            ].map((item) => (
+              <div key={item.label} className="text-center">
+                <p className="font-display text-5xl text-[#E8A825] mb-2">{item.stat}</p>
+                <p className="font-body text-white font-medium text-sm mb-1">{item.label}</p>
+                <p className="font-body text-white/60 text-sm">{item.desc}</p>
+              </div>
             ))}
+          </div>
+          <div className="flex justify-center mt-12">
+            <Link href="/about">
+              <Button className="bg-white text-[#7A2040] hover:bg-white/90 rounded-full px-8 h-12 font-medium">
+                Discover Our Story
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 px-6 bg-forest-600 text-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-200 via-transparent to-transparent" />
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <h2 className="font-display text-5xl md:text-6xl text-white mb-6">
-            Ready to explore <em className="italic text-amber-300">Sri Lanka?</em>
-          </h2>
-          <p className="font-body text-xl text-white/80 mb-10">
-            Book your journey today and travel with trusted local drivers.
-          </p>
-          <Link href="/tours">
-            <Button size="lg" className="bg-white text-forest-600 hover:bg-warm-50 h-14 px-10 text-lg font-body">
-              Start planning <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </Link>
+      {/* Orbit Showcase — Experience categories */}
+      <OrbitShowcaseSection />
+
+      {/* Horizontal Scroll Journeys */}
+      <HorizontalScrollSection />
+
+      {/* About Peacock — Story Blocks (sticky image + text) */}
+      <StoryBlocksSection />
+
+      {/* How Peacock Drivers Works */}
+      <section className="bg-[#FAF7F2] overflow-hidden pt-20 lg:pt-32 pb-12 md:pb-20 lg:pb-24">
+        <HowItWorksSection merged />
+      </section>
+
+      {/* Explore Destinations + Design your own adventure */}
+      <section className="bg-background">
+        <ParallaxDestinationsSection />
+        <DesignAdventureCTA />
+      </section>
+
+      {/* Climate Guide ("When to go") */}
+      <ClimateGuideSection />
+
+      {/* Get Inspired — curated journeys grid */}
+      <Section className="bg-background py-24 md:py-32 overflow-hidden border-t border-gray-100">
+        <Container>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+            <div className="max-w-2xl">
+              <Kicker>Curated Journeys</Kicker>
+              <H2 className="mb-6 text-warm-900">Get <em className="italic">Inspired.</em></H2>
+              <P className="text-xl max-w-lg leading-relaxed">
+                Hand-picked itineraries that define luxury travel in Sri Lanka.
+                Customize any route to your pace.
+              </P>
+            </div>
+            <Link href="/tours">
+              <Button className="rounded-full px-8 h-12">
+                View All Collections
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-[1200px] md:h-[600px]">
+            {/* Large Feature Card */}
+            <Link href="/tours" className="md:col-span-2 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
+              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6984886cfce4578d36659ddd_What-are-the-top-attractions-in-Nuwara-Eliya_20241113112510.jpg" alt="Wildlife" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div className="absolute top-6 left-6 flex flex-wrap gap-2">
+                <Badge className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">10 Days</Badge>
+                <Badge className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">Wildlife</Badge>
+              </div>
+              <div className="absolute bottom-0 left-0 p-8 md:p-10 w-full transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
+                <span className="text-amber-200 text-xs font-bold uppercase tracking-[0.2em] mb-3 block opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-700 delay-100">Signature Series</span>
+                <h3 className="font-display text-5xl md:text-6xl font-normal text-white mb-4 leading-[0.9]">Wild Sri Lanka</h3>
+                <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
+                  <div className="overflow-hidden">
+                    <p className="text-white/80 pb-6 leading-relaxed max-w-md text-lg font-light">
+                      An immersive journey through the island's most pristine national parks. Leopards, elephants, and luxury camping under the stars.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-white/20 pt-6 mt-2">
+                  <span className="text-white font-medium uppercase tracking-widest text-xs">Explore Trip</span>
+                  <div className="h-10 w-10 rounded-full bg-white text-black flex items-center justify-center -rotate-45 group-hover:rotate-0 transition-transform duration-500 shadow-lg">
+                    <ArrowRight className="h-5 w-5" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            {/* Tall Portrait Card */}
+            <Link href="/tours" className="md:col-span-1 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
+              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/698487a2a035dec2b9a0c107_Fishermen.jpeg" alt="Cultural Triangle" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+              <div className="absolute top-6 left-6">
+                <Badge className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">7 Days</Badge>
+              </div>
+              <div className="absolute bottom-0 left-0 p-8 w-full">
+                <h3 className="font-display text-3xl font-normal text-white mb-2 leading-tight">Cultural Triangle Odyssey</h3>
+                <p className="text-white/70 text-sm mb-4 line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Ancient cities and rock fortresses.</p>
+                <div className="h-8 w-8 rounded-full border border-white/30 text-white flex items-center justify-center -rotate-45 group-hover:rotate-0 transition-transform duration-500 group-hover:bg-white group-hover:text-black">
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </div>
+            </Link>
+
+            {/* Small Card - Southern Coast */}
+            <Link href="/tours" className="md:col-span-1 md:row-span-1 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
+              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6984898716687fc4ba9b5441_Sri-Lanka-5.jpg" alt="Southern Coast" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+              <div className="absolute bottom-0 left-0 p-6">
+                <div className="text-amber-200 text-[10px] font-bold uppercase tracking-widest mb-1">Beach & Chill</div>
+                <h3 className="font-display text-xl font-normal text-white leading-tight">Southern Coast</h3>
+              </div>
+            </Link>
+
+            {/* Small Card - Hill Country */}
+            <Link href="/tours" className="md:col-span-1 md:row-span-1 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
+              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6984898b6458e65dd0444751_Must-Visit-Caves-in-Sri-Lanka%20(1).jpg" alt="Hill Country" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+              <div className="absolute bottom-0 left-0 p-6">
+                <div className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-1">Tea & Mountains</div>
+                <h3 className="font-display text-xl font-normal text-white leading-tight">Hill Country</h3>
+              </div>
+            </Link>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Parallax Wizard CTA */}
+      <Section
+        className="min-h-[90vh] flex items-center justify-center relative overflow-hidden bg-cover bg-center bg-fixed"
+        style={{ backgroundImage: `url('https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69838bc1712205ff655de71c_5052216621-ezgif.com-webp-to-jpg-converter.jpg')` }}
+      >
+        <div className="absolute inset-0 bg-black/40" />
+        <Container className="relative z-10 text-center">
+          <div className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/20">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-normal text-white mb-6">
+              Still not sure where to <em className="italic">go?</em>
+            </h2>
+            <p className="text-xl text-white/90 mb-10 font-light">
+              Try our trip wizard to find your dream trip. We'll ask a few simple questions and build a route just for you.
+            </p>
+            <Link href="/tours/custom">
+              <Button size="lg" className="bg-white text-foreground hover:bg-white/90 h-14 px-8 rounded-full text-lg font-medium">
+                Start Trip Wizard
+              </Button>
+            </Link>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Trust + FAQ + Reviews */}
+      <section
+        className="relative overflow-hidden"
+        style={{ backgroundColor: "rgba(251, 250, 249, 1)" }}
+      >
+        {/* As Seen In */}
+        <div className="py-16">
+          <Container>
+            <div className="text-center mb-10">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                We are one of the world's best tour operators
+              </span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+              <span className="text-2xl font-display font-normal">Travel+Leisure</span>
+              <span className="text-2xl font-display font-normal">Cond&#233; Nast</span>
+              <span className="text-2xl font-display font-normal">VOGUE</span>
+              <span className="text-2xl font-display font-normal">Lonely Planet</span>
+            </div>
+          </Container>
+        </div>
+
+        {/* FAQs */}
+        <FAQSection embedded />
+
+        {/* Stories from the Road */}
+        <div className="overflow-hidden pb-24">
+          <Container className="pt-4">
+            <div className="text-center mb-12">
+              <Kicker>Social Proof</Kicker>
+              <H2 className="mb-4" style={{ fontSize: "60px", color: "rgba(12, 36, 33, 1)" }}>
+                Stories from the Road
+              </H2>
+              <P>Our guests don't just visit Sri Lanka; they live it.</P>
+            </div>
+          </Container>
+          <div className="w-full">
+            <MarqueeTestimonials reviews={reviews} />
+          </div>
         </div>
       </section>
     </div>

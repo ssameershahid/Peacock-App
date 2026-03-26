@@ -141,7 +141,7 @@ function TripDetailsForm() {
         <div className="px-6 pb-6 space-y-4 border-t border-warm-100 pt-4">
           <p className="font-body text-sm text-warm-500">These details help your driver prepare for your arrival</p>
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Passport number</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Passport number</label>
             <input
               value={passport}
               onChange={e => { setPassport(e.target.value); setSaved(false); }}
@@ -150,7 +150,7 @@ function TripDetailsForm() {
             />
           </div>
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Hotel names</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Hotel names</label>
             <textarea
               value={hotels}
               onChange={e => { setHotels(e.target.value); setSaved(false); }}
@@ -160,7 +160,7 @@ function TripDetailsForm() {
             />
           </div>
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Flight number (arrival)</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Flight number (arrival)</label>
             <input
               value={flight}
               onChange={e => { setFlight(e.target.value); setSaved(false); }}
@@ -191,7 +191,7 @@ function RescheduleModal({ onClose }: { onClose: () => void }) {
           <p>A fee of {"\u00a3"}50 applies if less than 10 days before departure.</p>
         </div>
         <div className="mb-4">
-          <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Preferred new date</label>
+          <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Preferred new date</label>
           <input type="date" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
         </div>
         <div className="flex gap-3">
@@ -341,7 +341,7 @@ export default function TripDetail() {
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            <Sparkles className="w-5 h-5 text-amber-200" />
             <span className="inline-flex items-center px-3 py-1 rounded-pill text-xs font-body font-medium bg-amber-100 text-amber-700">Quote Ready</span>
           </div>
           <h2 className="font-display text-3xl text-forest-600 mb-1">Custom Trip Quote</h2>
@@ -392,7 +392,7 @@ export default function TripDetail() {
           )}
         </div>
 
-        <Button className="w-full rounded-pill bg-amber-500 hover:bg-amber-600 text-white text-lg py-6 font-body font-semibold">
+        <Button className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-forest-800 text-lg py-6 font-body font-semibold transition-all duration-200">
           Pay Now {"\u2014"} {format(cyoData.quotedAmount)}
         </Button>
       </div>
@@ -502,7 +502,7 @@ export default function TripDetail() {
               <div className="space-y-2 mt-2">
                 {tour.itinerary.map((day: any, i: number) => (
                   <div key={i} className="flex gap-3 py-2 border-b border-warm-50 last:border-0">
-                    <span className="font-body text-xs font-medium text-amber-500 bg-amber-50 px-2.5 py-1 rounded-pill whitespace-nowrap h-fit">Day {day.day}</span>
+                    <span className="font-body text-xs font-medium text-amber-200 bg-amber-50 px-2.5 py-1 rounded-pill whitespace-nowrap h-fit">Day {day.day}</span>
                     <span className="font-body text-sm text-forest-600">{day.title}</span>
                   </div>
                 ))}
@@ -543,7 +543,7 @@ export default function TripDetail() {
             </Button>
             <button
               onClick={() => setShowCancel(true)}
-              className="px-4 py-2 rounded-pill font-body text-sm font-medium text-red-500 hover:bg-red-50 transition-colors border border-transparent hover:border-red-200"
+              className="px-4 py-2 rounded-full font-body text-sm font-medium text-[#C4382A] border-[1.5px] border-[#C4382A] bg-transparent hover:bg-[#FDECEA] transition-all duration-200"
             >
               <X className="w-4 h-4 mr-1 inline" /> Cancel Booking
             </button>

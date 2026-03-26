@@ -77,7 +77,7 @@ export default function DriverTripDetail() {
           <div className="flex gap-3">
             <a
               href={`tel:${trip.customer.phone}`}
-              className="flex-1 flex items-center justify-center gap-2 bg-forest-600 hover:bg-forest-500 text-white rounded-xl min-h-[48px] font-body text-sm font-medium transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 bg-forest-600 hover:bg-forest-500 text-white rounded-full min-h-[48px] font-body text-sm font-medium transition-all duration-200"
             >
               <Phone className="w-4 h-4" /> Call tourist
             </a>
@@ -85,7 +85,7 @@ export default function DriverTripDetail() {
               href={`https://wa.me/${trip.customer.phone.replace(/\s+/g, '').replace('+', '')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl min-h-[48px] font-body text-sm font-medium transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full min-h-[48px] font-body text-sm font-medium transition-all duration-200"
             >
               <MessageCircle className="w-4 h-4" /> WhatsApp
             </a>
@@ -158,7 +158,7 @@ export default function DriverTripDetail() {
         {trip.specialRequests && (
           <div className="bg-amber-50 rounded-2xl border border-amber-200 p-5">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-amber-200 mt-0.5 shrink-0" />
               <div>
                 <h3 className="font-body text-sm font-semibold text-amber-800 mb-1">Special requests</h3>
                 <p className="font-body text-sm text-amber-700">{trip.specialRequests}</p>
@@ -219,7 +219,7 @@ export default function DriverTripDetail() {
             <button
               onClick={() => updateStatus.mutate({ id: trip.id, status: 'accepted' })}
               disabled={updateStatus.isPending}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-body text-base font-semibold rounded-2xl min-h-[56px] shadow-lg transition-colors disabled:opacity-60"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-body text-base font-semibold rounded-full min-h-[56px] shadow-lg transition-all duration-200 disabled:opacity-60"
             >
               {updateStatus.isPending ? 'Accepting...' : 'Accept trip'}
             </button>
@@ -229,9 +229,9 @@ export default function DriverTripDetail() {
               disabled={!isStartDay || updateStatus.isPending}
               onClick={() => isStartDay && updateStatus.mutate({ id: trip.id, status: 'in-progress' })}
               className={cn(
-                'w-full font-body text-base font-semibold rounded-2xl min-h-[56px] shadow-lg transition-colors disabled:opacity-60',
+                'w-full font-body text-base font-semibold rounded-full min-h-[56px] shadow-lg transition-all duration-200 disabled:opacity-60',
                 isStartDay
-                  ? 'bg-amber-500 hover:bg-amber-400 text-white'
+                  ? 'bg-amber-500 hover:bg-amber-400 text-forest-800'
                   : 'bg-warm-200 text-warm-400 cursor-not-allowed'
               )}
             >
@@ -242,13 +242,13 @@ export default function DriverTripDetail() {
             <button
               onClick={() => updateStatus.mutate({ id: trip.id, status: 'completed' })}
               disabled={updateStatus.isPending}
-              className="w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-base font-semibold rounded-2xl min-h-[56px] shadow-lg transition-colors disabled:opacity-60"
+              className="w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-base font-semibold rounded-full min-h-[56px] shadow-lg transition-all duration-200 disabled:opacity-60"
             >
               {updateStatus.isPending ? 'Completing...' : 'Complete trip'}
             </button>
           )}
           {trip.driverStatus === 'completed' && (
-            <button disabled className="w-full bg-warm-200 text-warm-500 font-body text-base font-semibold rounded-2xl min-h-[56px] cursor-not-allowed">
+            <button disabled className="w-full bg-warm-200 text-warm-500 font-body text-base font-semibold rounded-full min-h-[56px] cursor-not-allowed">
               Trip completed {"\u2713"}
             </button>
           )}

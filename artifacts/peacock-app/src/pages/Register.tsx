@@ -50,7 +50,7 @@ export default function Register() {
       <div className="w-full max-w-[480px]">
         <div className="bg-white rounded-[32px] shadow-sm border border-warm-100 p-8 md:p-10">
           <div className="text-center mb-8">
-            <h1 className="font-display text-4xl text-forest-600 mb-2">Create your <em className="italic text-amber-500">account</em></h1>
+            <h1 className="font-display text-4xl text-forest-600 mb-2">Create your <em className="italic text-amber-200">account</em></h1>
             <p className="font-body text-warm-500 text-sm">Join Peacock Drivers and start planning your Sri Lanka adventure.</p>
           </div>
 
@@ -138,7 +138,7 @@ export default function Register() {
           </button>
 
           <p className="text-center mt-6 font-body text-sm text-warm-500">
-            Already have an account? <Link href="/login" className="text-forest-500 font-medium hover:text-amber-500 transition-colors">Log in →</Link>
+            Already have an account? <Link href="/login" className="text-forest-500 font-medium hover:text-amber-200 transition-colors">Log in →</Link>
           </p>
         </div>
       </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { cn, parseHeadingParts } from '@/lib/utils';
 
 interface SectionHeadingProps {
-  overline: string;
+  overline?: string;
   title: string;
   subtitle?: string;
   align?: 'left' | 'center';
@@ -13,10 +13,12 @@ export function SectionHeading({ overline, title, subtitle, align = 'left', clas
   const parts = parseHeadingParts(title);
   return (
     <div className={cn(`flex flex-col mb-12`, align === 'center' && 'items-center text-center', className)}>
-      <span className="font-body text-[12px] font-medium tracking-[0.08em] uppercase text-amber-500 mb-3">
-        {overline}
-      </span>
-      <h2 className="font-display text-4xl md:text-5xl text-forest-600 leading-[1.15] mb-4">
+      {overline && (
+        <span className="font-body text-[12px] font-medium tracking-[0.08em] uppercase text-amber-200 mb-3">
+          {overline}
+        </span>
+      )}
+      <h2 className="font-display font-normal text-[28px] md:text-[40px] text-warm-900 leading-[1.15] mb-4">
         {parts.map((p, i) =>
           p.italic ? <em key={i} className="italic">{p.text}</em> : <span key={i}>{p.text}</span>
         )}

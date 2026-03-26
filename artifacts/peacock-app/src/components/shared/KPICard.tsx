@@ -12,15 +12,15 @@ interface KPICardProps {
 
 export function KPICard({ icon, label, value, trend, className }: KPICardProps) {
   return (
-    <div className={cn('bg-white rounded-2xl border border-warm-100 p-6 shadow-card', className)}>
+    <div className={cn('bg-white rounded-xl border border-warm-100 p-5 shadow-none', className)}>
       <div className="flex items-start justify-between mb-4">
         <div className="w-11 h-11 rounded-xl bg-forest-50 flex items-center justify-center text-forest-500">
           {icon}
         </div>
         {trend && (
           <div className={cn(
-            'flex items-center gap-1 px-2.5 py-1 rounded-pill text-xs font-body font-medium',
-            trend.positive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+            'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-body font-medium',
+            trend.positive ? 'bg-[#E8F5E9] text-[#2D7A4F]' : 'bg-[#FDECEA] text-[#C4382A]'
           )}>
             {trend.positive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {trend.value}
@@ -28,7 +28,7 @@ export function KPICard({ icon, label, value, trend, className }: KPICardProps) 
         )}
       </div>
       <p className="font-body text-sm text-warm-400 mb-1">{label}</p>
-      <p className="font-display text-3xl text-forest-600">{value}</p>
+      <p className="font-display font-normal text-3xl text-warm-900">{value}</p>
     </div>
   );
 }

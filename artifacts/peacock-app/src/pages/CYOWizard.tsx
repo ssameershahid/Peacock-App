@@ -152,7 +152,7 @@ export default function CYOWizard() {
     <div className="min-h-screen bg-cream pt-24 pb-32">
       <div className="max-w-[1000px] mx-auto px-6">
         <div className="text-center mb-10">
-          <h1 className="font-display text-4xl text-forest-600 mb-2">Create Your <em className="italic text-amber-500">Own</em></h1>
+          <h1 className="font-display text-4xl text-forest-600 mb-2">Create Your <em className="italic text-amber-200">Own</em></h1>
           <p className="font-body text-warm-500">Design your perfect Sri Lankan journey in 5 simple steps.</p>
         </div>
 
@@ -206,9 +206,9 @@ export default function CYOWizard() {
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-3 font-body">How many travellers?</label>
                   <div className="flex items-center gap-4 bg-warm-50 p-2 rounded-2xl w-fit border border-warm-200">
-                    <button onClick={() => setSelections(s => ({ ...s, pax: Math.max(1, s.pax - 1) }))} className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl text-forest-600 hover:text-amber-500 font-body">−</button>
+                    <button onClick={() => setSelections(s => ({ ...s, pax: Math.max(1, s.pax - 1) }))} className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-xl text-forest-600 hover:text-amber-200 font-body transition-all duration-200">−</button>
                     <span className="font-display text-3xl text-forest-600 w-12 text-center">{selections.pax}</span>
-                    <button onClick={() => setSelections(s => ({ ...s, pax: s.pax + 1 }))} className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl text-forest-600 hover:text-amber-500 font-body">+</button>
+                    <button onClick={() => setSelections(s => ({ ...s, pax: s.pax + 1 }))} className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-xl text-forest-600 hover:text-amber-200 font-body transition-all duration-200">+</button>
                   </div>
                 </div>
                 <div>
@@ -333,7 +333,7 @@ export default function CYOWizard() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
-                    How many days? <span className="text-amber-500 font-display text-lg">{selections.days}</span>
+                    How many days? <span className="text-amber-200 font-display text-lg">{selections.days}</span>
                   </label>
                   <input
                     type="range"

@@ -72,7 +72,7 @@ export function DataTable<T extends Record<string, any>>({
   };
 
   return (
-    <div className={cn('bg-white rounded-2xl border border-warm-100 overflow-hidden', className)}>
+    <div className={cn('bg-white rounded-xl border border-warm-100 overflow-hidden', className)}>
       <div className="p-4 flex flex-col sm:flex-row gap-3 border-b border-warm-100">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-400" />
@@ -122,7 +122,7 @@ export function DataTable<T extends Record<string, any>>({
           </thead>
           <tbody>
             {pageData.map((row, i) => (
-              <tr key={i} className="border-b border-warm-50 hover:bg-warm-50/50 transition-colors">
+              <tr key={i} className="border-b border-warm-50 hover:bg-warm-50 transition-colors">
                 {columns.map(col => (
                   <td key={col.key} className="px-4 py-3.5 font-body text-sm text-warm-600">
                     {col.render ? col.render(row) : row[col.key]}
@@ -150,7 +150,7 @@ export function DataTable<T extends Record<string, any>>({
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="p-2 rounded-lg hover:bg-warm-50 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-2 rounded-full hover:bg-warm-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -160,7 +160,7 @@ export function DataTable<T extends Record<string, any>>({
             <button
               onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="p-2 rounded-lg hover:bg-warm-50 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-2 rounded-full hover:bg-warm-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -25,7 +25,7 @@ export function MapPlaceholder({ locations, className }: MapPlaceholderProps) {
               <div className={cn(
                 'w-3.5 h-3.5 rounded-full border-2 shrink-0',
                 i === 0 ? 'bg-forest-500 border-forest-500' :
-                i === locations.length - 1 ? 'bg-amber-400 border-amber-400' :
+                i === locations.length - 1 ? 'bg-amber-200 border-amber-200' :
                 'bg-white border-forest-300'
               )} />
               {i < locations.length - 1 && (

@@ -93,7 +93,7 @@ export default function Profile() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">First Name</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">First Name</label>
             <input
               value={firstName}
               onChange={e => { setFirstName(e.target.value); setSaved(false); }}
@@ -101,7 +101,7 @@ export default function Profile() {
             />
           </div>
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Last Name</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Last Name</label>
             <input
               value={lastName}
               onChange={e => { setLastName(e.target.value); setSaved(false); }}
@@ -111,7 +111,7 @@ export default function Profile() {
         </div>
 
         <div className="mb-4">
-          <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Email</label>
+          <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Email</label>
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-400" />
             <input
@@ -124,7 +124,7 @@ export default function Profile() {
         </div>
 
         <div className="mb-4">
-          <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Phone Number</label>
+          <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Phone Number</label>
           <input
             value={phone}
             onChange={e => { setPhone(e.target.value); setSaved(false); }}
@@ -133,7 +133,7 @@ export default function Profile() {
         </div>
 
         <div className="mb-6">
-          <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Country</label>
+          <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Country</label>
           <div className="relative">
             <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-400" />
             <select
@@ -166,15 +166,15 @@ export default function Profile() {
         )}
         <div className="space-y-4 mb-6">
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Current Password</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Current Password</label>
             <input type="password" value={currentPw} onChange={e => { setCurrentPw(e.target.value); setPasswordSaved(false); }} placeholder="••••••••" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
           </div>
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">New Password</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">New Password</label>
             <input type="password" value={newPw} onChange={e => { setNewPw(e.target.value); setPasswordSaved(false); }} placeholder="••••••••" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
           </div>
           <div>
-            <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Confirm New Password</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Confirm New Password</label>
             <input type="password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPasswordSaved(false); }} placeholder="••••••••" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
           </div>
         </div>
@@ -183,7 +183,7 @@ export default function Profile() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl border-2 border-red-200 p-6">
+      <div className="bg-white rounded-2xl border-[1.5px] border-[#C4382A]/20 p-6">
         <h3 className="font-body font-semibold text-red-600 mb-2">Danger Zone</h3>
         <p className="font-body text-sm text-warm-500 mb-4">Once you delete your account, all your data will be permanently removed. This action cannot be undone.</p>
         {showDeleteConfirm ? (

@@ -32,7 +32,7 @@ export default function AdminCYO() {
               key={v}
               onClick={() => setView(v)}
               className={cn(
-                'px-4 py-1.5 rounded-lg font-body text-xs font-medium transition-colors capitalize',
+                'px-4 py-1.5 rounded-full font-body text-xs font-medium transition-all duration-200 capitalize',
                 view === v ? 'bg-white text-forest-600 shadow-sm' : 'text-warm-500 hover:text-forest-600'
               )}
             >
@@ -57,7 +57,7 @@ export default function AdminCYO() {
                   <div className="space-y-3">
                     {items.map(req => (
                       <Link key={req.id} href={`/admin/requests/${req.id}`}>
-                        <div className="bg-white rounded-xl p-4 border border-warm-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                        <div className="bg-white rounded-xl p-4 border border-warm-100 cursor-pointer hover:bg-warm-50 transition-colors">
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-body text-[10px] font-bold text-warm-400">{req.id}</span>
                             <span className="font-body text-[10px] text-warm-400">{new Date(req.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
@@ -86,7 +86,7 @@ export default function AdminCYO() {
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-warm-100 overflow-hidden">
+        <div className="bg-white rounded-xl border border-warm-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -98,7 +98,7 @@ export default function AdminCYO() {
               </thead>
               <tbody className="divide-y divide-warm-50">
                 {(requests || []).map(req => (
-                  <tr key={req.id} className="hover:bg-warm-50/50 transition-colors cursor-pointer" onClick={() => window.location.href = `/admin/requests/${req.id}`}>
+                  <tr key={req.id} className="hover:bg-warm-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/admin/requests/${req.id}`}>
                     <td className="px-4 py-3 font-body text-sm font-medium text-forest-600">{req.id}</td>
                     <td className="px-4 py-3 font-body text-sm text-warm-600">{req.customer}</td>
                     <td className="px-4 py-3 font-body text-sm text-warm-500">{req.locations.slice(0, 2).join(', ')}{req.locations.length > 2 && '...'}</td>

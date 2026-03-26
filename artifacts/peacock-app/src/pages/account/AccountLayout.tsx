@@ -29,7 +29,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
         <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
             <h1 className="font-display text-4xl md:text-5xl mb-2">
-              Welcome back, <span className="italic text-amber-300">James</span>
+              Welcome back, <span className="italic text-amber-200">James</span>
             </h1>
             <p className="font-body text-white/70">Manage your Sri Lankan adventures.</p>
           </div>

@@ -45,7 +45,7 @@ export default function MyTrips() {
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 hover:shadow-md transition-shadow cursor-pointer flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-5 h-5 text-amber-500" />
+                    <Sparkles className="w-5 h-5 text-amber-200" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
@@ -57,7 +57,7 @@ export default function MyTrips() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="font-body font-bold text-amber-600">View & Pay {"\u2014"} {format(cyo.quotedAmount)}</span>
-                  <ArrowRight className="w-4 h-4 text-amber-500" />
+                  <ArrowRight className="w-4 h-4 text-amber-200" />
                 </div>
               </div>
             </Link>
@@ -82,7 +82,7 @@ export default function MyTrips() {
               {tab === 'upcoming' ? 'Time to plan your Sri Lankan adventure!' : 'Your completed trips will appear here.'}
             </p>
             <Link href="/tours">
-              <button className="bg-forest-600 text-white px-6 py-3 rounded-pill font-body font-medium hover:bg-forest-700 transition-colors inline-flex items-center gap-2">
+              <button className="bg-forest-600 text-white px-6 py-3 rounded-full font-body font-medium hover:bg-forest-700 transition-all duration-200 inline-flex items-center gap-2">
                 Browse tours <ArrowRight className="w-4 h-4" />
               </button>
             </Link>

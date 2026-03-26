@@ -56,7 +56,7 @@ export default function AdminCYODetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Customer request</h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div><p className="font-body text-xs text-warm-400">Trip type</p><p className="font-body text-sm text-forest-600">{request.tripType}</p></div>
@@ -101,7 +101,7 @@ export default function AdminCYODetail() {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Quote builder</h2>
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
@@ -146,13 +146,13 @@ export default function AdminCYODetail() {
               <span className="font-display text-2xl text-forest-600">{format(total)}</span>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => setLinkGenerated(true)} className="flex items-center gap-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+              <button onClick={() => setLinkGenerated(true)} className="flex items-center gap-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-200">
                 <Link2 className="w-4 h-4" /> Generate Stripe Payment Link
               </button>
-              <button onClick={() => setQuoteSent(true)} className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white font-body text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+              <button onClick={() => setQuoteSent(true)} className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-forest-800 font-body text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-200">
                 <Send className="w-4 h-4" /> Send quote to customer
               </button>
-              <button className="flex items-center gap-2 border border-warm-200 text-forest-600 font-body text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-warm-50 transition-colors">
+              <button className="flex items-center gap-2 border border-warm-200 text-forest-600 font-body text-sm font-medium px-5 py-2.5 rounded-full hover:bg-warm-50 transition-all duration-200">
                 <Copy className="w-4 h-4" /> Copy payment link
               </button>
             </div>
@@ -168,7 +168,7 @@ export default function AdminCYODetail() {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Activity log</h2>
             <div className="space-y-4">
               {[
@@ -191,12 +191,12 @@ export default function AdminCYODetail() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Customer</h2>
             <p className="font-body font-semibold text-forest-600">{request.customer}</p>
             {request.customerData && (
               <>
-                <a href={`mailto:${request.customerData.email}`} className="font-body text-sm text-forest-500 hover:text-amber-500 flex items-center gap-1.5 mt-2"><Mail className="w-3.5 h-3.5" /> {request.customerData.email}</a>
+                <a href={`mailto:${request.customerData.email}`} className="font-body text-sm text-forest-500 hover:text-amber-200 flex items-center gap-1.5 mt-2"><Mail className="w-3.5 h-3.5" /> {request.customerData.email}</a>
                 <a href={`tel:${request.customerData.phone}`} className="font-body text-sm text-warm-500 hover:text-forest-500 flex items-center gap-1.5 mt-1"><Phone className="w-3.5 h-3.5" /> {request.customerData.phone}</a>
                 <p className="font-body text-sm text-warm-400 mt-1">{request.customerData.country}</p>
               </>
@@ -204,7 +204,7 @@ export default function AdminCYODetail() {
           </div>
 
           {request.status === 'Abandoned' && (
-            <div className="bg-white rounded-2xl border border-warm-100 p-6">
+            <div className="bg-white rounded-xl border border-warm-100 p-6">
               <h2 className="font-body text-sm font-semibold text-warm-500 mb-3">Abandonment reason</h2>
               <textarea rows={3} defaultValue="No response after 3 follow-ups" className="w-full border border-warm-200 rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none" />
             </div>

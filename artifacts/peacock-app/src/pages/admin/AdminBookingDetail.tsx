@@ -88,24 +88,24 @@ export default function AdminBookingDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Customer</h2>
             {customer ? (
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-body font-semibold text-forest-600 text-lg">{customer.name}</p>
-                  {customer.email && <a href={`mailto:${customer.email}`} className="font-body text-sm text-forest-500 hover:text-amber-500 flex items-center gap-1.5 mt-1"><Mail className="w-3.5 h-3.5" /> {customer.email}</a>}
+                  {customer.email && <a href={`mailto:${customer.email}`} className="font-body text-sm text-forest-500 hover:text-amber-200 flex items-center gap-1.5 mt-1"><Mail className="w-3.5 h-3.5" /> {customer.email}</a>}
                   {customer.phone && <a href={`tel:${customer.phone}`} className="font-body text-sm text-warm-500 hover:text-forest-500 flex items-center gap-1.5 mt-1"><Phone className="w-3.5 h-3.5" /> {customer.phone}</a>}
                   {customer.country && <p className="font-body text-sm text-warm-400 mt-1">{customer.country}</p>}
                 </div>
-                <button className="px-4 py-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium rounded-xl transition-colors">Contact customer</button>
+                <button className="px-4 py-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium rounded-full transition-all duration-200">Contact customer</button>
               </div>
             ) : (
               <p className="font-body text-sm text-warm-400">Customer ID: {booking.customerId}</p>
             )}
           </div>
 
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Trip details</h2>
             <h3 className="font-display text-xl text-forest-600 mb-3">{booking.title || booking.referenceCode}</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -116,7 +116,7 @@ export default function AdminBookingDetail() {
             </div>
             {booking.specialRequests && (
               <div className="bg-amber-50 rounded-xl p-4 flex items-start gap-3">
-                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <AlertTriangle className="w-4 h-4 text-amber-200 mt-0.5 shrink-0" />
                 <div>
                   <p className="font-body text-xs font-semibold text-amber-800">Special requests</p>
                   <p className="font-body text-sm text-amber-700">{booking.specialRequests}</p>
@@ -127,11 +127,11 @@ export default function AdminBookingDetail() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Management</h2>
             <div className="space-y-4">
               <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Status</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Status</label>
                 <select
                   value={selectedStatus}
                   onChange={e => setSelectedStatus(e.target.value)}
@@ -142,13 +142,13 @@ export default function AdminBookingDetail() {
                 <button
                   onClick={handleUpdateStatus}
                   disabled={updateBooking.isPending}
-                  className="mt-2 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium py-2 rounded-xl transition-colors disabled:opacity-60"
+                  className="mt-2 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-xs font-medium py-2 rounded-full transition-all duration-200 disabled:opacity-60"
                 >
                   {updateBooking.isPending ? 'Updating…' : 'Update status'}
                 </button>
               </div>
               <div className="border-t border-warm-100 pt-4">
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Assign driver</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Assign driver</label>
                 <select
                   value={selectedDriverId}
                   onChange={e => setSelectedDriverId(e.target.value)}
@@ -164,14 +164,14 @@ export default function AdminBookingDetail() {
                 <button
                   onClick={handleAssignDriver}
                   disabled={!selectedDriverId || updateBooking.isPending}
-                  className="mt-2 w-full bg-white border border-warm-200 text-forest-600 font-body text-xs font-medium py-2 rounded-xl hover:bg-warm-50 transition-colors disabled:opacity-60"
+                  className="mt-2 w-full bg-white border border-warm-200 text-forest-600 font-body text-xs font-medium py-2 rounded-full hover:bg-warm-50 transition-all duration-200 disabled:opacity-60"
                 >
                   Assign & confirm
                 </button>
                 <p className="font-body text-[10px] text-warm-400 mt-1">Driver will be notified by email</p>
               </div>
               <div className="border-t border-warm-100 pt-4">
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Internal notes</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Internal notes</label>
                 <textarea
                   rows={3}
                   value={adminNotes}
@@ -183,7 +183,7 @@ export default function AdminBookingDetail() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-warm-100 p-6">
+          <div className="bg-white rounded-xl border border-warm-100 p-6">
             <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Payment</h2>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -196,15 +196,15 @@ export default function AdminBookingDetail() {
                   booking.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                 }`}>{booking.paymentStatus || 'PENDING'}</span>
               </div>
-              <button className="w-full flex items-center justify-center gap-1.5 border border-warm-200 text-forest-600 font-body text-xs font-medium py-2 rounded-xl hover:bg-warm-50 transition-colors">
+              <button className="w-full flex items-center justify-center gap-1.5 border border-warm-200 text-forest-600 font-body text-xs font-medium py-2 rounded-full hover:bg-warm-50 transition-all duration-200">
                 <Download className="w-3.5 h-3.5" /> Download invoice
               </button>
             </div>
           </div>
 
-          <div className="border border-red-200 rounded-2xl p-6">
+          <div className="border border-red-200 rounded-xl p-6">
             <h2 className="font-body text-sm font-semibold text-red-600 mb-3">Danger zone</h2>
-            <button onClick={() => setShowCancel(true)} className="w-full border border-red-300 text-red-600 font-body text-xs font-medium py-2.5 rounded-xl hover:bg-red-50 transition-colors">Cancel booking</button>
+            <button onClick={() => setShowCancel(true)} className="w-full text-[#C4382A] border-[1.5px] border-[#C4382A] bg-transparent hover:bg-[#FDECEA] font-body text-xs font-medium py-2.5 rounded-full transition-all duration-200">Cancel booking</button>
           </div>
         </div>
       </div>
@@ -215,7 +215,7 @@ export default function AdminBookingDetail() {
             <p className="font-body text-sm text-red-700">Refund: Full refund if more than 10 days before departure. No refund within 10 days.</p>
           </div>
           <div>
-            <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Cancellation reason</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Cancellation reason</label>
             <textarea
               rows={3}
               value={cancelReason}

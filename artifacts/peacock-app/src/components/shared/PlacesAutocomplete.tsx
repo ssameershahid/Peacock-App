@@ -32,7 +32,7 @@ interface PlacesAutocompleteProps {
 }
 
 function useDebouncedCallback<T extends (...args: any[]) => any>(fn: T, delay: number) {
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   return useCallback((...args: Parameters<T>) => {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => fn(...args), delay);
@@ -129,7 +129,7 @@ export function PlacesAutocomplete({
         className={cn(
           'w-full bg-white border border-warm-200 rounded-xl py-3 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none transition-all',
           icon ? 'pl-10' : 'pl-4',
-          resolving && 'border-amber-300',
+          resolving && 'border-amber-200',
           className,
         )}
       />

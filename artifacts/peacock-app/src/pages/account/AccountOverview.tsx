@@ -9,7 +9,7 @@ const QUICK_ACTIONS = [
   { label: 'My Trips', desc: 'View upcoming and past bookings', href: '/account/bookings', icon: Map, color: 'bg-forest-50 text-forest-500' },
   { label: 'Invoices', desc: 'Download receipts and invoices', href: '/account/invoices', icon: FileText, color: 'bg-blue-50 text-blue-500' },
   { label: 'Profile', desc: 'Update your personal details', href: '/account/profile', icon: User, color: 'bg-violet-50 text-violet-500' },
-  { label: 'Book a New Trip', desc: 'Explore tours and transfers', href: '/tours', icon: Sparkles, color: 'bg-amber-50 text-amber-500' },
+  { label: 'Book a New Trip', desc: 'Explore tours and transfers', href: '/tours', icon: Sparkles, color: 'bg-amber-50 text-amber-200' },
 ];
 
 export default function AccountOverview() {
@@ -73,7 +73,7 @@ export default function AccountOverview() {
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 hover:shadow-md transition-shadow cursor-pointer flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <Sparkles className="w-4 h-4 text-amber-200" />
                     <span className="font-body text-xs font-medium text-amber-600 uppercase tracking-wider">Custom Trip Quote Ready</span>
                   </div>
                   <h4 className="font-body font-semibold text-forest-600">{cyo.locations.join(" \u2192 ")}</h4>
@@ -81,7 +81,7 @@ export default function AccountOverview() {
                 </div>
                 <div className="text-right">
                   <span className="font-body font-bold text-amber-600">View & Pay</span>
-                  <ArrowRight className="w-4 h-4 text-amber-500 ml-2 inline" />
+                  <ArrowRight className="w-4 h-4 text-amber-200 ml-2 inline" />
                 </div>
               </div>
             </Link>

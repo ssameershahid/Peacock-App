@@ -35,7 +35,7 @@ export default function AdminLayout({ children, title, breadcrumbs, actions }: A
   const sidebar = (
     <div className="flex flex-col h-full">
       <div className="p-5 flex items-center gap-3 border-b border-forest-600/50">
-        <div className="w-9 h-9 rounded-full bg-amber-400 flex items-center justify-center text-forest-700 font-display text-xl italic pr-0.5">P</div>
+        <div className="w-9 h-9 rounded-full bg-amber-200 flex items-center justify-center text-forest-700 font-display text-xl italic pr-0.5">P</div>
         <span className="font-display text-lg text-white tracking-wide">Peacock Admin</span>
       </div>
       <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
@@ -58,11 +58,11 @@ export default function AdminLayout({ children, title, breadcrumbs, actions }: A
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg font-body text-sm transition-colors',
                 active
-                  ? 'bg-forest-500/20 text-white font-medium border-l-2 border-amber-400'
+                  ? 'bg-forest-500/20 text-white font-medium border-l-2 border-amber-200'
                   : 'text-forest-200 hover:bg-forest-600 hover:text-white'
               )}
             >
-              <Icon className={cn('w-4 h-4', active && 'text-amber-400')} />
+              <Icon className={cn('w-4 h-4', active && 'text-amber-200')} />
               {(item as any).label}
             </Link>
           );

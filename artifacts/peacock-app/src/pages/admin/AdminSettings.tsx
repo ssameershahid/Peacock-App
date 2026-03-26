@@ -35,7 +35,7 @@ export default function AdminSettings() {
             key={t}
             onClick={() => setTab(t)}
             className={cn(
-              'px-4 py-2 rounded-xl font-body text-sm font-medium whitespace-nowrap transition-colors',
+              'px-4 py-2 rounded-full font-body text-sm font-medium whitespace-nowrap transition-all duration-200',
               tab === t ? 'bg-forest-600 text-white' : 'bg-white border border-warm-200 text-warm-500 hover:text-forest-600'
             )}
           >
@@ -46,25 +46,25 @@ export default function AdminSettings() {
 
       <div className="max-w-3xl">
         {tab === 'Payments' && (
-          <div className="bg-white rounded-2xl border border-warm-100 p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Stripe publishable key</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Stripe publishable key</label>
               <input type="text" defaultValue="pk_live_51N..." className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm font-mono focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Stripe secret key</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Stripe secret key</label>
               <input type="password" defaultValue="sk_live_xxxxxxxxxxxxx" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm font-mono focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Webhook signing secret</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Webhook signing secret</label>
               <input type="password" defaultValue="whsec_xxxxxxxxxxxxx" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm font-mono focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => setTestResult('Connection successful')} className="px-5 py-2.5 border border-warm-200 text-forest-600 font-body text-sm font-medium rounded-xl hover:bg-warm-50 transition-colors">Test connection</button>
+              <button onClick={() => setTestResult('Connection successful')} className="px-5 py-2.5 border border-warm-200 text-forest-600 font-body text-sm font-medium rounded-full hover:bg-warm-50 transition-all duration-200">Test connection</button>
               {testResult && <span className="font-body text-xs text-emerald-600 flex items-center gap-1"><Check className="w-3.5 h-3.5" /> {testResult}</span>}
             </div>
             <div className="flex justify-end pt-4 border-t border-warm-100">
-              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl transition-colors">
+              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all duration-200">
                 {saved === tab ? 'Saved!' : 'Save'}
               </button>
             </div>
@@ -72,16 +72,16 @@ export default function AdminSettings() {
         )}
 
         {tab === 'Currency' && (
-          <div className="bg-white rounded-2xl border border-warm-100 p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Base currency</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Base currency</label>
               <div className="flex items-center gap-2 px-4 py-2.5 bg-warm-50 border border-warm-200 rounded-xl">
                 <span className="font-body text-sm font-semibold text-forest-600">GBP</span>
                 <span className="font-body text-xs text-warm-400">(not editable)</span>
               </div>
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Display currencies</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Display currencies</label>
               <div className="space-y-2">
                 {['USD', 'EUR', 'CAD', 'AUD', 'LKR'].map(c => (
                   <label key={c} className="flex items-center gap-3 bg-warm-50 rounded-xl px-4 py-3 cursor-pointer hover:bg-forest-50 transition-colors">
@@ -92,7 +92,7 @@ export default function AdminSettings() {
               </div>
             </div>
             <div className="flex justify-end pt-4 border-t border-warm-100">
-              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl transition-colors">
+              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all duration-200">
                 {saved === tab ? 'Saved!' : 'Save'}
               </button>
             </div>
@@ -100,7 +100,7 @@ export default function AdminSettings() {
         )}
 
         {tab === 'Policies' && (
-          <div className="bg-white rounded-2xl border border-warm-100 p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-4">
             {[
               { label: 'Cancellation policy for tours', val: 'Cancellations made less than 10 days before start date will not be refunded. Cancellations made 10+ days before departure will receive a full refund minus a 5% processing fee.' },
               { label: 'Cancellation policy for transfers', val: 'Cancellations made less than 48 hours before pickup will not be refunded.' },
@@ -108,16 +108,16 @@ export default function AdminSettings() {
               { label: 'No-show policy', val: 'No refund for no-shows. Driver will wait up to 30 minutes past the scheduled pickup time.' },
             ].map(p => (
               <div key={p.label}>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">{p.label}</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">{p.label}</label>
                 <textarea rows={3} defaultValue={p.val} className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none" />
               </div>
             ))}
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Terms & conditions</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Terms & conditions</label>
               <textarea rows={6} defaultValue="By booking with Peacock Drivers, you agree to our terms of service..." className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none" />
             </div>
             <div className="flex justify-end pt-4 border-t border-warm-100">
-              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl transition-colors">
+              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all duration-200">
                 {saved === tab ? 'Saved!' : 'Save'}
               </button>
             </div>
@@ -125,9 +125,9 @@ export default function AdminSettings() {
         )}
 
         {tab === 'Driver Payouts' && (
-          <div className="bg-white rounded-2xl border border-warm-100 p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Tour daily fees by vehicle type</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Tour daily fees by vehicle type</label>
               <div className="space-y-2">
                 {[{ name: 'Car', fee: 15 }, { name: 'Minivan', fee: 20 }, { name: 'Large Van', fee: 25 }, { name: 'Small Bus', fee: 35 }, { name: 'Medium Bus', fee: 50 }].map(v => (
                   <div key={v.name} className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function AdminSettings() {
               <span className="font-body text-sm text-forest-600">Commission includes add-ons</span>
             </label>
             <div className="flex justify-end pt-4 border-t border-warm-100">
-              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl transition-colors">
+              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all duration-200">
                 {saved === tab ? 'Saved!' : 'Save'}
               </button>
             </div>
@@ -160,9 +160,9 @@ export default function AdminSettings() {
         )}
 
         {tab === 'Notifications' && (
-          <div className="bg-white rounded-2xl border border-warm-100 p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Admin notification emails</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Admin notification emails</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {['sameer@peacockdrivers.lk', 'admin@peacockdrivers.lk'].map(e => (
                   <span key={e} className="bg-forest-50 text-forest-600 font-body text-xs px-3 py-1.5 rounded-pill flex items-center gap-1.5">
@@ -185,7 +185,7 @@ export default function AdminSettings() {
               ))}
             </div>
             <div className="flex justify-end pt-4 border-t border-warm-100">
-              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl transition-colors">
+              <button onClick={handleSave} className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all duration-200">
                 {saved === tab ? 'Saved!' : 'Save'}
               </button>
             </div>

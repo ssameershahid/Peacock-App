@@ -36,7 +36,7 @@ export default function DriverHome() {
       <div className="bg-forest-600 text-white px-5 pt-12 pb-24 rounded-b-[32px] md:rounded-none md:pt-8 md:pb-16">
         <div className="max-w-lg mx-auto md:max-w-3xl">
           <div className="flex justify-between items-center mb-6">
-            <div className="w-10 h-10 rounded-full bg-amber-400 flex items-center justify-center text-forest-600 font-display text-2xl italic pr-1 md:hidden">P</div>
+            <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-forest-600 font-display text-2xl italic pr-1 md:hidden">P</div>
             <div className="w-12 h-12 rounded-full bg-white/20 overflow-hidden border-2 border-white/30">
               {profile?.photo && <img src={profile.photo} alt="Profile" className="w-full h-full object-cover" />}
             </div>
@@ -52,7 +52,7 @@ export default function DriverHome() {
           <Link href={`/driver/trips/${todayTrip.id}`}>
             <div className="bg-white rounded-2xl shadow-lg border border-warm-100 p-6 mb-6 cursor-pointer hover:shadow-xl transition-shadow">
               <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-4 h-4 text-amber-500" />
+                <Clock className="w-4 h-4 text-amber-200" />
                 <span className="font-body text-xs font-medium text-amber-600 uppercase tracking-wider">Next pickup</span>
               </div>
               <div className="flex justify-between items-start mb-4">
@@ -64,7 +64,7 @@ export default function DriverHome() {
               </div>
               <div className="space-y-3 mb-5">
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                  <MapPin className="w-4 h-4 text-amber-200 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-body text-xs text-warm-400">Pickup</p>
                     <p className="font-body text-sm text-forest-600">{todayTrip.pickupLocation || 'TBC'}</p>
@@ -153,7 +153,7 @@ export default function DriverHome() {
                     {trip.rating && (
                       <div className="flex items-center gap-0.5 justify-end mt-0.5">
                         {Array.from({ length: trip.rating }).map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          <Star key={i} className="w-3 h-3 fill-amber-200 text-amber-200" />
                         ))}
                       </div>
                     )}

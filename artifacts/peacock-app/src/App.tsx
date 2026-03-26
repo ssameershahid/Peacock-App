@@ -19,6 +19,18 @@ import TouristPortal from "@/pages/TouristPortal";
 import DriverDashboard from "@/pages/DriverDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
+import DestinationsGuide from "@/pages/DestinationsGuide";
+import DestinationDetail from "@/pages/DestinationDetail";
+import HowItWorks from "@/pages/HowItWorks";
+import Reviews from "@/pages/Reviews";
+import About from "@/pages/About";
+import FAQ from "@/pages/FAQ";
+import Contact from "@/pages/Contact";
+import Blog from "@/pages/Blog";
+import ArticlePage from "@/pages/ArticlePage";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
+import CancellationPolicy from "@/pages/CancellationPolicy";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +49,19 @@ function Router() {
       <Route path="/tours" component={() => <PublicRoute component={Tours} />} />
       <Route path="/tours/custom" component={() => <PublicRoute component={CYOWizard} />} />
       <Route path="/tours/:slug" component={() => <PublicRoute component={TourDetail} />} />
+      <Route path="/destinations" component={() => <PublicRoute component={DestinationsGuide} />} />
+      <Route path="/destinations/:slug" component={() => <PublicRoute component={DestinationDetail} />} />
+      <Route path="/how-it-works" component={() => <PublicRoute component={HowItWorks} />} />
+      <Route path="/reviews" component={() => <PublicRoute component={Reviews} />} />
+      <Route path="/about" component={() => <PublicRoute component={About} />} />
+      <Route path="/faq" component={() => <PublicRoute component={FAQ} />} />
+      <Route path="/contact" component={() => <PublicRoute component={Contact} />} />
+      <Route path="/blog" component={() => <PublicRoute component={Blog} />} />
+      <Route path="/blog/:slug" component={() => <PublicRoute component={ArticlePage} />} />
+      <Route path="/destinations/articles/:slug" component={() => <PublicRoute component={ArticlePage} />} />
+      <Route path="/privacy" component={() => <PublicRoute component={PrivacyPolicy} />} />
+      <Route path="/terms" component={() => <PublicRoute component={TermsOfService} />} />
+      <Route path="/cancellation-policy" component={() => <PublicRoute component={CancellationPolicy} />} />
       <Route path="/transfers" component={() => <PublicRoute component={Transfers} />} />
       <Route path="/checkout" component={() => <PublicRoute component={Checkout} />} />
       <Route path="/checkout/confirmation" component={() => <PublicRoute component={Confirmation} />} />

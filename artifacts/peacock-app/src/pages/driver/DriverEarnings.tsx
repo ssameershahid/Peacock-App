@@ -74,7 +74,7 @@ export default function DriverEarnings() {
         {pendingTotal > 0 && (
           <div className="bg-amber-50 rounded-2xl border border-amber-200 p-5 mb-6">
             <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 text-amber-500 mt-0.5" />
+              <Clock className="w-5 h-5 text-amber-200 mt-0.5" />
               <div>
                 <p className="font-body text-sm font-semibold text-amber-800">Pending payout: {format(pendingTotal)}</p>
                 <p className="font-body text-xs text-amber-600 mt-0.5">Payouts are processed weekly</p>
@@ -141,7 +141,7 @@ export default function DriverEarnings() {
           )}
         </div>
 
-        <button className="w-full flex items-center justify-center gap-2 bg-white border border-warm-200 text-forest-600 font-body text-sm font-medium rounded-xl min-h-[48px] hover:bg-warm-50 transition-colors">
+        <button className="w-full flex items-center justify-center gap-2 bg-white border border-warm-200 text-forest-600 font-body text-sm font-medium rounded-full min-h-[48px] hover:bg-warm-50 transition-all duration-200">
           <Download className="w-4 h-4" /> Export earnings report
         </button>
       </div>

@@ -141,7 +141,7 @@ export function MapView({
                   className={cn(
                     'relative w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white transition-all duration-200',
                     isFirst ? 'bg-forest-600 text-white'
-                      : isLast ? 'bg-amber-400 text-forest-800'
+                      : isLast ? 'bg-amber-200 text-forest-800'
                       : isActive ? 'bg-forest-500 text-white scale-125'
                       : 'bg-white text-forest-700 ring-2 ring-forest-400',
                   )}

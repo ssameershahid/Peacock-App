@@ -3,12 +3,20 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+@font-face {
+  font-family: 'LLIvory';
+  src: url('/fonts/LLIvory.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-  
+
   --color-forest-50: hsl(120 11% 91%);
   --color-forest-100: hsl(120 12% 81%);
   --color-forest-200: hsl(120 14% 61%);
@@ -17,14 +25,24 @@
   --color-forest-500: hsl(165 38% 17%);
   --color-forest-600: hsl(165 38% 13%);
   --color-forest-700: hsl(165 38% 9%);
-  
-  --color-amber-50: hsl(36 88% 94%);
-  --color-amber-100: hsl(35 78% 75%);
-  --color-amber-200: hsl(31 76% 60%);
-  --color-amber-300: hsl(32 67% 50%);
-  --color-amber-400: hsl(32 71% 41%);
-  --color-amber-500: hsl(31 72% 34%);
-  
+
+  /* Updated amber/honey gold ramp */
+  --color-amber-50: #FDF5E0;
+  --color-amber-100: #F5D478;
+  --color-amber-200: #E8A825;
+  --color-amber-300: #D49A1E;
+  --color-amber-400: #B58519;
+  --color-amber-500: #8A6200;
+
+  /* New rosewood ramp */
+  --color-rosewood-50: #F0DEE3;
+  --color-rosewood-100: #E0B5C0;
+  --color-rosewood-200: #C47A90;
+  --color-rosewood-300: #92294E;
+  --color-rosewood-400: #7A2040;
+  --color-rosewood-500: #5C1830;
+  --color-rosewood-600: #3D0F20;
+
   --color-warm-50: hsl(43 24% 94%);
   --color-warm-100: hsl(40 17% 89%);
   --color-warm-200: hsl(40 12% 81%);
@@ -36,7 +54,7 @@
 
   --color-cream: hsl(38 33% 95%);
   --color-sage: hsl(120 11% 91%);
-  
+
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -61,13 +79,18 @@
 
   --font-display: 'Instrument Serif', 'Playfair Display', Georgia, serif;
   --font-body: 'DM Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-serif: 'LLIvory', 'Instrument Serif', Georgia, serif;
+
+  --shadow-float: 0 20px 60px -12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-soft: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-elevated: 0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
 
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-pill: 999px;
-  
+
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
   --shadow-modal: 0 12px 32px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04);
@@ -76,41 +99,78 @@
 :root {
   --background: 0 0% 100%;
   --foreground: 40 6% 10%; /* warm-900 */
-  
+
   --card: 0 0% 100%;
   --card-foreground: 40 6% 10%;
-  
+
   --primary: 165 38% 17%; /* forest-500 */
   --primary-foreground: 0 0% 100%;
-  
+
   --secondary: 43 24% 94%; /* warm-50 */
   --secondary-foreground: 165 38% 17%;
-  
-  --accent: 32 67% 50%; /* amber-300 */
-  --accent-foreground: 0 0% 100%;
-  
+
+  --accent: 45 82% 53%; /* honey gold */
+  --accent-foreground: 40 6% 10%; /* dark text on gold */
+
   --destructive: 5 65% 47%;
   --destructive-foreground: 0 0% 100%;
-  
+
   --success: 146 46% 33%;
   --success-foreground: 0 0% 100%;
-  
+
   --border: 40 17% 89%; /* warm-100 */
   --input: 40 17% 89%;
   --ring: 165 38% 17%;
-  
+
   --radius: 0.5rem;
+
+  /* Updated accent colors */
+  --color-amber: #E8A825;
+  --color-amber-light: #F5D478;
+  --color-amber-hover: #D49A1E;
+  --color-amber-bg: #FDF5E0;
+  --color-amber-text: #8A6200;
+
+  /* New rosewood colors */
+  --color-rosewood: #7A2040;
+  --color-rosewood-light: #92294E;
+  --color-rosewood-bg: #F0DEE3;
+  --color-rosewood-text: #5C1830;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground font-body antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-normal;
+  }
+
+  /* Selection color */
+  ::selection {
+    background: rgba(27, 60, 52, 0.15);
+    color: #1A1917;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D4D1CB;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #B0ADA7;
   }
 }
 
@@ -120,10 +180,54 @@
 }
 
 /* Hide scrollbar for horizontal scrolling areas but allow scroll */
-.hide-scrollbar::-webkit-scrollbar {
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
   display: none;
 }
-.hide-scrollbar {
+.hide-scrollbar,
+.no-scrollbar,
+.scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Marquee animation for infinite scroll strips */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Page enter animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: fadeIn 300ms ease-out;
+}
+
+/* Skeleton loading animation */
+@keyframes pulse-skeleton {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.skeleton {
+  background: #E8E5DF;
+  border-radius: 8px;
+  animation: pulse-skeleton 1.5s ease-in-out infinite;
+}
+
+/* Shadow utilities */
+.shadow-float {
+  box-shadow: var(--shadow-float);
+}
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+.shadow-elevated {
+  box-shadow: var(--shadow-elevated);
 }

@@ -25,7 +25,7 @@ export default function AdminTours() {
       breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Tours' }]}
       actions={
         <Link href="/admin/tours/new">
-          <button className="flex items-center gap-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+          <button className="flex items-center gap-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-200">
             <Plus className="w-4 h-4" /> Create new tour
           </button>
         </Link>
@@ -59,7 +59,7 @@ export default function AdminTours() {
           )},
           { key: 'actions', label: '', render: (row: any) => (
             <Link href={`/admin/tours/${row.slug}/edit`}>
-              <button className="font-body text-xs text-forest-500 hover:text-amber-500 font-medium transition-colors">Edit</button>
+              <button className="font-body text-xs text-forest-500 hover:text-amber-200 font-medium transition-colors">Edit</button>
             </Link>
           )},
         ]}

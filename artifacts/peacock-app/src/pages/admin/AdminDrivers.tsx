@@ -24,7 +24,7 @@ export default function AdminDrivers() {
       breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Drivers' }]}
       actions={
         <Link href="/admin/drivers/new">
-          <button className="flex items-center gap-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+          <button className="flex items-center gap-2 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium px-5 py-2.5 rounded-full transition-all duration-200">
             <Plus className="w-4 h-4" /> Add new driver
           </button>
         </Link>
@@ -33,7 +33,7 @@ export default function AdminDrivers() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-14 bg-white border border-warm-100 rounded-2xl animate-pulse" />
+            <div key={i} className="h-14 bg-white border border-warm-100 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (
@@ -65,7 +65,7 @@ export default function AdminDrivers() {
             )},
             { key: 'actions', label: '', render: (row: any) => (
               <Link href={`/admin/drivers/${row.id}/edit`}>
-                <button className="font-body text-xs text-forest-500 hover:text-amber-500 font-medium transition-colors">Edit</button>
+                <button className="font-body text-xs text-forest-500 hover:text-amber-200 font-medium transition-colors">Edit</button>
               </Link>
             )},
           ]}

@@ -44,29 +44,29 @@ export default function AdminTourForm() {
       breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Tours', href: '/admin/tours' }, { label: isEdit ? 'Edit' : 'New' }]}
     >
       <div className="space-y-6 max-w-4xl pb-24">
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Basic Info</h2>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Title</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Title</label>
                 <input type="text" defaultValue={tour?.title || ''} placeholder="e.g. Classic Sri Lanka" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
               </div>
               <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Slug</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Slug</label>
                 <input type="text" defaultValue={tour?.slug || ''} placeholder="classic-sri-lanka" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 bg-warm-50" />
               </div>
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Tagline</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Tagline</label>
               <input type="text" defaultValue={tour?.tagline || ''} placeholder="A short compelling tagline" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Description</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Description</label>
               <textarea rows={5} defaultValue={tour?.description || ''} placeholder="Full tour description..." className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 resize-none" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Type</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Type</label>
               <select className="border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300">
                 <option>Ready-made</option>
               </select>
@@ -74,25 +74,25 @@ export default function AdminTourForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Duration</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Days</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Days</label>
               <input type="number" defaultValue={tour?.durationDays || 7} min={1} className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Nights (auto = days - 1)</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Nights (auto = days - 1)</label>
               <input type="number" defaultValue={tour?.durationNights || 6} className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm bg-warm-50 focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Classification</h2>
           <div className="space-y-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Regions</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Regions</label>
               <div className="flex flex-wrap gap-2">
                 {['Colombo', 'Cultural Triangle', 'Kandy', 'Hill Country', 'South Coast', 'Ella', 'Sigiriya', 'Yala', 'Trincomalee', 'Negombo', 'Galle'].map(r => (
                   <label key={r} className="flex items-center gap-1.5 bg-warm-50 border border-warm-200 rounded-pill px-3 py-1.5 cursor-pointer hover:bg-forest-50 transition-colors">
@@ -103,7 +103,7 @@ export default function AdminTourForm() {
               </div>
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Difficulty</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Difficulty</label>
               <div className="flex gap-3">
                 {['Easy', 'Moderate', 'Challenging'].map(d => (
                   <label key={d} className="flex items-center gap-2 bg-warm-50 border border-warm-200 rounded-xl px-4 py-2.5 cursor-pointer hover:bg-forest-50 transition-colors">
@@ -114,7 +114,7 @@ export default function AdminTourForm() {
               </div>
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Highlights (tag input)</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Highlights (tag input)</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {(tour?.highlights || ['Ancient ruins', 'Wildlife safari', 'Tea plantations']).map((h: string, i: number) => (
                   <span key={i} className="bg-forest-50 text-forest-600 font-body text-xs px-3 py-1.5 rounded-pill flex items-center gap-1.5">
@@ -127,7 +127,7 @@ export default function AdminTourForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Included / Not included</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -157,7 +157,7 @@ export default function AdminTourForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-body text-sm font-semibold text-forest-600">Itinerary builder</h2>
             <button onClick={() => setDays(days + 1)} className="flex items-center gap-1 text-forest-500 hover:text-forest-600 font-body text-xs font-medium"><Plus className="w-3 h-3" /> Add day</button>
@@ -193,10 +193,10 @@ export default function AdminTourForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Pricing</h2>
           <div className="mb-6">
-            <label className="font-body text-xs font-medium text-forest-600 mb-2 block">Vehicle rates (per day)</label>
+            <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Vehicle rates (per day)</label>
             <div className="space-y-2">
               {[{ name: 'Car', rate: 45 }, { name: 'Minivan', rate: 65 }, { name: 'Large Van', rate: 85 }, { name: 'Small Bus', rate: 120 }, { name: 'Medium Bus', rate: 175 }].map(v => (
                 <div key={v.name} className="flex items-center gap-3">
@@ -211,7 +211,7 @@ export default function AdminTourForm() {
           </div>
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <label className="font-body text-xs font-medium text-forest-600">Add-ons</label>
+              <label className="text-[13px] font-medium text-warm-600">Add-ons</label>
               <button onClick={() => setAddOns([...addOns, { name: '', desc: '', price: '' }])} className="font-body text-xs text-forest-500 flex items-center gap-1"><Plus className="w-3 h-3" /> Add add-on</button>
             </div>
             <div className="space-y-2">
@@ -230,7 +230,7 @@ export default function AdminTourForm() {
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="font-body text-xs font-medium text-forest-600">Seasonal pricing</label>
+              <label className="text-[13px] font-medium text-warm-600">Seasonal pricing</label>
               <button onClick={() => setSeasons([...seasons, { start: '', end: '', mult: '1.0' }])} className="font-body text-xs text-forest-500 flex items-center gap-1"><Plus className="w-3 h-3" /> Add season</button>
             </div>
             <div className="space-y-2">
@@ -246,15 +246,15 @@ export default function AdminTourForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Settings</h2>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Min lead time (days)</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Min lead time (days)</label>
               <input type="number" defaultValue={tour?.leadTimeDays || 7} className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
             <div>
-              <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Max extra days</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Max extra days</label>
               <input type="number" defaultValue={tour?.maxExtraDays || 3} className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
             </div>
           </div>
@@ -266,7 +266,7 @@ export default function AdminTourForm() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-warm-100 p-6">
+        <div className="bg-white rounded-xl border border-warm-100 p-6">
           <h2 className="font-body text-sm font-semibold text-forest-600 mb-4">Images</h2>
           <div className="border-2 border-dashed border-warm-200 rounded-xl p-8 text-center hover:border-forest-300 transition-colors cursor-pointer">
             <Upload className="w-10 h-10 text-warm-300 mx-auto mb-3" />
@@ -284,10 +284,10 @@ export default function AdminTourForm() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-warm-200 p-4 z-40 lg:pl-[276px]">
         <div className="max-w-4xl mx-auto flex items-center justify-end gap-3">
           <Link href="/admin/tours">
-            <button className="px-6 py-2.5 font-body text-sm text-warm-500 hover:text-forest-600 transition-colors">Cancel</button>
+            <button className="px-6 py-2.5 font-body text-sm text-warm-500 hover:text-forest-600 transition-all duration-200">Cancel</button>
           </Link>
-          <button className="px-6 py-2.5 bg-white border border-warm-200 text-forest-600 font-body text-sm font-medium rounded-xl hover:bg-warm-50 transition-colors">Save as draft</button>
-          <button className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl transition-colors">Publish tour</button>
+          <button className="px-6 py-2.5 bg-white border border-warm-200 text-forest-600 font-body text-sm font-medium rounded-full hover:bg-warm-50 transition-all duration-200">Save as draft</button>
+          <button className="px-6 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all duration-200">Publish tour</button>
         </div>
       </div>
     </AdminLayout>

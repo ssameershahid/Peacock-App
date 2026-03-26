@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
 import { PlacesAutocomplete, type PlaceResult } from '@/components/shared/PlacesAutocomplete';
@@ -25,7 +25,36 @@ export default function Transfers() {
   const [passengers, setPassengers] = useState(2);
   const [luggage, setLuggage] = useState(2);
 
+  const [, setLocation] = useLocation();
   const selectedVehicleData = vehicles?.find((v: any) => v.id === selectedVehicle);
+
+  const bookTransfer = (opts: {
+    name: string;
+    vehicleType: string;
+    vehicleName: string;
+    price: number;
+    startDate?: string;
+    passengers?: number;
+    routeId?: string;
+  }) => {
+    const data = {
+      type: 'TRANSFER',
+      transferRouteId: opts.routeId,
+      tourName: opts.name,
+      vehicleType: opts.vehicleType,
+      vehicleName: opts.vehicleName,
+      startDate: opts.startDate || '',
+      numDays: 1,
+      passengers: opts.passengers ?? passengers,
+      vehicleRate: opts.price,
+      vehicleTotal: opts.price,
+      addOnsTotal: 0,
+      selectedAddOns: [],
+      totalPrice: opts.price,
+    };
+    sessionStorage.setItem('peacock_booking', JSON.stringify(data));
+    setLocation('/checkout');
+  };
   const perKmRate = selectedVehicleData ? selectedVehicleData.pricePerDay / 100 : 0.55;
   const estimatedDistance = pickup && dropoff ? 80 + Math.floor(Math.random() * 120) : 0;
   const estimatedPrice = Math.round(estimatedDistance * perKmRate);
@@ -40,8 +69,8 @@ export default function Transfers() {
     <div className="pt-24 pb-32 min-h-screen">
       <div className="bg-forest-600 py-16 -mt-24 pt-36 mb-16">
         <div className="max-w-[1200px] mx-auto px-6 text-center">
-          <p className="font-body text-xs uppercase tracking-[0.2em] text-amber-300 mb-3">GET THERE</p>
-          <h1 className="font-display text-5xl md:text-6xl text-white mb-4">Island <em className="italic text-amber-300">transfers</em></h1>
+          <p className="font-body text-xs uppercase tracking-[0.2em] text-amber-200 mb-3">GET THERE</p>
+          <h1 className="font-display text-5xl md:text-6xl text-white mb-4">Island <em className="italic text-amber-200">transfers</em></h1>
           <p className="font-body text-lg text-white/80 max-w-2xl mx-auto">
             Private driver transfers to any destination in Sri Lanka. Airport pickups, city-to-city routes, and custom journeys — all with English-speaking drivers.
           </p>
@@ -97,11 +126,19 @@ export default function Transfers() {
                         </div>
                       ))}
                     </div>
-                    <Link href="/checkout">
-                      <Button className="w-full mt-4 font-body">
-                        Book now <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
+                    <Button
+                      className="w-full mt-4 font-body"
+                      onClick={() => bookTransfer({
+                        name: `${route.from} → ${route.to}`,
+                        routeId: route.id,
+                        vehicleType: selectedVehicle,
+                        vehicleName: selectedVehicleData?.name || 'Private Transfer',
+                        price: route.prices?.[selectedVehicle] ?? route.price ?? 0,
+                        passengers,
+                      })}
+                    >
+                      Book now <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
                   </div>
                 )}
               </div>
@@ -221,11 +258,19 @@ export default function Transfers() {
                   <p className="font-body text-sm text-warm-400 mb-1">Estimated price</p>
                   <p className="font-display text-5xl text-forest-600 mb-2">{format(estimatedPrice)}</p>
                   <p className="font-body text-xs text-warm-400">~{estimatedDistance} km · {selectedVehicleData?.name || 'Car'}</p>
-                  <Link href="/checkout">
-                    <Button className="mt-4 h-12 px-8 text-base bg-amber-400 text-forest-600 hover:bg-amber-300 font-body">
-                      Book transfer — {format(estimatedPrice)} <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => bookTransfer({
+                      name: `${pickup} → ${dropoff}`,
+                      vehicleType: selectedVehicle,
+                      vehicleName: selectedVehicleData?.name || 'Private Transfer',
+                      price: estimatedPrice,
+                      startDate: date,
+                      passengers,
+                    })}
+                    className="mt-4 h-12 px-8 text-base bg-amber-200 text-forest-600 hover:bg-amber-300 font-body"
+                  >
+                    Book transfer — {format(estimatedPrice)} <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               )}
             </div>
@@ -279,11 +324,20 @@ export default function Transfers() {
                   </span>
                 </div>
                 <p className="font-body text-sm text-warm-500 mb-4 line-clamp-2">{route.description}</p>
-                <Link href="/checkout">
-                  <Button variant="outline" size="sm" className="font-body text-xs w-full">
-                    Book this route <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="font-body text-xs w-full"
+                  onClick={() => bookTransfer({
+                    name: `${route.from} → ${route.to}`,
+                    vehicleType: selectedVehicle,
+                    vehicleName: selectedVehicleData?.name || 'Private Transfer',
+                    price: route.priceFrom ?? route.price ?? 0,
+                    passengers,
+                  })}
+                >
+                  Book this route <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
               </div>
             ))}
           </div>

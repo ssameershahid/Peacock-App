@@ -98,14 +98,14 @@ export default function TourDetail() {
             <div className="flex flex-col gap-1">
               <span className="text-warm-400 text-xs font-body uppercase tracking-wider">Duration</span>
               <div className="flex items-center gap-2 text-forest-600 font-medium font-body text-sm">
-                <Clock className="w-4 h-4 text-amber-500" />
+                <Clock className="w-4 h-4 text-amber-200" />
                 {tour.durationDays} Days, {tour.durationNights} Nights
               </div>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-warm-400 text-xs font-body uppercase tracking-wider">Start/End</span>
               <div className="flex items-center gap-2 text-forest-600 font-medium font-body text-sm">
-                <MapPin className="w-4 h-4 text-amber-500" />
+                <MapPin className="w-4 h-4 text-amber-200" />
                 {tour.startEnd || 'Colombo (CMB)'}
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function TourDetail() {
                         <p className="font-body text-sm text-warm-600 leading-relaxed mb-4">{day.description}</p>
                         <div className="flex flex-wrap gap-3 items-center bg-warm-50 p-3 rounded-xl">
                           <div className="flex items-center gap-1.5 text-xs font-medium text-forest-600 font-body mr-2">
-                            <Clock className="w-3.5 h-3.5 text-amber-500" />
+                            <Clock className="w-3.5 h-3.5 text-amber-200" />
                             {day.drivingTime}
                           </div>
                           {day.stops.map((stop: string) => (
@@ -264,10 +264,10 @@ export default function TourDetail() {
 
             <div>
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
-                Duration: <span className="text-amber-500">{totalDays} days</span>
+                Duration: <span className="text-amber-200">{totalDays} days</span>
               </label>
               <div className="flex items-center gap-3">
-                <button onClick={() => setExtraDays(d => Math.max(-(tour.maxExtraDays || 3), d - 1))} className="w-8 h-8 rounded-lg bg-warm-50 border border-warm-200 flex items-center justify-center hover:bg-warm-100">
+                <button onClick={() => setExtraDays(d => Math.max(-(tour.maxExtraDays || 3), d - 1))} className="w-8 h-8 rounded-full bg-warm-50 border border-warm-200 flex items-center justify-center hover:bg-warm-100">
                   <Minus className="w-4 h-4 text-warm-500" />
                 </button>
                 <input
@@ -278,7 +278,7 @@ export default function TourDetail() {
                   onChange={e => setExtraDays(Number(e.target.value))}
                   className="flex-1 accent-forest-500"
                 />
-                <button onClick={() => setExtraDays(d => Math.min(tour.maxExtraDays || 3, d + 1))} className="w-8 h-8 rounded-lg bg-warm-50 border border-warm-200 flex items-center justify-center hover:bg-warm-100">
+                <button onClick={() => setExtraDays(d => Math.min(tour.maxExtraDays || 3, d + 1))} className="w-8 h-8 rounded-full bg-warm-50 border border-warm-200 flex items-center justify-center hover:bg-warm-100">
                   <Plus className="w-4 h-4 text-warm-500" />
                 </button>
               </div>
@@ -377,7 +377,7 @@ export default function TourDetail() {
             <Button
               onClick={handleBooking}
               disabled={!startDate}
-              className="w-full h-14 text-lg font-body bg-amber-400 hover:bg-amber-300 text-forest-600 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+              className="w-full h-14 text-lg font-body bg-amber-200 hover:bg-amber-300 text-forest-600 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
             >
               Book this tour — {format(totalPrice)} <ArrowRight className="w-5 h-5 ml-2" />
             </Button>

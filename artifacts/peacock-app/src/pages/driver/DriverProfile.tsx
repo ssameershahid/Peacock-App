@@ -94,7 +94,7 @@ export default function DriverProfile() {
 
           <div className="space-y-4">
             <div>
-              <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Phone</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Phone</label>
               <input
                 type="tel"
                 value={phone}
@@ -103,7 +103,7 @@ export default function DriverProfile() {
               />
             </div>
             <div>
-              <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Bio</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Bio</label>
               <textarea
                 value={bio}
                 onChange={e => setBio(e.target.value)}
@@ -112,7 +112,7 @@ export default function DriverProfile() {
               />
             </div>
             <div>
-              <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Languages</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Languages</label>
               <div className="flex flex-wrap gap-2">
                 {profile.languages.map((lang: string) => (
                   <span key={lang} className="bg-forest-50 text-forest-600 font-body text-sm px-3 py-1.5 rounded-pill flex items-center gap-1.5">
@@ -126,7 +126,7 @@ export default function DriverProfile() {
               </div>
             </div>
             <div>
-              <label className="font-body text-sm font-medium text-forest-600 mb-1.5 block">Experience (years)</label>
+              <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Experience (years)</label>
               <input
                 type="text"
                 value={experience}
@@ -140,7 +140,7 @@ export default function DriverProfile() {
           <button
             onClick={handleSave}
             disabled={updateProfile.isPending}
-            className="mt-5 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl min-h-[48px] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            className="mt-5 w-full bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full min-h-[48px] transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {saved ? <><Check className="w-4 h-4" /> Saved</> : updateProfile.isPending ? 'Saving…' : 'Save profile'}
           </button>
@@ -167,7 +167,7 @@ export default function DriverProfile() {
           </p>
           {!available && (
             <div className="mt-3 bg-amber-50 rounded-xl p-4 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-amber-200 mt-0.5 shrink-0" />
               <p className="font-body text-sm text-amber-700">You won't receive new trip assignments while unavailable</p>
             </div>
           )}
@@ -224,7 +224,7 @@ export default function DriverProfile() {
             <div className="mt-4 border border-warm-200 rounded-xl p-5 bg-warm-50 space-y-4">
               <h3 className="font-body text-sm font-semibold text-forest-600">Add new vehicle</h3>
               <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Vehicle type</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Vehicle type</label>
                 <select className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300 min-h-[48px]">
                   <option>Car</option>
                   <option>Minivan</option>
@@ -235,16 +235,16 @@ export default function DriverProfile() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Plate number</label>
+                  <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Plate number</label>
                   <input type="text" placeholder="WP-XXX-0000" className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300 min-h-[48px]" />
                 </div>
                 <div>
-                  <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Year</label>
+                  <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Year</label>
                   <input type="text" placeholder="2024" className="w-full border border-warm-200 rounded-xl px-4 py-3 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-300 min-h-[48px]" />
                 </div>
               </div>
               <div>
-                <label className="font-body text-xs font-medium text-forest-600 mb-1 block">Features</label>
+                <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Features</label>
                 <div className="flex flex-wrap gap-2">
                   {['AC', 'WiFi', 'USB charging', 'Cooler box', 'Bluetooth', 'GPS'].map(f => (
                     <label key={f} className="flex items-center gap-1.5 bg-white border border-warm-200 rounded-pill px-3 py-1.5 cursor-pointer hover:bg-forest-50 transition-colors">
@@ -255,12 +255,12 @@ export default function DriverProfile() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button className="flex-1 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-xl min-h-[48px] transition-colors">
+                <button className="flex-1 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full min-h-[48px] transition-all duration-200">
                   Add vehicle
                 </button>
                 <button
                   onClick={() => setShowAddVehicle(false)}
-                  className="px-6 border border-warm-200 text-warm-500 font-body text-sm font-medium rounded-xl min-h-[48px] hover:bg-warm-50 transition-colors"
+                  className="px-6 border border-warm-200 text-warm-500 font-body text-sm font-medium rounded-full min-h-[48px] hover:bg-warm-50 transition-all duration-200"
                 >
                   Cancel
                 </button>

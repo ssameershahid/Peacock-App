@@ -57,7 +57,7 @@ export function TourCard({ tour }: TourCardProps) {
               {format(perDay)} <span className="text-sm font-normal text-warm-400">/day</span>
             </span>
           </div>
-          <div className="flex items-center gap-1 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-500 transition-colors">
+          <div className="flex items-center gap-1 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-200 transition-colors">
             View tour <ArrowRight className="w-4 h-4" />
           </div>
         </div>

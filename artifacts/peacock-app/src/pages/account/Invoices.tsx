@@ -65,7 +65,7 @@ export default function Invoices() {
               </thead>
               <tbody>
                 {invoices.map(inv => (
-                  <tr key={inv.invoiceNo} className="border-b border-warm-50 last:border-0 hover:bg-warm-50/30 transition-colors">
+                  <tr key={inv.invoiceNo} className="border-b border-warm-50 last:border-0 hover:bg-warm-50 transition-colors">
                     <td className="px-6 py-4 font-body text-sm font-medium text-forest-600">{inv.invoiceNo}</td>
                     <td className="px-6 py-4 font-body text-sm text-warm-500">{inv.dateIssued}</td>
                     <td className="px-6 py-4 font-body text-sm text-warm-500">{inv.bookingRef}</td>

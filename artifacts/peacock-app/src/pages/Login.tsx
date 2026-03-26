@@ -97,7 +97,7 @@ export default function Login() {
             </div>
 
             <div className="flex justify-end">
-              <a href="#" className="font-body text-sm text-forest-500 hover:text-amber-500 transition-colors">Forgot password?</a>
+              <a href="#" className="font-body text-sm text-forest-500 hover:text-amber-200 transition-colors">Forgot password?</a>
             </div>
 
             <Button type="submit" disabled={loading} className="w-full h-12 text-base font-body">
@@ -117,7 +117,7 @@ export default function Login() {
           </button>
 
           <p className="text-center mt-6 font-body text-sm text-warm-500">
-            Don't have an account? <Link href="/register" className="text-forest-500 font-medium hover:text-amber-500 transition-colors">Register →</Link>
+            Don't have an account? <Link href="/register" className="text-forest-500 font-medium hover:text-amber-200 transition-colors">Register →</Link>
           </p>
         </div>
       </div>

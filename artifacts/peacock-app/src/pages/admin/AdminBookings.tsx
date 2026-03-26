@@ -24,7 +24,7 @@ export default function AdminBookings() {
       title="Bookings"
       breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Bookings' }]}
       actions={
-        <button className="flex items-center gap-2 bg-white border border-warm-200 text-forest-600 font-body text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-warm-50 transition-colors">
+        <button className="flex items-center gap-2 bg-white border border-warm-200 text-forest-600 font-body text-sm font-medium px-5 py-2.5 rounded-full hover:bg-warm-50 transition-all duration-200">
           <Download className="w-4 h-4" /> Export CSV
         </button>
       }
@@ -33,7 +33,7 @@ export default function AdminBookings() {
         columns={[
           { key: 'id', label: 'Reference', sortable: true, render: (row: any) => (
             <Link href={`/admin/bookings/${row.id}`}>
-              <span className="font-medium text-forest-600 hover:text-amber-500 cursor-pointer">{row.id}</span>
+              <span className="font-medium text-forest-600 hover:text-amber-200 cursor-pointer">{row.id}</span>
             </Link>
           )},
           { key: 'customerName', label: 'Customer', sortable: true },
@@ -46,7 +46,7 @@ export default function AdminBookings() {
           { key: 'dateLabel', label: 'Dates', sortable: true },
           { key: 'vehicle', label: 'Vehicle' },
           { key: 'driverName', label: 'Driver', render: (row: any) => (
-            <span className={row.driverName === 'Unassigned' ? 'text-amber-500 font-medium' : ''}>{row.driverName}</span>
+            <span className={row.driverName === 'Unassigned' ? 'text-amber-200 font-medium' : ''}>{row.driverName}</span>
           )},
           { key: 'status', label: 'Status', render: (row: any) => <StatusBadge status={row.status} /> },
           { key: 'amount', label: 'Amount', sortable: true, render: (row: any) => (

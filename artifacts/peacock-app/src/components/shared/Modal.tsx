@@ -55,9 +55,9 @@ export function Modal({
 
         {(onConfirm || cancelLabel) && (
           <div className="flex items-center justify-end gap-3 p-6 border-t border-warm-100">
-            <Button variant="ghost" onClick={onClose}>{cancelLabel}</Button>
+            <Button variant="ghost" className="rounded-full transition-all duration-200" onClick={onClose}>{cancelLabel}</Button>
             {onConfirm && (
-              <Button variant={confirmVariant === 'destructive' ? 'destructive' : 'default'} onClick={onConfirm}>
+              <Button variant={confirmVariant === 'destructive' ? 'destructive' : 'default'} className="rounded-full transition-all duration-200" onClick={onConfirm}>
                 {confirmLabel || 'Confirm'}
               </Button>
             )}

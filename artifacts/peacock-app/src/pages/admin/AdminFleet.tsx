@@ -43,7 +43,7 @@ export default function AdminFleet() {
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {VEHICLES.map(v => (
-          <div key={v.id} className="bg-white rounded-2xl border border-warm-100 p-5">
+          <div key={v.id} className="bg-white rounded-xl border border-warm-100 p-5">
             <div className="w-full h-20 bg-warm-50 rounded-xl mb-3 flex items-center justify-center">
               <span className="font-body text-2xl text-warm-300">{v.name[0]}</span>
             </div>
@@ -57,25 +57,25 @@ export default function AdminFleet() {
               <span>Daily: {format(v.dailyRate)}</span>
               <span>Per km: {format(v.perKm)}</span>
             </div>
-            <button className="mt-3 w-full flex items-center justify-center gap-1.5 border border-warm-200 text-forest-600 font-body text-xs font-medium py-1.5 rounded-xl hover:bg-warm-50 transition-colors">
+            <button className="mt-3 w-full flex items-center justify-center gap-1.5 border border-warm-200 text-forest-600 font-body text-xs font-medium py-1.5 rounded-full hover:bg-warm-50 transition-all duration-200">
               <Edit className="w-3 h-3" /> Edit
             </button>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-warm-100 p-6">
+      <div className="bg-white rounded-xl border border-warm-100 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-body text-sm font-semibold text-forest-600">Availability calendar</h2>
           <div className="flex items-center gap-3">
-            <button onClick={() => setMonthOffset(monthOffset - 1)} className="p-1.5 hover:bg-warm-50 rounded-lg"><ChevronLeft className="w-4 h-4 text-warm-500" /></button>
+            <button onClick={() => setMonthOffset(monthOffset - 1)} className="p-1.5 hover:bg-warm-50 rounded-full transition-all duration-200"><ChevronLeft className="w-4 h-4 text-warm-500" /></button>
             <span className="font-body text-sm font-medium text-forest-600 min-w-[140px] text-center">{monthName}</span>
-            <button onClick={() => setMonthOffset(monthOffset + 1)} className="p-1.5 hover:bg-warm-50 rounded-lg"><ChevronRight className="w-4 h-4 text-warm-500" /></button>
+            <button onClick={() => setMonthOffset(monthOffset + 1)} className="p-1.5 hover:bg-warm-50 rounded-full transition-all duration-200"><ChevronRight className="w-4 h-4 text-warm-500" /></button>
           </div>
         </div>
         <div className="flex items-center gap-4 mb-4 font-body text-xs text-warm-400">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-200" /> Available</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-300" /> Partial</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-200" /> Partial</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-300" /> Fully booked</span>
         </div>
         <div className="overflow-x-auto relative">
