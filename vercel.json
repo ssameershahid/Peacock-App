@@ -3,7 +3,7 @@
   "installCommand": "pnpm install --no-frozen-lockfile",
   "builds": [
     {
-      "src": "artifacts/api-server/api/index.js",
+      "src": "artifacts/api-server/api/index.ts",
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
@@ -17,7 +17,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "artifacts/api-server/api/index.js"
+      "dest": "artifacts/api-server/api/index.ts"
     }
   ]
 }
