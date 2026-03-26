@@ -1,10 +1,10 @@
-import express, { type Application } from "express";
+import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import router from "./routes/index.js";
 import stripeWebhookRouter from "./routes/webhooks/stripe.js";
 
-const app: Application = express();
+const app = express();
 
 // Allow all origins in dev; configure FRONTEND_URL in prod
 const allowedOrigins = process.env.FRONTEND_URL
