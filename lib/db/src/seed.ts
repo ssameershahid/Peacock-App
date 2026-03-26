@@ -74,7 +74,7 @@ async function seed() {
   const [tourist1] = await db
     .insert(usersTable)
     .values({
-      email: "sarah@example.com",
+      email: "xyz@example.com",
       passwordHash: touristPasswordHash,
       firstName: "Sarah",
       lastName: "Johnson",
@@ -714,7 +714,7 @@ async function seed() {
   console.log("\nLogin credentials:");
   console.log("  Admin:   sameer@artyreal.com / admin123!");
   console.log("  Driver:  kumara@peacockdrivers.com / driver123!");
-  console.log("  Tourist: sarah@example.com / tourist123!");
+  console.log("  Tourist: xyz@example.com / tourist123!");
 
   process.exit(0);
 }
