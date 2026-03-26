@@ -28,6 +28,7 @@ catalog:
 
 onlyBuiltDependencies:
   - '@swc/core'
+  - '@tailwindcss/oxide'
   - esbuild
   - msw
   - unrs-resolver
