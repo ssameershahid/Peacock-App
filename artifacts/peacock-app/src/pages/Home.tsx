@@ -7,12 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import TripSearchHero from '@/components/peacock/TripSearchHero';
 import MarqueeTestimonials from '@/components/peacock/MarqueeTestimonials';
 import DesignAdventureCTA from '@/components/peacock/DesignAdventureCTA';
-import HowItWorksSection from '@/components/home/HowItWorksSection';
 import FAQSection from '@/components/home/FAQSection';
 import { StoryIntroSection, StoryBlocksSection } from '@/components/home/StoryScrollSection';
 import SpreadCardsSection from '@/components/home/SpreadCardsSection';
 import ParallaxDestinationsSection from '@/components/home/ParallaxDestinationsSection';
-import HorizontalScrollSection from '@/components/home/HorizontalScrollSection';
 import OrbitShowcaseSection from '@/components/home/OrbitShowcaseSection';
 import TropicalParadiseSection from '@/components/home/TropicalParadiseSection';
 import ClimateGuideSection from '@/components/home/ClimateGuideSection';
@@ -188,57 +186,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Sri Lanka — Rosewood Heritage Section */}
-      <section className="py-20 md:py-28 px-6 bg-[#7A2040] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%221%22/%3E%3C/svg%3E")' }} />
-        <div className="max-w-[1200px] mx-auto relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <span className="font-body text-[12px] font-medium tracking-[0.08em] uppercase text-[#E8A825] mb-4 block">Heritage & Culture</span>
-            <h2 className="font-display font-normal text-[28px] md:text-[40px] text-white leading-[1.15] mb-6">
-              Why <em className="italic">Sri Lanka?</em>
-            </h2>
-            <p className="text-lg text-white/75 leading-relaxed mb-12 max-w-2xl mx-auto font-body">
-              An island that holds 8 UNESCO World Heritage Sites, 2,500 years of documented history, and some of the
-              most biodiverse ecosystems on the planet. From misty tea plantations to sun-drenched coastlines —
-              this is a land that rewards the curious.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
-            {[
-              { stat: '8', label: 'UNESCO World Heritage Sites', desc: 'Ancient cities, rock temples, and colonial fortresses' },
-              { stat: '26', label: 'National Parks', desc: 'Home to leopards, elephants, and blue whales' },
-              { stat: '2,500+', label: 'Years of History', desc: 'One of the oldest continuously documented civilizations' },
-            ].map((item) => (
-              <div key={item.label} className="text-center">
-                <p className="font-display text-5xl text-[#E8A825] mb-2">{item.stat}</p>
-                <p className="font-body text-white font-medium text-sm mb-1">{item.label}</p>
-                <p className="font-body text-white/60 text-sm">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-center mt-12">
-            <Link href="/about">
-              <Button className="bg-white text-[#7A2040] hover:bg-white/90 rounded-full px-8 h-12 font-medium">
-                Discover Our Story
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Orbit Showcase — Experience categories */}
       <OrbitShowcaseSection />
 
-      {/* Horizontal Scroll Journeys */}
-      <HorizontalScrollSection />
-
       {/* About Peacock — Story Blocks (sticky image + text) */}
       <StoryBlocksSection />
-
-      {/* How Peacock Drivers Works */}
-      <section className="bg-[#FAF7F2] overflow-hidden pt-20 lg:pt-32 pb-12 md:pb-20 lg:pb-24">
-        <HowItWorksSection merged />
-      </section>
 
       {/* Explore Destinations + Design your own adventure */}
       <section className="bg-background">
