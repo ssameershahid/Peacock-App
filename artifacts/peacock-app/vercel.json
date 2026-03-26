@@ -1,5 +1,5 @@
 {
   "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm --filter @workspace/peacock-app run build",
-  "outputDirectory": "dist/public"
+  "outputDirectory": "dist"
 }
