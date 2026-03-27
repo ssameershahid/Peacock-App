@@ -5,11 +5,11 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import AdminLayout from './AdminLayout';
 
 const VEHICLES = [
-  { id: 'car', name: 'Car', model: 'Toyota Prius / Axio', count: 3, dailyRate: 45, perKm: 0.15 },
-  { id: 'minivan', name: 'Minivan', model: 'Toyota KDH', count: 4, dailyRate: 65, perKm: 0.20 },
-  { id: 'large-van', name: 'Large Van', model: 'Toyota HiAce', count: 2, dailyRate: 85, perKm: 0.25 },
-  { id: 'small-bus', name: 'Small Bus', model: 'Rosa / Coaster', count: 1, dailyRate: 120, perKm: 0.35 },
-  { id: 'medium-bus', name: 'Medium Bus', model: 'Mitsubishi Rosa', count: 1, dailyRate: 175, perKm: 0.45 },
+  { id: 'car', name: 'Car', model: 'Toyota Prius / Axio', image: '/vehicles/car-new.png', count: 3, dailyRate: 45, perKm: 0.15 },
+  { id: 'minivan', name: 'Minivan', model: 'Toyota KDH', image: '/vehicles/minivan-new.png', count: 4, dailyRate: 65, perKm: 0.20 },
+  { id: 'large-van', name: 'Large Van', model: 'Toyota HiAce', image: '/vehicles/large-minivan-new.png', count: 2, dailyRate: 85, perKm: 0.25 },
+  { id: 'small-bus', name: 'Small Bus', model: 'Rosa / Coaster', image: '/vehicles/small-bus-new.png', count: 1, dailyRate: 120, perKm: 0.35 },
+  { id: 'medium-bus', name: 'Medium Bus', model: 'Mitsubishi Rosa', image: '/vehicles/medium-bus-new.png', count: 1, dailyRate: 175, perKm: 0.45 },
 ];
 
 const DAYS_IN_MONTH = 31;
@@ -44,8 +44,8 @@ export default function AdminFleet() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {VEHICLES.map(v => (
           <div key={v.id} className="bg-white rounded-xl border border-warm-100 p-5">
-            <div className="w-full h-20 bg-warm-50 rounded-xl mb-3 flex items-center justify-center">
-              <span className="font-body text-2xl text-warm-300">{v.name[0]}</span>
+            <div className="w-full h-20 bg-warm-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+              <img src={v.image} alt={v.name} className="h-16 w-auto object-contain" />
             </div>
             <h3 className="font-body text-sm font-semibold text-forest-600">{v.name}</h3>
             <p className="font-body text-xs text-warm-400 mb-3">{v.model}</p>
