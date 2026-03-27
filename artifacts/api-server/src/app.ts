@@ -6,10 +6,19 @@ import stripeWebhookRouter from "./routes/webhooks/stripe.js";
 
 const app = express();
 
-// Allow all origins in dev; configure FRONTEND_URL in prod
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"]
-  : true;
+// CORS: support comma-separated FRONTEND_URL and Vercel preview URLs
+const allowedOrigins: (string | RegExp)[] = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+if (process.env.FRONTEND_URL) {
+  process.env.FRONTEND_URL.split(",").forEach((u) => {
+    const trimmed = u.trim().replace(/\/+$/, ""); // strip trailing slashes
+    if (trimmed) allowedOrigins.push(trimmed);
+  });
+}
+// Allow all Vercel preview deployments for peacock-drivers
+allowedOrigins.push(/^https:\/\/peacock-drivers[^.]*\.vercel\.app$/);
 
 app.use(
   cors({
