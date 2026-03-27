@@ -265,11 +265,12 @@ router.get("/trips/mine", authenticate, requireDriver, async (req, res) => {
   }
 });
 
-// PUT /api/driver/trips/:id (driver updates trip status)
+// PUT /api/driver/trips/:id (driver updates trip status — accept, decline, start, complete)
 router.put("/trips/:id", authenticate, requireDriver, async (req, res) => {
-  const allowedStatuses = ["IN_PROGRESS", "COMPLETED"] as const;
+  const allowedStatuses = ["CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"] as const;
   const schema = z.object({
     status: z.enum(allowedStatuses),
+    reason: z.string().optional(),
   });
 
   const parsed = schema.safeParse(req.body);
@@ -301,9 +302,18 @@ router.put("/trips/:id", authenticate, requireDriver, async (req, res) => {
       return;
     }
 
+    const updateData: any = { status: parsed.data.status, updatedAt: new Date() };
+
+    // If declining (CANCELLED), record reason and unassign driver
+    if (parsed.data.status === "CANCELLED" && parsed.data.reason) {
+      updateData.cancellationReason = parsed.data.reason;
+      updateData.cancelledAt = new Date();
+      updateData.driverId = null;
+    }
+
     const [updated] = await db
       .update(bookingsTable)
-      .set({ status: parsed.data.status, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(bookingsTable.id, req.params.id as string))
       .returning();
 

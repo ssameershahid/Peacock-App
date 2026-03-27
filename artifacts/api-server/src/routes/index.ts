@@ -7,6 +7,7 @@ import transfersRouter from "./transfers.js";
 import bookingsRouter from "./bookings.js";
 import customRequestsRouter from "./custom-requests.js";
 import driversRouter from "./drivers.js";
+import driverFeaturesRouter from "./driver-features.js";
 import invoicesRouter from "./invoices.js";
 import currenciesRouter from "./currencies.js";
 
@@ -20,6 +21,7 @@ router.use("/transfers", transfersRouter);
 router.use("/bookings", bookingsRouter);
 router.use("/custom-requests", customRequestsRouter);
 router.use("/drivers", driversRouter);
+router.use("/drivers", driverFeaturesRouter);
 router.use("/invoices", invoicesRouter);
 router.use("/currencies", currenciesRouter);
 

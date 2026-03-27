@@ -333,8 +333,8 @@ export function useDriverBooking(id: string) {
 export function useUpdateDriverStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      api.put(`/drivers/trips/${id}`, { status }),
+    mutationFn: ({ id, status, reason }: { id: string; status: string; reason?: string }) =>
+      api.put(`/drivers/trips/${id}`, { status, reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["driver", "bookings"] });
     },
@@ -431,6 +431,116 @@ export function useUpdateDriverProfile() {
     mutationFn: (data: any) => api.put<any>("/drivers/me", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["driver", "profile"] });
+    },
+  });
+}
+
+// ── Driver Notifications ─────────────────────────────────────────────────────
+
+export function useDriverNotifications() {
+  return useQuery({
+    queryKey: ["driver", "notifications"],
+    queryFn: () => api.get<any[]>("/drivers/notifications"),
+    refetchInterval: 60_000,
+  });
+}
+
+export function useMarkNotificationRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.put<any>(`/drivers/notifications/${id}/read`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "notifications"] });
+    },
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.put<any>("/drivers/notifications/read-all", {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "notifications"] });
+    },
+  });
+}
+
+// ── Driver Documents ─────────────────────────────────────────────────────────
+
+export function useDriverDocuments() {
+  return useQuery({
+    queryKey: ["driver", "documents"],
+    queryFn: () => api.get<any[]>("/drivers/documents"),
+  });
+}
+
+export function useUploadDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => api.post<any>("/drivers/documents", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "documents"] });
+    },
+  });
+}
+
+export function useDeleteDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<any>(`/drivers/documents/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "documents"] });
+    },
+  });
+}
+
+// ── Driver Availability ──────────────────────────────────────────────────────
+
+export function useDriverAvailability(month: string) {
+  return useQuery({
+    queryKey: ["driver", "availability", month],
+    queryFn: () => api.get<any>(`/drivers/availability?month=${month}`),
+    enabled: !!month,
+  });
+}
+
+export function useUpdateAvailability() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { unavailableDates: string[] }) =>
+      api.put<any>("/drivers/availability", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "availability"] });
+    },
+  });
+}
+
+// ── Driver Ratings ───────────────────────────────────────────────────────────
+
+export function useDriverRatings() {
+  return useQuery({
+    queryKey: ["driver", "ratings"],
+    queryFn: () => api.get<any>("/drivers/ratings"),
+  });
+}
+
+// ── Trip Checklist ───────────────────────────────────────────────────────────
+
+export function useDriverChecklist(tripId: string) {
+  return useQuery({
+    queryKey: ["driver", "checklist", tripId],
+    queryFn: () => api.get<any>(`/drivers/trips/${tripId}/checklist`),
+    enabled: !!tripId,
+  });
+}
+
+export function useUpdateChecklist() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tripId, items }: { tripId: string; items: { id: string; checked: boolean }[] }) =>
+      api.put<any>(`/drivers/trips/${tripId}/checklist`, { items }),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["driver", "checklist", vars.tripId] });
     },
   });
 }

@@ -6,3 +6,8 @@ export * from "./transfers";
 export * from "./bookings";
 export * from "./custom-requests";
 export * from "./invoices";
+export * from "./notifications";
+export * from "./driver-documents";
+export * from "./driver-availability";
+export * from "./driver-ratings";
+export * from "./driver-checklist";
