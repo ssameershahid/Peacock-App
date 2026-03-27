@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Calendar, Wallet, User } from 'lucide-react';
+import { Home, Calendar, Wallet, User, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: Home, href: '/driver' },
@@ -11,6 +12,7 @@ const NAV_ITEMS = [
 
 export default function DriverLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { logout } = useAuth();
 
   const isActive = (href: string) => {
     if (href === '/driver') return location === '/driver' || location === '/driver/';
@@ -24,12 +26,12 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
       </div>
 
       <div className="hidden md:flex min-h-screen">
-        <aside className="w-64 bg-white border-r border-warm-100 p-6 sticky top-0 h-screen">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-forest-600 font-display text-2xl italic pr-1">P</div>
+        <aside className="w-64 bg-white border-r border-warm-100 p-6 sticky top-0 h-screen flex flex-col">
+          <Link href="/" className="flex items-center gap-3 mb-10 group">
+            <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-forest-600 font-display text-2xl italic pr-1 group-hover:bg-amber-300 transition-colors">P</div>
             <span className="font-display text-xl text-forest-600">Peacock Drivers</span>
-          </div>
-          <nav className="space-y-1">
+          </Link>
+          <nav className="space-y-1 flex-1">
             {NAV_ITEMS.map(item => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -50,6 +52,13 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
               );
             })}
           </nav>
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl font-body text-sm text-warm-400 hover:bg-red-50 hover:text-red-500 transition-colors mt-auto"
+          >
+            <LogOut className="w-5 h-5" />
+            Sign Out
+          </button>
         </aside>
         <main className="flex-1 overflow-auto">
           {children}

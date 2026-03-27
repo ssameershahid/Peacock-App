@@ -5,10 +5,12 @@
  */
 
 import { db } from "./index.js";
+import { eq } from "drizzle-orm";
 import {
   usersTable,
   driversTable,
   driverVehiclesTable,
+  driverPayoutRatesTable,
   toursTable,
   tourVehicleRatesTable,
   itineraryDaysTable,
@@ -17,6 +19,9 @@ import {
   vehiclesTable,
   transferRoutesTable,
   transferFixedPricesTable,
+  bookingsTable,
+  invoicesTable,
+  customTourRequestsTable,
 } from "./schema/index.js";
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
@@ -83,6 +88,11 @@ async function seed() {
     })
     .onConflictDoNothing()
     .returning();
+
+  // Re-fetch users in case they already existed (onConflictDoNothing returns nothing for conflicts)
+  const [resolvedTourist] = await db.select().from(usersTable).where(eq(usersTable.email, "xyz@example.com")).limit(1);
+  const [resolvedDriver1] = await db.select().from(usersTable).where(eq(usersTable.email, "kumara@peacockdrivers.com")).limit(1);
+  const [resolvedDriver2] = await db.select().from(usersTable).where(eq(usersTable.email, "nimal@peacockdrivers.com")).limit(1);
 
   console.log("  ✓ Users created");
 
@@ -710,6 +720,276 @@ async function seed() {
   }
 
   console.log("  ✓ Tours created");
+
+  // ─── Driver Payout Rates ───────────────────────────────────────────────────
+  console.log("  Creating driver payout rates...");
+  // Get driver records
+  const allDrivers = await db.select().from(driversTable);
+  for (const d of allDrivers) {
+    await db
+      .insert(driverPayoutRatesTable)
+      .values([
+        { driverId: d.id, vehicleType: "car", dailyFee: 25, commissionPct: 15 },
+        { driverId: d.id, vehicleType: "minivan", dailyFee: 35, commissionPct: 15 },
+      ])
+      .onConflictDoNothing();
+  }
+  console.log("  ✓ Driver payout rates created");
+
+  // ─── Bookings ──────────────────────────────────────────────────────────────
+  console.log("  Creating sample bookings...");
+
+  // Get the first tour for bookings
+  const allTours = await db.select().from(toursTable);
+  const classicTour = allTours.find((t) => t.slug === "classic-sri-lanka");
+  const hillTour = allTours.find((t) => t.slug === "hill-country-escape");
+  const beachTour = allTours.find((t) => t.slug === "south-coast-beach");
+  const allTransfers = await db.select().from(transferRoutesTable);
+  const airportColombo = allTransfers.find((r) => r.name.includes("Colombo"));
+
+  if (resolvedTourist && classicTour && hillTour && allDrivers.length > 0) {
+    const driver1Rec = allDrivers[0];
+    const driver2Rec = allDrivers.length > 1 ? allDrivers[1] : allDrivers[0];
+
+    // Booking 1: Completed tour (past)
+    const [booking1] = await db
+      .insert(bookingsTable)
+      .values({
+        referenceCode: "PKD-DEMO1",
+        type: "READY_MADE",
+        status: "COMPLETED",
+        customerId: resolvedTourist.id,
+        tourId: classicTour.id,
+        vehicleType: "minivan",
+        driverId: driver1Rec.id,
+        startDate: new Date("2026-02-10"),
+        endDate: new Date("2026-02-19"),
+        numDays: 10,
+        pickupTime: "08:00",
+        pickupLocation: "Bandaranaike Int. Airport (CMB)",
+        dropoffLocation: "Bandaranaike Int. Airport (CMB)",
+        passengers: 2,
+        specialRequests: "Vegetarian meals preferred. We celebrate our anniversary on Feb 14th!",
+        totalGBP: 650,
+        paymentStatus: "PAID",
+        pricingBreakdown: {
+          vehicleTotal: 650,
+          addOnsTotal: 43,
+          taxesAndFees: 0,
+        },
+        addOns: [
+          { name: "Airport Pickup", price: 28 },
+          { name: "Welcome Pack", price: 15 },
+        ],
+        hotelDetails: "Cinnamon Grand Colombo, then Heritance Kandalama",
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    // Booking 2: Upcoming confirmed tour
+    const [booking2] = await db
+      .insert(bookingsTable)
+      .values({
+        referenceCode: "PKD-DEMO2",
+        type: "READY_MADE",
+        status: "CONFIRMED",
+        customerId: resolvedTourist.id,
+        tourId: hillTour.id,
+        vehicleType: "car",
+        driverId: driver2Rec.id,
+        startDate: new Date("2026-04-15"),
+        endDate: new Date("2026-04-21"),
+        numDays: 7,
+        pickupTime: "09:00",
+        pickupLocation: "Colombo Fort Railway Station",
+        dropoffLocation: "Kandy Queens Hotel",
+        passengers: 2,
+        specialRequests: "Would love to stop at a tea factory along the way.",
+        totalGBP: 315,
+        paymentStatus: "PAID",
+        pricingBreakdown: {
+          vehicleTotal: 315,
+          addOnsTotal: 0,
+          taxesAndFees: 0,
+        },
+        hotelDetails: "Hotel & Boutique Nuwara Eliya",
+        flightNumber: "BA2069",
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    // Booking 3: Completed transfer (past)
+    const [booking3] = await db
+      .insert(bookingsTable)
+      .values({
+        referenceCode: "PKD-DEMO3",
+        type: "TRANSFER",
+        status: "COMPLETED",
+        customerId: resolvedTourist.id,
+        transferRouteId: airportColombo?.id,
+        vehicleType: "car",
+        driverId: driver1Rec.id,
+        startDate: new Date("2026-02-09"),
+        endDate: new Date("2026-02-09"),
+        numDays: 1,
+        pickupTime: "14:30",
+        pickupLocation: "Bandaranaike Int. Airport (CMB)",
+        dropoffLocation: "Colombo Hilton Hotel",
+        passengers: 2,
+        totalGBP: 28,
+        paymentStatus: "PAID",
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    // Booking 4: Pending tour (another tourist or same, waiting payment)
+    await db
+      .insert(bookingsTable)
+      .values({
+        referenceCode: "PKD-DEMO4",
+        type: "READY_MADE",
+        status: "PENDING",
+        customerId: resolvedTourist.id,
+        tourId: beachTour?.id,
+        vehicleType: "minivan",
+        startDate: new Date("2026-05-20"),
+        endDate: new Date("2026-05-25"),
+        numDays: 6,
+        pickupTime: "07:30",
+        pickupLocation: "Colombo City Hotel",
+        dropoffLocation: "Galle Fort Hotel",
+        passengers: 4,
+        specialRequests: "Travelling with 2 children (ages 6 and 9). Need child-safe seats.",
+        totalGBP: 390,
+        paymentStatus: "PENDING",
+      })
+      .onConflictDoNothing();
+
+    console.log("  ✓ Bookings created");
+
+    // ─── Invoices ──────────────────────────────────────────────────────────────
+    console.log("  Creating invoices...");
+
+    if (booking1) {
+      await db
+        .insert(invoicesTable)
+        .values({
+          invoiceNumber: "INV-2026-001",
+          bookingId: booking1.id,
+          customerId: resolvedTourist.id,
+          lineItems: [
+            { description: "Classic Sri Lanka (10 days, Minivan)", quantity: 1, price: 650 },
+            { description: "Airport Pickup", quantity: 1, price: 28 },
+            { description: "Welcome Pack", quantity: 1, price: 15 },
+          ],
+          subtotal: 693,
+          tax: 0,
+          total: 693,
+        })
+        .onConflictDoNothing();
+    }
+
+    if (booking2) {
+      await db
+        .insert(invoicesTable)
+        .values({
+          invoiceNumber: "INV-2026-002",
+          bookingId: booking2.id,
+          customerId: resolvedTourist.id,
+          lineItems: [
+            { description: "Hill Country Escape (7 days, Car)", quantity: 1, price: 315 },
+          ],
+          subtotal: 315,
+          tax: 0,
+          total: 315,
+        })
+        .onConflictDoNothing();
+    }
+
+    if (booking3) {
+      await db
+        .insert(invoicesTable)
+        .values({
+          invoiceNumber: "INV-2026-003",
+          bookingId: booking3.id,
+          customerId: resolvedTourist.id,
+          lineItems: [
+            { description: "Airport Transfer → Colombo (Car)", quantity: 1, price: 28 },
+          ],
+          subtotal: 28,
+          tax: 0,
+          total: 28,
+        })
+        .onConflictDoNothing();
+    }
+
+    console.log("  ✓ Invoices created");
+  }
+
+  // ─── Custom Tour Requests ──────────────────────────────────────────────────
+  console.log("  Creating custom tour requests...");
+
+  if (resolvedTourist) {
+    // A quoted custom request (tourist will see "quote ready")
+    await db
+      .insert(customTourRequestsTable)
+      .values({
+        referenceCode: "CTR-DEMO1",
+        status: "QUOTED",
+        customerId: resolvedTourist.id,
+        tripType: "Honeymoon",
+        locations: ["Colombo", "Kandy", "Ella", "Mirissa"],
+        preferredDates: "June 2026",
+        durationDays: 12,
+        flexibility: true,
+        vehiclePreference: "car",
+        passengers: 2,
+        budgetRange: "£800–£1200",
+        travelStyle: ["Luxury", "Romantic"],
+        interests: ["Cultural sites", "Beaches", "Wildlife", "Fine dining"],
+        specialRequests:
+          "This is our honeymoon trip. Would love special dinner arrangements on the first night.",
+        quote: {
+          totalGBP: 980,
+          breakdown: [
+            { item: "Private car & driver (12 days)", amount: 540 },
+            { item: "Honeymoon experience package", amount: 180 },
+            { item: "Whale watching excursion", amount: 65 },
+            { item: "Airport transfers", amount: 56 },
+            { item: "Welcome & farewell dinners", amount: 139 },
+          ],
+          validUntil: "2026-04-30",
+          notes:
+            "Includes a surprise beach dinner setup in Mirissa and spa vouchers at Heritance Tea Factory.",
+        },
+      })
+      .onConflictDoNothing();
+
+    // A new custom request (admin will see as pending)
+    await db
+      .insert(customTourRequestsTable)
+      .values({
+        referenceCode: "CTR-DEMO2",
+        status: "NEW",
+        customerId: resolvedTourist.id,
+        tripType: "Family Adventure",
+        locations: ["Sigiriya", "Dambulla", "Minneriya", "Kandy"],
+        preferredDates: "August 2026",
+        durationDays: 8,
+        flexibility: false,
+        vehiclePreference: "minivan",
+        passengers: 5,
+        budgetRange: "£600–£900",
+        travelStyle: ["Adventure", "Family-friendly"],
+        interests: ["Wildlife safari", "Ancient ruins", "Nature walks"],
+        specialRequests:
+          "Travelling with 3 kids (ages 4, 7, 11). Need child-safe transport and kid-friendly activities.",
+      })
+      .onConflictDoNothing();
+  }
+
+  console.log("  ✓ Custom tour requests created");
+
   console.log("\n✅ Seed complete!");
   console.log("\nLogin credentials:");
   console.log("  Admin:   sameer@artyreal.com / admin123!");

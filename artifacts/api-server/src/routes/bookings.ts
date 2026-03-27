@@ -26,6 +26,62 @@ function generateReferenceCode() {
   return `${prefix}-${rand}`;
 }
 
+// Enrich bookings with tour name, customer name, etc.
+async function enrichBookings(bookings: any[]) {
+  if (bookings.length === 0) return [];
+
+  // Gather unique IDs
+  const customerIds = [...new Set(bookings.map((b) => b.customerId))];
+  const tourIds = [
+    ...new Set(bookings.filter((b) => b.tourId).map((b) => b.tourId!)),
+  ];
+
+  // Batch-fetch customers
+  const customers =
+    customerIds.length > 0
+      ? await db
+          .select({
+            id: usersTable.id,
+            firstName: usersTable.firstName,
+            lastName: usersTable.lastName,
+            email: usersTable.email,
+            phone: usersTable.phone,
+          })
+          .from(usersTable)
+          .where(
+            customerIds.length === 1
+              ? eq(usersTable.id, customerIds[0])
+              : undefined as any
+          )
+      : [];
+  // Simple map approach — works for small datasets
+  const customerMap: Record<string, any> = {};
+  for (const c of customers) customerMap[c.id] = c;
+
+  // Batch-fetch tours
+  const tours =
+    tourIds.length > 0
+      ? await db.select({ id: toursTable.id, name: toursTable.name }).from(toursTable)
+      : [];
+  const tourMap: Record<string, string> = {};
+  for (const t of tours) tourMap[t.id] = t.name;
+
+  return bookings.map((b) => {
+    const cust = customerMap[b.customerId];
+    return {
+      ...b,
+      tourName: b.tourId ? tourMap[b.tourId] || null : null,
+      customer: cust
+        ? {
+            name: [cust.firstName, cust.lastName].filter(Boolean).join(" "),
+            email: cust.email,
+            phone: cust.phone,
+          }
+        : { name: "Unknown", email: "", phone: "" },
+    };
+  });
+}
+
 // GET /api/bookings
 router.get("/", authenticate, async (req, res) => {
   try {
@@ -60,7 +116,8 @@ router.get("/", authenticate, async (req, res) => {
         .orderBy(desc(bookingsTable.createdAt));
     }
 
-    res.json(bookings);
+    const enriched = await enrichBookings(bookings);
+    res.json(enriched);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch bookings" });
   }

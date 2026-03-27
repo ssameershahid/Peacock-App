@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { LayoutDashboard, Map, Users, Calendar, MessageSquare, Truck, Settings, LogOut, Menu, X, Search, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const NAV_ITEMS = [
   { section: 'Overview' },
@@ -26,6 +27,9 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children, title, breadcrumbs, actions }: AdminLayoutProps) {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const initials = [user?.firstName?.[0], user?.lastName?.[0]].filter(Boolean).join('').toUpperCase() || 'AD';
+  const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Admin';
 
   const isActive = (href: string) => {
     if (href === '/admin') return location === '/admin' || location === '/admin/';
@@ -34,10 +38,10 @@ export default function AdminLayout({ children, title, breadcrumbs, actions }: A
 
   const sidebar = (
     <div className="flex flex-col h-full">
-      <div className="p-5 flex items-center gap-3 border-b border-forest-600/50">
+      <Link href="/" className="p-5 flex items-center gap-3 border-b border-forest-600/50 hover:bg-forest-600/30 transition-colors">
         <div className="w-9 h-9 rounded-full bg-amber-200 flex items-center justify-center text-forest-700 font-display text-xl italic pr-0.5">P</div>
         <span className="font-display text-lg text-white tracking-wide">Peacock Admin</span>
-      </div>
+      </Link>
       <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
         {NAV_ITEMS.map((item, i) => {
           if ('section' in item && item.section) {
@@ -70,12 +74,12 @@ export default function AdminLayout({ children, title, breadcrumbs, actions }: A
       </nav>
       <div className="p-4 border-t border-forest-600/50">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-forest-500 flex items-center justify-center text-white font-body text-sm font-bold">SS</div>
+          <div className="w-9 h-9 rounded-full bg-forest-500 flex items-center justify-center text-white font-body text-sm font-bold">{initials}</div>
           <div className="flex-1 min-w-0">
-            <p className="font-body text-sm text-white font-medium truncate">Sameer Shahid</p>
+            <p className="font-body text-sm text-white font-medium truncate">{displayName}</p>
             <p className="font-body text-[10px] text-forest-300">Admin</p>
           </div>
-          <button className="p-1.5 text-forest-300 hover:text-white transition-colors">
+          <button onClick={logout} className="p-1.5 text-forest-300 hover:text-white transition-colors">
             <LogOut className="w-4 h-4" />
           </button>
         </div>
@@ -118,7 +122,7 @@ export default function AdminLayout({ children, title, breadcrumbs, actions }: A
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
             </button>
             <div className="w-8 h-8 rounded-full bg-forest-100 flex items-center justify-center text-forest-600 font-body text-xs font-bold border border-forest-200">
-              SS
+              {initials}
             </div>
           </div>
         </header>

@@ -111,19 +111,30 @@ function normalizeBooking(b: any) {
     IN_PROGRESS: 'In Progress',
     CANCELLED: 'Cancelled',
   };
+  const rawDate = (v: any) => {
+    if (!v) return undefined;
+    if (v instanceof Date) return v.toISOString().split('T')[0];
+    if (typeof v === 'string') return v.includes('T') ? v.split('T')[0] : v;
+    return v;
+  };
+  const total = b.totalGBP ?? b.totalAmountGBP ?? b.price ?? 0;
+  const typeMap: Record<string, string> = { READY_MADE: 'tour', CUSTOM: 'custom', TRANSFER: 'transfer' };
   return {
     ...b,
     title: b.title ?? b.tourName ?? b.referenceCode ?? b.id,
-    startDate: b.startDate instanceof Date ? b.startDate.toISOString().split('T')[0] : b.startDate,
-    endDate: b.endDate instanceof Date ? b.endDate.toISOString().split('T')[0] : b.endDate,
+    type: typeMap[b.type] ?? b.type ?? 'tour',
+    startDate: rawDate(b.startDate),
+    endDate: rawDate(b.endDate),
     status: statusMap[b.status] ?? b.status,
     vehicle: b.vehicleType ?? b.vehicle ?? '',
-    price: b.totalAmountGBP ?? b.price ?? 0,
-    pricing: b.pricing ?? {
-      vehicleTotal: b.totalAmountGBP ?? 0,
+    price: total,
+    totalGBP: total,
+    pricing: b.pricing ?? b.pricingBreakdown ?? {
+      vehicleTotal: total,
       addOnsTotal: 0,
       taxesAndFees: 0,
     },
+    customer: b.customer ?? { name: 'Guest', email: '', phone: '' },
     driver: b.driver ?? null,
     passengers: b.numPassengers ?? b.passengers ?? 1,
   };
