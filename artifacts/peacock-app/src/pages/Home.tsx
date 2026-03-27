@@ -45,7 +45,7 @@ export default function Home() {
 
         <Container className="relative z-10 w-full pt-20 flex flex-col items-center">
           <div className="text-center max-w-4xl mx-auto mb-12 animate-in slide-in-from-bottom-8 fade-in duration-1000">
-            <h1 className="text-4xl md:text-6xl lg:text-[56px] font-display font-normal text-white mb-6 tracking-tight leading-[1.1] drop-shadow-sm">
+            <h1 className="text-5xl md:text-7xl lg:text-[72px] font-display font-normal text-white mb-6 tracking-tight leading-[1.1] drop-shadow-sm">
               Experience Sri Lanka's <br /> beauty like a <em className="italic">true native</em>
             </h1>
             <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
