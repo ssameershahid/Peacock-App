@@ -55,24 +55,6 @@ export default function Home() {
 
           <div className="w-full flex flex-col items-center gap-6">
             <div className="w-full max-w-4xl relative">
-              <div className="hidden md:flex items-center justify-center gap-[10px] py-[5px] my-[5px] animate-in fade-in zoom-in duration-700 delay-500">
-                <div className="flex -space-x-2">
-                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-black/20" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop" alt="Traveler" />
-                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-black/20" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=64&h=64&fit=crop" alt="Traveler" />
-                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-black/20" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop" alt="Traveler" />
-                </div>
-                <div className="flex flex-col items-start leading-none">
-                  <div className="flex text-amber-200 mb-0.5">
-                    <Star className="h-3 w-3 fill-current" />
-                    <Star className="h-3 w-3 fill-current" />
-                    <Star className="h-3 w-3 fill-current" />
-                    <Star className="h-3 w-3 fill-current" />
-                    <Star className="h-3 w-3 fill-current" />
-                  </div>
-                  <span className="text-xs font-bold text-white drop-shadow-md">Join 12k+ happy travelers</span>
-                </div>
-              </div>
-
               <TripSearchHero />
             </div>
 
@@ -103,9 +85,13 @@ export default function Home() {
       {/* Our Philosophy (Tropical Paradise + Philosophy content) */}
       <TropicalParadiseSection />
 
+      {/* Orbit Showcase — Experience categories */}
+      <OrbitShowcaseSection />
+
       {/* Three Product Cards */}
       <section className="py-24 px-6 bg-white relative -mt-16 z-20 rounded-t-[40px]">
         <div className="max-w-[1200px] mx-auto">
+          <SectionHeading overline="WHAT WE DO" title="Your journey, your *way*" subtitle="Whether you want a ready-made itinerary, a fully custom adventure, or a simple airport transfer — we've got you covered." align="center" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link href="/tours" className="block">
               <div className="bg-sage rounded-3xl p-8 h-full hover:-translate-y-2 transition-transform duration-300 shadow-sm border border-warm-100 group cursor-pointer">
@@ -142,7 +128,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 px-6 bg-cream">
+      <section className="py-24 px-6 bg-white">
         <div className="max-w-[1200px] mx-auto">
           <SectionHeading overline="HOW IT WORKS" title="Three simple *steps*" align="center" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-16 relative">
@@ -162,6 +148,15 @@ export default function Home() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* About Peacock — Story Blocks (sticky image + text) */}
+      <StoryBlocksSection />
+
+      {/* Explore Destinations + Design your own adventure */}
+      <section className="bg-background">
+        <ParallaxDestinationsSection />
+        <DesignAdventureCTA />
       </section>
 
       {/* Vehicle Fleet */}
@@ -184,18 +179,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Orbit Showcase — Experience categories */}
-      <OrbitShowcaseSection />
-
-      {/* About Peacock — Story Blocks (sticky image + text) */}
-      <StoryBlocksSection />
-
-      {/* Explore Destinations + Design your own adventure */}
-      <section className="bg-background">
-        <ParallaxDestinationsSection />
-        <DesignAdventureCTA />
       </section>
 
       {/* Climate Guide ("When to go") */}
