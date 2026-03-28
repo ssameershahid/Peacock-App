@@ -263,3 +263,35 @@
 .animate-pulse-dot {
   animation: pulse-dot 2s ease-in-out infinite;
 }
+
+/* Gentle countdown pulse for trips within 3 days */
+@keyframes countdown-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+.animate-countdown-pulse {
+  animation: countdown-pulse 2s ease-in-out infinite;
+}
+
+/* Sparkle shimmer for trip-is-today */
+@keyframes sparkle-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-sparkle {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(232, 168, 37, 0.15) 25%,
+    rgba(232, 168, 37, 0.3) 50%,
+    rgba(232, 168, 37, 0.15) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: sparkle-shimmer 3s ease-in-out 1;
+}
+
+/* Completed trip nostalgia overlay */
+.trip-memory {
+  filter: saturate(0.7) brightness(0.95);
+}

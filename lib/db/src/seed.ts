@@ -22,6 +22,8 @@ import {
   bookingsTable,
   invoicesTable,
   customTourRequestsTable,
+  bookingActivitiesTable,
+  globalSeasonalPricingTable,
 } from "./schema/index.js";
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
@@ -755,7 +757,7 @@ async function seed() {
     const [booking1] = await db
       .insert(bookingsTable)
       .values({
-        referenceCode: "PKD-DEMO1",
+        referenceCode: "PKD-2026-001",
         type: "READY_MADE",
         status: "COMPLETED",
         customerId: resolvedTourist.id,
@@ -790,7 +792,7 @@ async function seed() {
     const [booking2] = await db
       .insert(bookingsTable)
       .values({
-        referenceCode: "PKD-DEMO2",
+        referenceCode: "PKD-2026-002",
         type: "READY_MADE",
         status: "CONFIRMED",
         customerId: resolvedTourist.id,
@@ -822,7 +824,7 @@ async function seed() {
     const [booking3] = await db
       .insert(bookingsTable)
       .values({
-        referenceCode: "PKD-DEMO3",
+        referenceCode: "PKD-2026-003",
         type: "TRANSFER",
         status: "COMPLETED",
         customerId: resolvedTourist.id,
@@ -846,7 +848,7 @@ async function seed() {
     await db
       .insert(bookingsTable)
       .values({
-        referenceCode: "PKD-DEMO4",
+        referenceCode: "PKD-2026-004",
         type: "READY_MADE",
         status: "PENDING",
         customerId: resolvedTourist.id,
@@ -924,7 +926,56 @@ async function seed() {
     }
 
     console.log("  ✓ Invoices created");
+
+    // ─── Booking Activities ───────────────────────────────────────────────────
+    console.log("  Creating booking activities...");
+    if (booking1) {
+      await db.insert(bookingActivitiesTable).values([
+        { bookingId: booking1.id, action: "created", details: { referenceCode: "PKD-2026-001" }, performedByName: "Sarah Johnson", createdAt: new Date("2026-02-01T10:00:00Z") },
+        { bookingId: booking1.id, action: "payment_received", details: { amount: 650, currency: "GBP" }, performedByName: "System", createdAt: new Date("2026-02-01T10:05:00Z") },
+        { bookingId: booking1.id, action: "status_changed", details: { fromStatus: "PENDING", toStatus: "CONFIRMED" }, performedByName: "Admin", createdAt: new Date("2026-02-02T09:00:00Z") },
+        { bookingId: booking1.id, action: "driver_assigned", details: { driverName: "Kumara Perera" }, performedByName: "Admin", createdAt: new Date("2026-02-02T09:05:00Z") },
+        { bookingId: booking1.id, action: "status_changed", details: { fromStatus: "CONFIRMED", toStatus: "IN_PROGRESS" }, performedByName: "System", createdAt: new Date("2026-02-10T08:00:00Z") },
+        { bookingId: booking1.id, action: "status_changed", details: { fromStatus: "IN_PROGRESS", toStatus: "COMPLETED" }, performedByName: "System", createdAt: new Date("2026-02-19T18:00:00Z") },
+      ]).onConflictDoNothing();
+    }
+    if (booking2) {
+      await db.insert(bookingActivitiesTable).values([
+        { bookingId: booking2.id, action: "created", details: { referenceCode: "PKD-2026-002" }, performedByName: "Sarah Johnson", createdAt: new Date("2026-03-15T14:00:00Z") },
+        { bookingId: booking2.id, action: "payment_received", details: { amount: 315, currency: "GBP" }, performedByName: "System", createdAt: new Date("2026-03-15T14:05:00Z") },
+        { bookingId: booking2.id, action: "status_changed", details: { fromStatus: "PENDING", toStatus: "CONFIRMED" }, performedByName: "Admin", createdAt: new Date("2026-03-16T09:00:00Z") },
+        { bookingId: booking2.id, action: "driver_assigned", details: { driverName: "Nimal Silva" }, performedByName: "Admin", createdAt: new Date("2026-03-16T09:10:00Z") },
+      ]).onConflictDoNothing();
+    }
+    console.log("  ✓ Booking activities created");
   }
+
+  // ─── Global Seasonal Pricing ────────────────────────────────────────────────
+  console.log("  Creating global seasonal pricing...");
+  await db
+    .insert(globalSeasonalPricingTable)
+    .values([
+      {
+        name: "Peak season",
+        startDate: new Date("2026-12-15"),
+        endDate: new Date("2027-01-15"),
+        multiplier: 1.3,
+      },
+      {
+        name: "High season",
+        startDate: new Date("2026-07-01"),
+        endDate: new Date("2026-08-31"),
+        multiplier: 1.2,
+      },
+      {
+        name: "Shoulder season",
+        startDate: new Date("2026-04-01"),
+        endDate: new Date("2026-06-30"),
+        multiplier: 1.1,
+      },
+    ])
+    .onConflictDoNothing();
+  console.log("  ✓ Global seasonal pricing created");
 
   // ─── Custom Tour Requests ──────────────────────────────────────────────────
   console.log("  Creating custom tour requests...");
@@ -934,7 +985,7 @@ async function seed() {
     await db
       .insert(customTourRequestsTable)
       .values({
-        referenceCode: "CTR-DEMO1",
+        referenceCode: "CTR-2026-001",
         status: "QUOTED",
         customerId: resolvedTourist.id,
         tripType: "Honeymoon",
@@ -969,7 +1020,7 @@ async function seed() {
     await db
       .insert(customTourRequestsTable)
       .values({
-        referenceCode: "CTR-DEMO2",
+        referenceCode: "CTR-2026-002",
         status: "NEW",
         customerId: resolvedTourist.id,
         tripType: "Family Adventure",

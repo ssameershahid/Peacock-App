@@ -1,13 +1,15 @@
 import { Router } from "express";
 import { z } from "zod";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, like, sql, inArray } from "drizzle-orm";
 import {
   db,
   bookingsTable,
+  bookingActivitiesTable,
   toursTable,
   transferRoutesTable,
   usersTable,
   driversTable,
+  reviewsTable,
 } from "@workspace/db";
 import { authenticate, requireAdmin, requireDriver } from "../middleware/auth.js";
 import { createCheckoutSession } from "../lib/stripe.js";
@@ -20,10 +22,37 @@ const router = Router();
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-function generateReferenceCode() {
-  const prefix = "PKD";
-  const rand = Math.random().toString(36).substring(2, 7).toUpperCase();
-  return `${prefix}-${rand}`;
+async function generateReferenceCode(): Promise<string> {
+  const year = new Date().getFullYear();
+  const prefix = `PKD-${year}-`;
+  const [result] = await db
+    .select({ code: bookingsTable.referenceCode })
+    .from(bookingsTable)
+    .where(like(bookingsTable.referenceCode, `${prefix}%`))
+    .orderBy(desc(bookingsTable.referenceCode))
+    .limit(1);
+  let next = 1;
+  if (result?.code) {
+    const num = parseInt(result.code.replace(prefix, ""), 10);
+    if (!isNaN(num)) next = num + 1;
+  }
+  return `${prefix}${String(next).padStart(3, "0")}`;
+}
+
+async function logBookingActivity(
+  bookingId: string,
+  action: string,
+  details?: Record<string, any>,
+  performedBy?: string,
+  performedByName?: string
+) {
+  await db.insert(bookingActivitiesTable).values({
+    bookingId,
+    action,
+    details: details || null,
+    performedBy: performedBy || null,
+    performedByName: performedByName || null,
+  });
 }
 
 // Enrich bookings with tour name, customer name, etc.
@@ -46,38 +75,75 @@ async function enrichBookings(bookings: any[]) {
             lastName: usersTable.lastName,
             email: usersTable.email,
             phone: usersTable.phone,
+            country: usersTable.country,
+            createdAt: usersTable.createdAt,
           })
           .from(usersTable)
-          .where(
-            customerIds.length === 1
-              ? eq(usersTable.id, customerIds[0])
-              : undefined as any
-          )
+          .where(inArray(usersTable.id, customerIds))
       : [];
   // Simple map approach — works for small datasets
   const customerMap: Record<string, any> = {};
   for (const c of customers) customerMap[c.id] = c;
 
-  // Batch-fetch tours
+  // Batch-fetch tours (include slug + hero image for tourist portal)
   const tours =
     tourIds.length > 0
-      ? await db.select({ id: toursTable.id, name: toursTable.name }).from(toursTable)
+      ? await db.select({ id: toursTable.id, name: toursTable.name, slug: toursTable.slug, heroImages: toursTable.heroImages }).from(toursTable)
       : [];
-  const tourMap: Record<string, string> = {};
-  for (const t of tours) tourMap[t.id] = t.name;
+  const tourMap: Record<string, { name: string; slug: string; heroImage: string | null }> = {};
+  for (const t of tours) tourMap[t.id] = { name: t.name, slug: t.slug, heroImage: t.heroImages?.[0] || null };
+
+  // Batch-fetch drivers for enrichment
+  const driverIds = [...new Set(bookings.filter(b => b.driverId).map(b => b.driverId!))];
+  const driverMap: Record<string, any> = {};
+  if (driverIds.length > 0) {
+    const driverRows = await db.select().from(driversTable).where(inArray(driversTable.id, driverIds));
+    const driverUserIds = driverRows.map(d => d.userId);
+    const driverUsers = driverUserIds.length > 0
+      ? await db.select({ id: usersTable.id, firstName: usersTable.firstName, lastName: usersTable.lastName, phone: usersTable.phone, profileImageUrl: usersTable.profileImageUrl }).from(usersTable).where(inArray(usersTable.id, driverUserIds))
+      : [];
+    const duMap: Record<string, any> = {};
+    for (const u of driverUsers) duMap[u.id] = u;
+    for (const d of driverRows) {
+      const u = duMap[d.userId];
+      driverMap[d.id] = {
+        id: d.id,
+        name: u ? [u.firstName, u.lastName].filter(Boolean).join(" ") : d.id,
+        phone: u?.phone || "",
+        photo: u?.profileImageUrl || null,
+        languages: d.languages || [],
+        experienceYears: d.experienceYears || 0,
+      };
+    }
+  }
+
+  // Check which bookings have reviews
+  const bookingIds = bookings.map(b => b.id);
+  const reviewedRows = bookingIds.length > 0
+    ? await db.select({ bookingId: reviewsTable.bookingId }).from(reviewsTable).where(inArray(reviewsTable.bookingId, bookingIds))
+    : [];
+  const reviewedSet = new Set(reviewedRows.map(r => r.bookingId));
 
   return bookings.map((b) => {
     const cust = customerMap[b.customerId];
+    const tourData = b.tourId ? tourMap[b.tourId] : null;
     return {
       ...b,
-      tourName: b.tourId ? tourMap[b.tourId] || null : null,
+      tourName: tourData?.name || null,
+      tourSlug: tourData?.slug || null,
+      tourImage: tourData?.heroImage || null,
+      reviewed: reviewedSet.has(b.id),
       customer: cust
         ? {
+            id: cust.id,
             name: [cust.firstName, cust.lastName].filter(Boolean).join(" "),
             email: cust.email,
             phone: cust.phone,
+            country: cust.country,
+            memberSince: cust.createdAt,
           }
         : { name: "Unknown", email: "", phone: "" },
+      driver: b.driverId ? driverMap[b.driverId] || null : null,
     };
   });
 }
@@ -156,7 +222,9 @@ router.get("/:id", authenticate, async (req, res) => {
       }
     }
 
-    res.json(booking);
+    // Enrich with driver and tour info
+    const enriched = (await enrichBookings([booking]))[0];
+    res.json(enriched);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch booking" });
   }
@@ -192,7 +260,7 @@ router.post("/", authenticate, async (req, res) => {
   }
 
   try {
-    const referenceCode = generateReferenceCode();
+    const referenceCode = await generateReferenceCode();
     const [booking] = await db
       .insert(bookingsTable)
       .values({
@@ -205,6 +273,11 @@ router.post("/", authenticate, async (req, res) => {
         paymentStatus: "PENDING",
       })
       .returning();
+
+    // Log booking creation activity
+    const [cust] = await db.select({ firstName: usersTable.firstName, lastName: usersTable.lastName }).from(usersTable).where(eq(usersTable.id, req.user!.userId)).limit(1);
+    const custName = cust ? [cust.firstName, cust.lastName].filter(Boolean).join(" ") : "Customer";
+    await logBookingActivity(booking.id, "created", { referenceCode }, req.user!.userId, custName);
 
     // Get tour name for checkout description
     let description = "Peacock Drivers — ";
@@ -269,6 +342,9 @@ router.put("/:id", authenticate, requireAdmin, async (req, res) => {
       paymentStatus: z.enum(["PENDING","PAID","REFUNDED","FAILED"]).optional(),
     });
     const data = schema.parse(req.body);
+    // Fetch old booking for activity logging
+    const [oldBooking] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, req.params.id as string)).limit(1);
+
     const [updated] = await db
       .update(bookingsTable)
       .set({ ...data, updatedAt: new Date() })
@@ -278,6 +354,22 @@ router.put("/:id", authenticate, requireAdmin, async (req, res) => {
     if (!updated) {
       res.status(404).json({ error: "Booking not found" });
       return;
+    }
+
+    // Log activity for status change
+    if (data.status && oldBooking && data.status !== oldBooking.status) {
+      await logBookingActivity(updated.id, "status_changed", { fromStatus: oldBooking.status, toStatus: data.status }, req.user!.userId, "Admin");
+    }
+
+    // Log activity for driver assignment
+    if (data.driverId && (!oldBooking || data.driverId !== oldBooking.driverId)) {
+      const [drvUser] = await db.select().from(driversTable).where(eq(driversTable.id, data.driverId)).limit(1);
+      let driverName = data.driverId;
+      if (drvUser) {
+        const [u] = await db.select({ firstName: usersTable.firstName, lastName: usersTable.lastName }).from(usersTable).where(eq(usersTable.id, drvUser.userId)).limit(1);
+        if (u) driverName = [u.firstName, u.lastName].filter(Boolean).join(" ");
+      }
+      await logBookingActivity(updated.id, "driver_assigned", { driverId: data.driverId, driverName }, req.user!.userId, "Admin");
     }
 
     // If driver was just assigned, send notification emails
@@ -352,6 +444,8 @@ router.put("/:id/cancel", authenticate, async (req, res) => {
       .where(eq(bookingsTable.id, req.params.id as string))
       .returning();
 
+    await logBookingActivity(cancelled.id, "cancelled", { reason }, req.user!.userId, role === "ADMIN" ? "Admin" : "Customer");
+
     const [customer] = await db
       .select({ email: usersTable.email, firstName: usersTable.firstName })
       .from(usersTable)
@@ -370,6 +464,20 @@ router.put("/:id/cancel", authenticate, async (req, res) => {
     res.json(cancelled);
   } catch (err) {
     res.status(500).json({ error: "Failed to cancel booking" });
+  }
+});
+
+// GET /api/bookings/:id/activities
+router.get("/:id/activities", authenticate, async (req, res) => {
+  try {
+    const activities = await db
+      .select()
+      .from(bookingActivitiesTable)
+      .where(eq(bookingActivitiesTable.bookingId, req.params.id as string))
+      .orderBy(desc(bookingActivitiesTable.createdAt));
+    res.json(activities);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch activities" });
   }
 });
 

@@ -137,6 +137,9 @@ function normalizeBooking(b: any) {
     customer: b.customer ?? { name: 'Guest', email: '', phone: '' },
     driver: b.driver ?? null,
     passengers: b.numPassengers ?? b.passengers ?? 1,
+    tourSlug: b.tourSlug ?? null,
+    tourImage: b.tourImage ?? null,
+    reviewed: b.reviewed ?? false,
   };
 }
 
@@ -260,12 +263,28 @@ export function useCYORequests() {
   });
 }
 
+function normalizeCYORequest(r: any) {
+  const statusMap: Record<string, string> = {
+    NEW: 'New', REVIEWING: 'Reviewing', QUOTED: 'Quoted',
+    AWAITING_PAYMENT: 'Awaiting Payment', PAID: 'Paid',
+    CONFIRMED: 'Confirmed', ABANDONED: 'Abandoned',
+  };
+  return {
+    ...r,
+    status: statusMap[r.status] ?? r.status,
+    customer: r.customerName || r.customer || 'Unknown',
+    submittedAt: r.createdAt || r.submittedAt,
+    dates: r.preferredDates || r.dates || '',
+  };
+}
+
 export function useAdminCYO() {
   return useQuery({
     queryKey: ["admin", "cyo"],
     queryFn: async () => {
       try {
-        return await api.get<any[]>("/custom-requests");
+        const data = await api.get<any[]>("/custom-requests");
+        return data.map(normalizeCYORequest);
       } catch {
         return CYO_REQUESTS;
       }
@@ -383,7 +402,113 @@ export function useAdminDrivers() {
 export function useAdminStats() {
   return useQuery({
     queryKey: ["admin", "stats"],
-    queryFn: () => api.get<any>("/admin/stats").catch(() => null),
+    queryFn: () => api.get<any>("/admin/stats"),
+    retry: false,
+  });
+}
+
+export function useAdminToday() {
+  return useQuery({
+    queryKey: ["admin", "today"],
+    queryFn: () => api.get<any>("/admin/today"),
+    refetchInterval: 60_000,
+  });
+}
+
+export function useAdminAttention() {
+  return useQuery({
+    queryKey: ["admin", "attention"],
+    queryFn: () => api.get<any>("/admin/attention"),
+    refetchInterval: 60_000,
+  });
+}
+
+export function useAdminSearch(query: string) {
+  return useQuery({
+    queryKey: ["admin", "search", query],
+    queryFn: () => api.get<any>(`/admin/search?q=${encodeURIComponent(query)}`),
+    enabled: query.length >= 2,
+    staleTime: 30_000,
+  });
+}
+
+export function useAdminCustomers() {
+  return useQuery({
+    queryKey: ["admin", "customers"],
+    queryFn: () => api.get<any[]>("/admin/customers"),
+  });
+}
+
+export function useAdminCustomer(id: string) {
+  return useQuery({
+    queryKey: ["admin", "customers", id],
+    queryFn: () => api.get<any>(`/admin/customers/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useAdminDriverDetail(id: string) {
+  return useQuery({
+    queryKey: ["admin", "drivers", id, "detail"],
+    queryFn: () => api.get<any>(`/admin/drivers/${id}/detail`),
+    enabled: !!id,
+  });
+}
+
+export function useBookingActivities(bookingId: string) {
+  return useQuery({
+    queryKey: ["bookings", bookingId, "activities"],
+    queryFn: () => api.get<any[]>(`/bookings/${bookingId}/activities`),
+    enabled: !!bookingId,
+  });
+}
+
+export function useAdminSeasons() {
+  return useQuery({
+    queryKey: ["admin", "pricing", "seasons"],
+    queryFn: () => api.get<any[]>("/admin/pricing/seasons"),
+  });
+}
+
+export function useCreateSeason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => api.post<any>("/admin/pricing/seasons", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "pricing", "seasons"] });
+    },
+  });
+}
+
+export function useUpdateSeason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      api.put<any>(`/admin/pricing/seasons/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "pricing", "seasons"] });
+    },
+  });
+}
+
+export function useDeleteSeason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<any>(`/admin/pricing/seasons/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "pricing", "seasons"] });
+    },
+  });
+}
+
+export function useVerifyDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ driverId, docId, action, reason }: { driverId: string; docId: string; action: string; reason?: string }) =>
+      api.put<any>(`/admin/drivers/${driverId}/documents/${docId}/verify`, { action, reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "drivers"] });
+    },
   });
 }
 
@@ -541,6 +666,245 @@ export function useUpdateChecklist() {
       api.put<any>(`/drivers/trips/${tripId}/checklist`, { items }),
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ["driver", "checklist", vars.tripId] });
+    },
+  });
+}
+
+// ── Tourist Dashboard ───────────────────────────────────────────────────────
+
+export function useTouristDashboard() {
+  return useQuery({
+    queryKey: ["account", "dashboard"],
+    queryFn: async () => {
+      try {
+        return await api.get<any>("/account/dashboard");
+      } catch {
+        return { upcomingTrips: [], activeTrips: [], completedTripsNeedingReview: [], totalTrips: 0, totalSpent: 0 };
+      }
+    },
+    refetchInterval: 120_000,
+  });
+}
+
+// ── Tourist Notifications ───────────────────────────────────────────────────
+
+export function useTouristNotifications() {
+  return useQuery({
+    queryKey: ["account", "notifications"],
+    queryFn: async () => {
+      try {
+        return await api.get<any[]>("/account/notifications");
+      } catch {
+        return [];
+      }
+    },
+    refetchInterval: 60_000,
+  });
+}
+
+export function useMarkTouristNotificationRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.put<any>(`/account/notifications/${id}/read`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["account", "notifications"] });
+    },
+  });
+}
+
+export function useMarkAllTouristNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.put<any>("/account/notifications/read-all", {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["account", "notifications"] });
+    },
+  });
+}
+
+// ── Reviews ─────────────────────────────────────────────────────────────────
+
+export function useReview(bookingId: string) {
+  return useQuery({
+    queryKey: ["reviews", bookingId],
+    queryFn: async () => {
+      try {
+        return await api.get<any>(`/account/reviews/${bookingId}`);
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!bookingId,
+  });
+}
+
+export function useCreateReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { bookingId: string; rating: number; reviewText?: string; wouldRecommend?: boolean }) =>
+      api.post<any>("/account/reviews", data),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["reviews", vars.bookingId] });
+      queryClient.invalidateQueries({ queryKey: ["account", "dashboard"] });
+    },
+  });
+}
+
+export function useUpdateReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string; rating?: number; reviewText?: string; wouldRecommend?: boolean }) =>
+      api.put<any>(`/account/reviews/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+    },
+  });
+}
+
+// ── Communication Preferences ───────────────────────────────────────────────
+
+export function useCommunicationPreferences() {
+  return useQuery({
+    queryKey: ["account", "preferences"],
+    queryFn: async () => {
+      try {
+        return await api.get<any>("/account/preferences");
+      } catch {
+        return { preTripReminders: true, reviewRequests: true, marketing: false };
+      }
+    },
+  });
+}
+
+export function useUpdateCommunicationPreferences() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { preTripReminders?: boolean; reviewRequests?: boolean; marketing?: boolean }) =>
+      api.put<any>("/account/preferences", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["account", "preferences"] });
+    },
+  });
+}
+
+// ── Trip Sharing ────────────────────────────────────────────────────────────
+
+export function useCreateShareLink() {
+  return useMutation({
+    mutationFn: (bookingId: string) => api.post<any>(`/account/bookings/${bookingId}/share`, {}),
+  });
+}
+
+// ── Update Booking Trip Details ─────────────────────────────────────────────
+
+export function useUpdateBookingDetails() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      api.put<any>(`/account/bookings/${id}/details`, data),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["bookings", vars.id] });
+      queryClient.invalidateQueries({ queryKey: ["account", "dashboard"] });
+    },
+  });
+}
+
+// ── Saved Trips ────────────────────────────────────────────────────────────
+
+export function useSavedTrips() {
+  return useQuery({
+    queryKey: ["saved-trips"],
+    queryFn: async () => {
+      try {
+        return await api.get<any[]>("/saved-trips");
+      } catch (err: any) {
+        if (err?.status === 401) return [];
+        return [];
+      }
+    },
+  });
+}
+
+export function useSavedTrip(id: string) {
+  return useQuery({
+    queryKey: ["saved-trips", id],
+    queryFn: () => api.get<any>(`/saved-trips/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useCreateSavedTrip() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { tripData: any; currentStep: number; isComplete?: boolean }) =>
+      api.post<any>("/saved-trips", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved-trips"] });
+    },
+  });
+}
+
+export function useUpdateSavedTrip() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      api.put<any>(`/saved-trips/${id}`, data),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["saved-trips"] });
+      queryClient.invalidateQueries({ queryKey: ["saved-trips", vars.id] });
+    },
+  });
+}
+
+export function useDeleteSavedTrip() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<any>(`/saved-trips/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved-trips"] });
+    },
+  });
+}
+
+// ── Trip Leads ─────────────────────────────────────────────────────────────
+
+export function useEmailTripPlan() {
+  return useMutation({
+    mutationFn: (data: { email: string; name?: string; tripData: any; currentStep?: number; source?: string; utmParams?: any }) =>
+      api.post<{ id: string; emailSent: boolean }>("/trip-leads", data),
+  });
+}
+
+export function useLeadTripData(id: string) {
+  return useQuery({
+    queryKey: ["trip-leads", id, "trip-data"],
+    queryFn: () => api.get<any>(`/trip-leads/${id}/trip-data`),
+    enabled: !!id,
+  });
+}
+
+export function useAdminLeads() {
+  return useQuery({
+    queryKey: ["admin", "leads"],
+    queryFn: () => api.get<any[]>("/trip-leads/admin/all"),
+  });
+}
+
+export function useAdminLead(id: string) {
+  return useQuery({
+    queryKey: ["admin", "leads", id],
+    queryFn: () => api.get<any>(`/trip-leads/admin/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useConvertLead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      api.put<any>(`/trip-leads/admin/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "leads"] });
     },
   });
 }

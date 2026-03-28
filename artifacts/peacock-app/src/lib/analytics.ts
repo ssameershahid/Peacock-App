@@ -52,6 +52,23 @@ export const analytics = {
       duration_days: durationDays,
     }),
 
+  cyoWizardStarted: () => trackEvent("cyo_wizard_started"),
+
+  cyoStepCompleted: (step: number, stepName: string, extra?: Record<string, unknown>) =>
+    trackEvent("cyo_wizard_step_completed", { step, step_name: stepName, ...extra }),
+
+  cyoTripSaved: (step: number, destinationCount: number) =>
+    trackEvent("cyo_trip_saved", { step, destination_count: destinationCount }),
+
+  cyoEmailCaptured: (step: number, destinationCount: number, hasName: boolean) =>
+    trackEvent("cyo_email_captured", { step, destination_count: destinationCount, has_name: hasName }),
+
+  cyoPdfDownloaded: (step: number, destinationCount: number) =>
+    trackEvent("cyo_pdf_downloaded", { step, destination_count: destinationCount }),
+
+  cyoWizardRecovered: (stepRecoveredAt: number, hoursSinceSave: string) =>
+    trackEvent("cyo_wizard_recovered", { step_recovered_at: stepRecoveredAt, hours_since_save: hoursSinceSave }),
+
   transferBooked: (routeName: string, vehicleType: string) =>
     trackEvent("transfer_booked", {
       route_name: routeName,

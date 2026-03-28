@@ -5,6 +5,120 @@ import { Camera, Check, AlertTriangle, Mail, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useCommunicationPreferences, useUpdateCommunicationPreferences } from '@/hooks/use-app-data';
+import { cn } from '@/lib/utils';
+
+// ── Toggle Switch ───────────────────────────────────────────────────────────
+
+function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',
+        checked ? 'bg-forest-500' : 'bg-warm-200'
+      )}
+    >
+      <span
+        className={cn(
+          'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
+          checked ? 'translate-x-5' : 'translate-x-0'
+        )}
+      />
+    </button>
+  );
+}
+
+// ── Communication Preferences ───────────────────────────────────────────────
+
+function CommunicationPreferencesSection() {
+  const { data: prefs } = useCommunicationPreferences();
+  const updatePrefs = useUpdateCommunicationPreferences();
+  const { toast } = useToast();
+
+  const [preTrip, setPreTrip] = useState(true);
+  const [reviewReq, setReviewReq] = useState(true);
+  const [marketing, setMarketing] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (prefs) {
+      setPreTrip(prefs.preTripReminders ?? true);
+      setReviewReq(prefs.reviewRequests ?? true);
+      setMarketing(prefs.marketing ?? false);
+    }
+  }, [prefs]);
+
+  const handleSave = async () => {
+    try {
+      await updatePrefs.mutateAsync({
+        preTripReminders: preTrip,
+        reviewRequests: reviewReq,
+        marketing,
+      });
+      setDirty(false);
+      toast({ title: 'Preferences saved' });
+    } catch {
+      toast({ title: 'Error saving preferences', variant: 'destructive' });
+    }
+  };
+
+  const toggles = [
+    {
+      label: 'Pre-trip reminders',
+      description: 'Helpful reminders as your trip approaches',
+      checked: preTrip,
+      onChange: (v: boolean) => { setPreTrip(v); setDirty(true); },
+    },
+    {
+      label: 'Trip review requests',
+      description: 'Invite to share your experience after a trip',
+      checked: reviewReq,
+      onChange: (v: boolean) => { setReviewReq(v); setDirty(true); },
+    },
+    {
+      label: 'Travel tips & offers',
+      description: 'Seasonal deals, new tours, and Sri Lanka travel guides',
+      checked: marketing,
+      onChange: (v: boolean) => { setMarketing(v); setDirty(true); },
+    },
+  ];
+
+  return (
+    <div className="bg-white rounded-2xl border border-warm-100 p-6 mb-6">
+      <h3 className="font-body text-lg font-semibold text-forest-600 mb-1">Communication preferences</h3>
+      <p className="font-body text-[13px] text-warm-400 mb-6">Control what emails you receive from us</p>
+
+      <div className="space-y-5 mb-6">
+        {toggles.map(t => (
+          <div key={t.label} className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-body text-sm font-medium text-warm-700">{t.label}</p>
+              <p className="font-body text-xs text-warm-400 mt-0.5">{t.description}</p>
+            </div>
+            <ToggleSwitch checked={t.checked} onChange={t.onChange} />
+          </div>
+        ))}
+      </div>
+
+      <Button
+        className="rounded-pill"
+        onClick={handleSave}
+        disabled={!dirty || updatePrefs.isPending}
+        size="sm"
+      >
+        {updatePrefs.isPending ? 'Saving...' : 'Save preferences'}
+      </Button>
+
+      <p className="font-body text-[11px] text-warm-300 mt-3">
+        You can unsubscribe from all emails at any time
+      </p>
+    </div>
+  );
+}
+
+// ── Main Profile Component ──────────────────────────────────────────────────
 
 export default function Profile() {
   const { user, updateUser } = useAuth();
@@ -182,6 +296,9 @@ export default function Profile() {
           {passwordSaved ? <><Check className="w-4 h-4 mr-2" /> Password updated</> : savingPw ? 'Updating…' : 'Update password'}
         </Button>
       </div>
+
+      {/* Communication Preferences */}
+      <CommunicationPreferencesSection />
 
       <div className="bg-white rounded-2xl border-[1.5px] border-[#C4382A]/20 p-6">
         <h3 className="font-body font-semibold text-red-600 mb-2">Danger Zone</h3>

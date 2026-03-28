@@ -31,6 +31,7 @@ import ArticlePage from "@/pages/ArticlePage";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import CancellationPolicy from "@/pages/CancellationPolicy";
+import TripShare from "@/pages/TripShare";
 
 const queryClient = new QueryClient();
 
@@ -65,12 +66,14 @@ function Router() {
       <Route path="/transfers" component={() => <PublicRoute component={Transfers} />} />
       <Route path="/checkout" component={() => <PublicRoute component={Checkout} />} />
       <Route path="/checkout/confirmation" component={() => <PublicRoute component={Confirmation} />} />
+      <Route path="/trips/share/:token" component={TripShare} />
       <Route path="/login" component={() => <PublicRoute component={Login} />} />
       <Route path="/register" component={() => <PublicRoute component={Register} />} />
 
       <Route path="/account" component={TouristPortal} />
       <Route path="/account/bookings" component={TouristPortal} />
       <Route path="/account/bookings/:id" component={TouristPortal} />
+      <Route path="/account/saved-trips" component={TouristPortal} />
       <Route path="/account/invoices" component={TouristPortal} />
       <Route path="/account/profile" component={TouristPortal} />
 
@@ -89,9 +92,13 @@ function Router() {
       <Route path="/admin/drivers" component={AdminDashboard} />
       <Route path="/admin/drivers/new" component={AdminDashboard} />
       <Route path="/admin/drivers/:id/edit" component={AdminDashboard} />
+      <Route path="/admin/drivers/:id" component={AdminDashboard} />
+      <Route path="/admin/customers" component={AdminDashboard} />
+      <Route path="/admin/customers/:id" component={AdminDashboard} />
       <Route path="/admin/requests" component={AdminDashboard} />
       <Route path="/admin/requests/:id" component={AdminDashboard} />
       <Route path="/admin/fleet" component={AdminDashboard} />
+      <Route path="/admin/leads" component={AdminDashboard} />
       <Route path="/admin/settings" component={AdminDashboard} />
 
       <Route component={NotFound} />

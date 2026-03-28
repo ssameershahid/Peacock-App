@@ -43,7 +43,9 @@ export default function AdminDrivers() {
               <div className="w-9 h-9 rounded-full bg-forest-100 flex items-center justify-center text-forest-600 font-body text-xs font-bold">{row.initials}</div>
             )},
             { key: 'name', label: 'Name', sortable: true, render: (row: any) => (
-              <span className="font-medium text-forest-600">{row.name}</span>
+              <Link href={`/admin/drivers/${row.id}`}>
+                <span className="font-medium text-forest-600 hover:text-amber-200 cursor-pointer">{row.name}</span>
+              </Link>
             )},
             { key: 'phone', label: 'Phone' },
             { key: 'languages', label: 'Languages', render: (row: any) => (

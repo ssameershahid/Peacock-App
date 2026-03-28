@@ -1,16 +1,114 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
-import { Map, FileText, User, LogOut, LayoutDashboard, Plane, Sparkles, ChevronDown, Menu, X } from 'lucide-react';
+import { Map, FileText, User, LogOut, LayoutDashboard, Plane, Sparkles, ChevronDown, Menu, X, Bell, CheckCircle, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTouristNotifications, useMarkTouristNotificationRead, useMarkAllTouristNotificationsRead } from '@/hooks/use-app-data';
+import { timeAgo } from '@/lib/date-utils';
 
 const NAV_ITEMS = [
   { href: '/account', label: 'Overview', icon: LayoutDashboard },
   { href: '/account/bookings', label: 'My Trips', icon: Map },
+  { href: '/account/saved-trips', label: 'Saved Trips', icon: Bookmark },
   { href: '/account/invoices', label: 'Invoices', icon: FileText },
   { href: '/account/profile', label: 'Profile', icon: User },
 ];
+
+// Notification type icon/color mapping
+const NOTIF_STYLES: Record<string, { color: string; bg: string }> = {
+  BOOKING_CONFIRMED: { color: 'text-emerald-600', bg: 'bg-emerald-100' },
+  DRIVER_ASSIGNED: { color: 'text-forest-600', bg: 'bg-forest-50' },
+  CYO_QUOTE_READY: { color: 'text-amber-600', bg: 'bg-amber-100' },
+  TRIP_REMINDER_3DAY: { color: 'text-amber-600', bg: 'bg-amber-50' },
+  TRIP_REMINDER_1DAY: { color: 'text-amber-600', bg: 'bg-amber-100' },
+  TRIP_STARTED: { color: 'text-forest-600', bg: 'bg-forest-50' },
+  TRIP_COMPLETED: { color: 'text-amber-600', bg: 'bg-amber-100' },
+  BOOKING_CANCELLED: { color: 'text-red-600', bg: 'bg-red-100' },
+  BOOKING_RESCHEDULED: { color: 'text-blue-600', bg: 'bg-blue-100' },
+};
+
+function NotificationBell() {
+  const [open, setOpen] = React.useState(false);
+  const { data: notifications = [] } = useTouristNotifications();
+  const markRead = useMarkTouristNotificationRead();
+  const markAllRead = useMarkAllTouristNotificationsRead();
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+
+  return (
+    <div className="relative" onMouseLeave={() => setOpen(false)}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative p-2 rounded-full hover:bg-warm-50 transition-colors"
+      >
+        <Bell className="w-5 h-5 text-warm-500" />
+        {unreadCount > 0 && (
+          <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute top-full right-0 mt-1 w-80 bg-white rounded-xl shadow-lg border border-warm-100 z-50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-warm-100">
+            <span className="font-body text-sm font-semibold text-forest-600">Notifications</span>
+            {unreadCount > 0 && (
+              <button
+                onClick={() => markAllRead.mutate()}
+                className="font-body text-xs text-forest-500 hover:text-forest-600 transition-colors"
+              >
+                Mark all read
+              </button>
+            )}
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="py-8 px-4 text-center">
+                <Bell className="w-8 h-8 text-warm-300 mx-auto mb-2" />
+                <p className="font-body text-sm font-medium text-warm-500">All caught up!</p>
+                <p className="font-body text-xs text-warm-400 mt-1">We'll notify you about trip updates, driver assignments, and more</p>
+              </div>
+            ) : (
+              notifications.slice(0, 10).map((n: any) => {
+                const style = NOTIF_STYLES[n.type] || { color: 'text-warm-500', bg: 'bg-warm-100' };
+                return (
+                  <button
+                    key={n.id}
+                    onClick={() => {
+                      if (!n.isRead) markRead.mutate(n.id);
+                      if (n.relatedId) {
+                        window.location.href = `/account/bookings/${n.relatedId}`;
+                      }
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      'w-full text-left px-4 py-3 hover:bg-warm-50 transition-colors flex items-start gap-3 border-b border-warm-50 last:border-0',
+                      !n.isRead && 'bg-forest-50/30'
+                    )}
+                  >
+                    <div className={cn('w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5', style.bg)}>
+                      <CheckCircle className={cn('w-4 h-4', style.color)} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn('font-body text-sm', !n.isRead ? 'font-medium text-forest-600' : 'text-warm-600')}>
+                        {n.title}
+                      </p>
+                      <p className="font-body text-xs text-warm-400 mt-0.5">{timeAgo(n.createdAt)}</p>
+                    </div>
+                    {!n.isRead && (
+                      <div className="w-2 h-2 rounded-full bg-forest-500 shrink-0 mt-2" />
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface AccountLayoutProps {
   children: React.ReactNode;
@@ -27,6 +125,9 @@ export function AccountLayout({ children }: AccountLayoutProps) {
     if (href === '/account') return location === '/account';
     return location.startsWith(href);
   };
+
+  // Hide the hero on the overview page — it has its own hero
+  const isOverview = location === '/account';
 
   return (
     <div className="min-h-screen bg-cream">
@@ -53,7 +154,8 @@ export function AccountLayout({ children }: AccountLayoutProps) {
             </nav>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1">
+            <NotificationBell />
             <div
               className="relative"
               onMouseEnter={() => setUserMenuOpen(true)}
@@ -94,9 +196,12 @@ export function AccountLayout({ children }: AccountLayoutProps) {
             </div>
           </div>
 
-          <button className="md:hidden p-2 text-warm-500" onClick={() => setMobileMenuOpen(true)}>
-            <Menu className="w-5 h-5" />
-          </button>
+          <div className="flex md:hidden items-center gap-1">
+            <NotificationBell />
+            <button className="p-2 text-warm-500" onClick={() => setMobileMenuOpen(true)}>
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -143,24 +248,29 @@ export function AccountLayout({ children }: AccountLayoutProps) {
         </div>
       )}
 
-      {/* Welcome hero */}
-      <div className="bg-forest-600 text-white pt-24 pb-12 px-6">
-        <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div>
-            <h1 className="font-display text-4xl md:text-5xl mb-2">
-              Welcome back, <span className="italic text-amber-200">{firstName}</span>
-            </h1>
-            <p className="font-body text-white/70">Manage your Sri Lankan adventures.</p>
+      {/* Welcome hero — hidden on overview page which has its own countdown hero */}
+      {!isOverview && (
+        <div className="bg-forest-600 text-white pt-24 pb-12 px-6">
+          <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div>
+              <h1 className="font-display text-4xl md:text-5xl mb-2">
+                Welcome back, <span className="italic text-amber-200">{firstName}</span>
+              </h1>
+              <p className="font-body text-white/70">Manage your Sri Lankan adventures.</p>
+            </div>
+            <Link href="/tours">
+              <Button className="bg-amber-200 text-forest-700 hover:bg-amber-300 rounded-pill font-body">
+                <Sparkles className="w-4 h-4 mr-2" /> Book a new trip
+              </Button>
+            </Link>
           </div>
-          <Link href="/tours">
-            <Button className="bg-amber-200 text-forest-700 hover:bg-amber-300 rounded-pill font-body">
-              <Sparkles className="w-4 h-4 mr-2" /> Book a new trip
-            </Button>
-          </Link>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-[1100px] mx-auto px-6 py-12 flex flex-col md:flex-row gap-10">
+      <div className={cn(
+        "max-w-[1100px] mx-auto px-6 py-12 flex flex-col md:flex-row gap-10",
+        isOverview && "pt-20"
+      )}>
         <div className="w-full md:w-64 shrink-0">
           <div className="bg-white rounded-2xl shadow-sm border border-warm-100 p-4 sticky top-20">
             <nav className="space-y-1">

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatDate } from '@/lib/date-utils';
 import AdminLayout from './AdminLayout';
 
 const VEHICLES = [
@@ -12,15 +13,82 @@ const VEHICLES = [
   { id: 'medium-bus', name: 'Medium Bus', model: 'Mitsubishi Rosa', image: '/vehicles/medium-bus-new.png', count: 1, dailyRate: 175, perKm: 0.45 },
 ];
 
-const DAYS_IN_MONTH = 31;
+const FAKE_CUSTOMERS = [
+  'Johnson family', 'Smith group', 'Patel party', 'Williams tour',
+  'Garcia family', 'Anderson duo', 'Thompson group', 'Martinez clan',
+  'Robinson party', 'Clark family', 'Walker tour', 'Lewis group',
+];
 
-function generateCalendarData() {
-  const data: Record<string, Record<number, 'available' | 'partial' | 'full'>> = {};
+const FAKE_TOUR_NAMES = [
+  'Hill Country Explorer', 'Coastal Sri Lanka', 'Cultural Triangle',
+  'Southern Beaches', 'Wildlife Safari', 'Tea Country Tour',
+  'Ancient Cities Trail', 'East Coast Discovery',
+];
+
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return s / 2147483647;
+  };
+}
+
+type DayStatus = 'available' | 'partial' | 'full';
+
+interface BookingInfo {
+  refCode: string;
+  customer: string;
+  tour: string;
+}
+
+interface DayData {
+  status: DayStatus;
+  bookedCount: number;
+  bookings: BookingInfo[];
+}
+
+function generateCalendarData(year: number, month: number) {
+  const daysCount = new Date(year, month + 1, 0).getDate();
+  const data: Record<string, Record<number, DayData>> = {};
+
   VEHICLES.forEach(v => {
     data[v.id] = {};
-    for (let d = 1; d <= DAYS_IN_MONTH; d++) {
-      const r = Math.random();
-      data[v.id][d] = r < 0.65 ? 'available' : r < 0.85 ? 'partial' : 'full';
+    for (let d = 1; d <= daysCount; d++) {
+      const rng = seededRandom(year * 10000 + month * 100 + d + v.id.charCodeAt(0) * 7);
+      const r = rng();
+      let status: DayStatus;
+      let bookedCount = 0;
+      const bookings: BookingInfo[] = [];
+
+      if (r < 0.65) {
+        status = 'available';
+        bookedCount = 0;
+      } else if (r < 0.85) {
+        status = 'partial';
+        bookedCount = Math.max(1, Math.floor(rng() * v.count));
+        if (bookedCount >= v.count) bookedCount = v.count - 1;
+        for (let b = 0; b < bookedCount; b++) {
+          const idx = Math.floor(rng() * 900) + 100;
+          bookings.push({
+            refCode: `PKD-2026-${idx}`,
+            customer: FAKE_CUSTOMERS[Math.floor(rng() * FAKE_CUSTOMERS.length)],
+            tour: FAKE_TOUR_NAMES[Math.floor(rng() * FAKE_TOUR_NAMES.length)],
+          });
+        }
+      } else {
+        status = 'full';
+        bookedCount = v.count;
+        for (let b = 0; b < bookedCount; b++) {
+          const idx = Math.floor(rng() * 900) + 100;
+          bookings.push({
+            refCode: `PKD-2026-${idx}`,
+            customer: FAKE_CUSTOMERS[Math.floor(rng() * FAKE_CUSTOMERS.length)],
+            tour: FAKE_TOUR_NAMES[Math.floor(rng() * FAKE_TOUR_NAMES.length)],
+          });
+        }
+      }
+
+      data[v.id][d] = { status, bookedCount, bookings };
     }
   });
   return data;
@@ -29,12 +97,34 @@ function generateCalendarData() {
 export default function AdminFleet() {
   const { format } = useCurrency();
   const [monthOffset, setMonthOffset] = useState(0);
-  const [calData] = useState(generateCalendarData);
   const [popover, setPopover] = useState<{ vehicle: string; day: number } | null>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   const baseDate = new Date(2026, 2 + monthOffset, 1);
   const monthName = baseDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
   const daysCount = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0).getDate();
+
+  const calData = useMemo(
+    () => generateCalendarData(baseDate.getFullYear(), baseDate.getMonth()),
+    [baseDate.getFullYear(), baseDate.getMonth()]
+  );
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    if (!popover) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setPopover(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [popover]);
+
+  function buildDateString(day: number) {
+    const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), day);
+    return formatDate(d, 'medium');
+  }
 
   return (
     <AdminLayout
@@ -68,9 +158,9 @@ export default function AdminFleet() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-body text-sm font-semibold text-forest-600">Availability calendar</h2>
           <div className="flex items-center gap-3">
-            <button onClick={() => setMonthOffset(monthOffset - 1)} className="p-1.5 hover:bg-warm-50 rounded-full transition-all duration-200"><ChevronLeft className="w-4 h-4 text-warm-500" /></button>
+            <button onClick={() => { setPopover(null); setMonthOffset(monthOffset - 1); }} className="p-1.5 hover:bg-warm-50 rounded-full transition-all duration-200"><ChevronLeft className="w-4 h-4 text-warm-500" /></button>
             <span className="font-body text-sm font-medium text-forest-600 min-w-[140px] text-center">{monthName}</span>
-            <button onClick={() => setMonthOffset(monthOffset + 1)} className="p-1.5 hover:bg-warm-50 rounded-full transition-all duration-200"><ChevronRight className="w-4 h-4 text-warm-500" /></button>
+            <button onClick={() => { setPopover(null); setMonthOffset(monthOffset + 1); }} className="p-1.5 hover:bg-warm-50 rounded-full transition-all duration-200"><ChevronRight className="w-4 h-4 text-warm-500" /></button>
           </div>
         </div>
         <div className="flex items-center gap-4 mb-4 font-body text-xs text-warm-400">
@@ -93,7 +183,8 @@ export default function AdminFleet() {
                 <tr key={v.id}>
                   <td className="sticky left-0 bg-white z-10 px-3 py-1.5 font-body text-xs text-forest-600 font-medium">{v.name}</td>
                   {Array.from({ length: daysCount }).map((_, d) => {
-                    const status = calData[v.id]?.[d + 1] || 'available';
+                    const dayData = calData[v.id]?.[d + 1];
+                    const status = dayData?.status || 'available';
                     const isPopover = popover?.vehicle === v.id && popover?.day === d + 1;
                     return (
                       <td key={d} className="px-0.5 py-1.5 relative">
@@ -106,22 +197,56 @@ export default function AdminFleet() {
                             'bg-red-200 hover:bg-red-300'
                           )}
                         />
-                        {isPopover && (
-                          <div className="absolute top-8 left-0 z-20 w-48 bg-white rounded-xl shadow-lg border border-warm-100 p-3">
-                            <p className="font-body text-xs font-semibold text-forest-600 mb-1">{v.name} {"\u2014"} {monthName.split(' ')[0]} {d + 1}</p>
-                            {status === 'available' ? (
-                              <p className="font-body text-xs text-emerald-600">All {v.count} vehicles available</p>
-                            ) : status === 'partial' ? (
-                              <div>
-                                <p className="font-body text-xs text-amber-600 mb-1">{Math.max(1, v.count - 1)} of {v.count} booked</p>
-                                <p className="font-body text-[10px] text-warm-400">BK-2026-007 (Johnson family)</p>
+                        {isPopover && dayData && (
+                          <div
+                            ref={popoverRef}
+                            className="absolute z-30 w-[280px] bg-white rounded-xl shadow-lg border border-warm-100"
+                            style={{ top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px' }}
+                          >
+                            {/* Pointer arrow */}
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-l border-t border-warm-100 rotate-45" />
+
+                            <div className="relative p-4">
+                              {/* Header */}
+                              <div className="mb-3 pb-2 border-b border-warm-50">
+                                <p className="font-body text-sm font-semibold text-forest-600">
+                                  {v.name}, {buildDateString(d + 1)}
+                                </p>
+                                <p className={cn(
+                                  'font-body text-xs mt-0.5',
+                                  status === 'available' ? 'text-emerald-600' :
+                                  status === 'partial' ? 'text-amber-600' :
+                                  'text-red-600'
+                                )}>
+                                  {dayData.bookedCount} of {v.count} in use
+                                </p>
                               </div>
-                            ) : (
-                              <div>
-                                <p className="font-body text-xs text-red-600 mb-1">All {v.count} vehicles booked</p>
-                                <p className="font-body text-[10px] text-warm-400">BK-2026-007, BK-2026-009</p>
-                              </div>
-                            )}
+
+                              {/* Booking list or empty state */}
+                              {dayData.bookings.length > 0 ? (
+                                <div className="space-y-2">
+                                  {dayData.bookings.map((bk, i) => (
+                                    <div key={i} className="flex items-start gap-2 bg-warm-50 rounded-lg p-2.5">
+                                      <div className="flex-1 min-w-0">
+                                        <a
+                                          href={`/admin/bookings/${bk.refCode}`}
+                                          className="font-body text-xs font-semibold text-forest-600 hover:text-forest-500 underline decoration-forest-200 hover:decoration-forest-400 transition-colors"
+                                          onClick={e => e.stopPropagation()}
+                                        >
+                                          {bk.refCode}
+                                        </a>
+                                        <p className="font-body text-[11px] text-warm-600 mt-0.5">{bk.customer}</p>
+                                        <p className="font-body text-[10px] text-warm-400">{bk.tour}</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="font-body text-xs text-emerald-600 py-2">
+                                  No bookings {'\u2014'} all {v.count} {v.name.toLowerCase()}{v.count > 1 ? 's' : ''} available
+                                </p>
+                              )}
+                            </div>
                           </div>
                         )}
                       </td>

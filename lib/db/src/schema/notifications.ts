@@ -15,6 +15,15 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "SCHEDULE_CHANGE",
   "TRIP_REMINDER",
   "PAYMENT_RECEIVED",
+  "BOOKING_CONFIRMED",
+  "DRIVER_ASSIGNED",
+  "CYO_QUOTE_READY",
+  "TRIP_REMINDER_3DAY",
+  "TRIP_REMINDER_1DAY",
+  "TRIP_STARTED",
+  "TRIP_COMPLETED",
+  "BOOKING_CANCELLED",
+  "BOOKING_RESCHEDULED",
 ]);
 
 export const notificationsTable = pgTable("notifications", {

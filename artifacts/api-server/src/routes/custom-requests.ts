@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, like, inArray } from "drizzle-orm";
 import {
   db,
   customTourRequestsTable,
@@ -15,8 +15,21 @@ import {
 
 const router = Router();
 
-function generateRefCode() {
-  return "CYO-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+async function generateRefCode(): Promise<string> {
+  const year = new Date().getFullYear();
+  const prefix = `CTR-${year}-`;
+  const [result] = await db
+    .select({ code: customTourRequestsTable.referenceCode })
+    .from(customTourRequestsTable)
+    .where(like(customTourRequestsTable.referenceCode, `${prefix}%`))
+    .orderBy(desc(customTourRequestsTable.referenceCode))
+    .limit(1);
+  let next = 1;
+  if (result?.code) {
+    const num = parseInt(result.code.replace(prefix, ""), 10);
+    if (!isNaN(num)) next = num + 1;
+  }
+  return `${prefix}${String(next).padStart(3, "0")}`;
 }
 
 // POST /api/custom-requests
@@ -42,7 +55,7 @@ router.post("/", authenticate, async (req, res) => {
   }
 
   try {
-    const referenceCode = generateRefCode();
+    const referenceCode = await generateRefCode();
     const [request] = await db
       .insert(customTourRequestsTable)
       .values({
@@ -86,7 +99,25 @@ router.get("/", authenticate, requireAdmin, async (_req, res) => {
       .select()
       .from(customTourRequestsTable)
       .orderBy(desc(customTourRequestsTable.createdAt));
-    res.json(requests);
+
+    // Enrich with customer names
+    const customerIds = [...new Set(requests.map(r => r.customerId))];
+    const customers = customerIds.length > 0
+      ? await db.select({ id: usersTable.id, firstName: usersTable.firstName, lastName: usersTable.lastName, email: usersTable.email }).from(usersTable).where(inArray(usersTable.id, customerIds))
+      : [];
+    const custMap: Record<string, any> = {};
+    for (const c of customers) custMap[c.id] = c;
+
+    const enriched = requests.map(r => {
+      const cust = custMap[r.customerId];
+      return {
+        ...r,
+        customerName: cust ? [cust.firstName, cust.lastName].filter(Boolean).join(" ") : "Unknown",
+        customerEmail: cust?.email || "",
+      };
+    });
+
+    res.json(enriched);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch requests" });
   }

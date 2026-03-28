@@ -10,6 +10,10 @@ import driversRouter from "./drivers.js";
 import driverFeaturesRouter from "./driver-features.js";
 import invoicesRouter from "./invoices.js";
 import currenciesRouter from "./currencies.js";
+import adminRouter from "./admin.js";
+import accountRouter from "./account.js";
+import savedTripsRouter from "./saved-trips.js";
+import tripLeadsRouter from "./trip-leads.js";
 
 const router: IRouter = Router();
 
@@ -24,5 +28,9 @@ router.use("/drivers", driversRouter);
 router.use("/drivers", driverFeaturesRouter);
 router.use("/invoices", invoicesRouter);
 router.use("/currencies", currenciesRouter);
+router.use("/admin", adminRouter);
+router.use("/account", accountRouter);
+router.use("/saved-trips", savedTripsRouter);
+router.use("/trip-leads", tripLeadsRouter);
 
 export default router;

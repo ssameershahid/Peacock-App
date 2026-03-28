@@ -1,14 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'wouter';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { VehicleSelector } from '@/components/shared/VehicleSelector';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
-import { Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft, Briefcase, Palmtree, Star, Trophy } from 'lucide-react';
-import { useVehicles } from '@/hooks/use-app-data';
+import {
+  Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft,
+  Briefcase, Palmtree, Star, Trophy, RotateCcw, MapPin, Car, Users,
+  Bookmark, Mail, Download, X, Loader2, Eye
+} from 'lucide-react';
+import { useVehicles, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip } from '@/hooks/use-app-data';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { analytics, trackEvent } from '@/lib/analytics';
 
-const DESTINATIONS = [
+// ── Static data ─────────────────────────────────────────────────────────────
+
+export const DESTINATIONS = [
   { id: 'colombo', name: 'Colombo', desc: 'Vibrant capital city', lng: 79.8612, lat: 6.9271 },
   { id: 'sigiriya', name: 'Sigiriya', desc: 'Ancient rock fortress', lng: 80.7597, lat: 7.9572 },
   { id: 'kandy', name: 'Kandy', desc: 'Cultural capital', lng: 80.6350, lat: 7.2906 },
@@ -32,34 +40,185 @@ const TRIP_TYPES = [
   { id: 'sport', label: 'Sport', icon: <Trophy className="w-6 h-6" />, desc: 'Active adventures' },
 ];
 
+const STORAGE_KEY = 'cyo_wizard_state';
+
+type WizardSelections = {
+  tripType: string;
+  pax: number;
+  vehicle: string;
+  destinations: string[];
+  otherPlaces: string;
+  startDate: string;
+  days: number;
+  flexibleDates: boolean;
+  budget: string;
+  travelStyle: string[];
+  interests: string[];
+  specialRequests: string;
+  name: string;
+  email: string;
+  phone: string;
+  country: string;
+};
+
+const DEFAULT_SELECTIONS: WizardSelections = {
+  tripType: '',
+  pax: 2,
+  vehicle: 'minivan',
+  destinations: [],
+  otherPlaces: '',
+  startDate: '',
+  days: 7,
+  flexibleDates: false,
+  budget: 'mid',
+  travelStyle: [],
+  interests: [],
+  specialRequests: '',
+  name: '',
+  email: '',
+  phone: '',
+  country: '',
+};
+
+// ── SessionStorage persistence ──────────────────────────────────────────────
+
+function saveWizardState(selections: WizardSelections, step: number) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+      selections,
+      step,
+      savedAt: new Date().toISOString(),
+    }));
+  } catch { /* quota exceeded, ignore */ }
+}
+
+function loadWizardState(): { selections: WizardSelections; step: number; savedAt: string } | null {
+  try {
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    if (!saved) return null;
+    const parsed = JSON.parse(saved);
+    const savedAt = new Date(parsed.savedAt);
+    const hoursSinceSave = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
+    if (hoursSinceSave > 24) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function clearWizardState() {
+  sessionStorage.removeItem(STORAGE_KEY);
+}
+
+// ── Helper: get destination names from IDs ──────────────────────────────────
+
+function getDestNames(ids: string[]): string[] {
+  return DESTINATIONS.filter(d => ids.includes(d.id)).map(d => d.name);
+}
+
+function getDestSummary(ids: string[]): string {
+  const names = getDestNames(ids);
+  if (names.length <= 2) return names.join(', ');
+  return `${names[0]}, ${names[1]}, +${names.length - 2} more`;
+}
+
+// ── Main component ──────────────────────────────────────────────────────────
+
 export default function CYOWizard() {
   const [step, setStep] = useState(1);
   const { data: vehicles } = useVehicles();
-  const { user } = useAuth();
+  const { user, login, register } = useAuth();
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
 
-  const [selections, setSelections] = useState({
-    tripType: '',
-    pax: 2,
-    vehicle: 'minivan',
-    destinations: [] as string[],
-    otherPlaces: '',
-    startDate: '',
-    days: 7,
-    flexibleDates: false,
-    budget: 'mid',
-    travelStyle: [] as string[],
-    interests: [] as string[],
-    specialRequests: '',
-    name: '',
-    email: '',
-    phone: '',
-    country: '',
-  });
+  const [selections, setSelections] = useState<WizardSelections>({ ...DEFAULT_SELECTIONS });
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [cyoRef, setCyoRef] = useState('');
   const [submitError, setSubmitError] = useState('');
+
+  // Recovery banner state
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryData, setRecoveryData] = useState<{ selections: WizardSelections; step: number; savedAt: string } | null>(null);
+
+  // Save/auth modal state
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authFirstName, setAuthFirstName] = useState('');
+  const [authLastName, setAuthLastName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Email capture state
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [emailCaptureEmail, setEmailCaptureEmail] = useState('');
+  const [emailCaptureName, setEmailCaptureName] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+
+  // Saved trip tracking
+  const [savedTripId, setSavedTripId] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [autoSaveTimer, setAutoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // PDF state
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+
+  const createSavedTrip = useCreateSavedTrip();
+  const updateSavedTrip = useUpdateSavedTrip();
+  const emailTripPlan = useEmailTripPlan();
+
+  const emailCaptureRef = useRef<HTMLDivElement>(null);
+
+  // ── Resume from URL param ───────────────────────────────────────────────
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const resumeId = params.get('resume');
+    if (!resumeId) {
+      // Check for sessionStorage recovery
+      const saved = loadWizardState();
+      if (saved && saved.selections.destinations.length > 0) {
+        setRecoveryData(saved);
+        setShowRecovery(true);
+      }
+      return;
+    }
+
+    // Try to load from saved trip first, then from lead
+    (async () => {
+      try {
+        const data = await api.get<any>(`/saved-trips/${resumeId}`);
+        if (data?.tripData) {
+          setSelections({ ...DEFAULT_SELECTIONS, ...data.tripData });
+          setStep(data.currentStep || 1);
+          setSavedTripId(data.id);
+          setIsSaved(true);
+          toast({ title: 'Your saved trip has been loaded', description: 'Continue where you left off' });
+          trackEvent('cyo_wizard_recovered', { source: 'saved_trip' });
+          return;
+        }
+      } catch { /* not a saved trip, try lead */ }
+
+      try {
+        const data = await api.get<any>(`/trip-leads/${resumeId}/trip-data`);
+        if (data?.tripData) {
+          setSelections({ ...DEFAULT_SELECTIONS, ...data.tripData });
+          setStep(5); // jump to review for email resume
+          toast({ title: 'Your trip plan has been loaded', description: 'Ready to submit for a quote!' });
+          trackEvent('cyo_wizard_recovered', { source: 'email_resume' });
+        }
+      } catch { /* invalid resume ID, ignore */ }
+    })();
+  }, []);
+
+  // ── Pre-fill user info ──────────────────────────────────────────────────
 
   useEffect(() => {
     if (user) {
@@ -72,6 +231,62 @@ export default function CYOWizard() {
       }));
     }
   }, [user]);
+
+  // ── Persist to sessionStorage on every change ───────────────────────────
+
+  useEffect(() => {
+    if (selections.destinations.length > 0 || selections.tripType) {
+      saveWizardState(selections, step);
+    }
+  }, [selections, step]);
+
+  // ── Analytics: track step changes ───────────────────────────────────────
+
+  const prevStep = useRef(step);
+  useEffect(() => {
+    if (step !== prevStep.current) {
+      const stepNames = ['trip_basics', 'destinations', 'dates', 'preferences', 'review'];
+      trackEvent('cyo_wizard_step_completed', {
+        step: prevStep.current,
+        stepName: stepNames[prevStep.current - 1],
+        ...(prevStep.current === 2 ? { destinationCount: selections.destinations.length } : {}),
+        ...(prevStep.current === 3 ? { duration: selections.days } : {}),
+      });
+      prevStep.current = step;
+    }
+  }, [step]);
+
+  // ── Auto-save for logged-in users ───────────────────────────────────────
+
+  const autoSave = useCallback(() => {
+    if (!user || selections.destinations.length === 0) return;
+
+    const tripData = { ...selections };
+    const isComplete = step === 5 && !!selections.name && !!selections.email;
+
+    if (savedTripId) {
+      updateSavedTrip.mutate(
+        { id: savedTripId, data: { tripData, currentStep: step, isComplete } },
+        { onSuccess: () => setIsSaved(true) }
+      );
+    } else {
+      createSavedTrip.mutate(
+        { tripData, currentStep: step, isComplete },
+        { onSuccess: (data: any) => { setSavedTripId(data.id); setIsSaved(true); } }
+      );
+    }
+  }, [user, selections, step, savedTripId]);
+
+  // Auto-save on step navigation for logged-in users
+  useEffect(() => {
+    if (!user || selections.destinations.length === 0 || step <= 1) return;
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    const timer = setTimeout(() => autoSave(), 1500);
+    setAutoSaveTimer(timer);
+    return () => clearTimeout(timer);
+  }, [step, user]);
+
+  // ── Selection helpers ───────────────────────────────────────────────────
 
   const toggleDest = (id: string) => {
     setSelections(s => ({
@@ -127,8 +342,280 @@ export default function CYOWizard() {
     index: i,
   }));
 
+  // ── Recovery banner handlers ────────────────────────────────────────────
+
+  const handleRecoveryContinue = () => {
+    if (recoveryData) {
+      setSelections({ ...DEFAULT_SELECTIONS, ...recoveryData.selections });
+      setStep(recoveryData.step);
+      trackEvent('cyo_wizard_recovered', {
+        stepRecoveredAt: recoveryData.step,
+        hoursSinceSave: ((Date.now() - new Date(recoveryData.savedAt).getTime()) / (1000 * 60 * 60)).toFixed(1),
+      });
+    }
+    setShowRecovery(false);
+  };
+
+  const handleRecoveryFresh = () => {
+    clearWizardState();
+    setShowRecovery(false);
+  };
+
+  // ── Save trip handler ───────────────────────────────────────────────────
+
+  const handleSaveTrip = () => {
+    if (user) {
+      // Already logged in — save immediately
+      autoSave();
+      toast({ title: 'Trip saved!', description: 'Find it in My Account \u2192 Saved Trips' });
+      trackEvent('cyo_trip_saved', { step, destinationCount: selections.destinations.length });
+    } else {
+      // Show auth modal
+      setShowAuthModal(true);
+    }
+  };
+
+  // ── Auth modal submit ───────────────────────────────────────────────────
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthLoading(true);
+
+    try {
+      if (authMode === 'register') {
+        await register({
+          email: authEmail,
+          password: authPassword,
+          firstName: authFirstName,
+          lastName: authLastName,
+        });
+      } else {
+        await login(authEmail, authPassword);
+      }
+      setShowAuthModal(false);
+      // Auto-save after auth (runs in next tick when user state updates)
+      setTimeout(() => {
+        const tripData = { ...selections };
+        const isComplete = step === 5 && !!selections.name && !!selections.email;
+        createSavedTrip.mutate(
+          { tripData, currentStep: step, isComplete },
+          {
+            onSuccess: (data: any) => {
+              setSavedTripId(data.id);
+              setIsSaved(true);
+              toast({
+                title: authMode === 'register' ? 'Account created! Your trip has been saved' : 'Logged in! Your trip has been saved',
+              });
+              trackEvent('cyo_trip_saved', { step, destinationCount: selections.destinations.length });
+            },
+          }
+        );
+      }, 500);
+    } catch (err: any) {
+      setAuthError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // ── Email capture handler ───────────────────────────────────────────────
+
+  const handleEmailCapture = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailSending(true);
+    try {
+      await emailTripPlan.mutateAsync({
+        email: emailCaptureEmail,
+        name: emailCaptureName || undefined,
+        tripData: selections,
+        currentStep: step,
+        source: 'cyo_wizard',
+      });
+      setEmailSent(true);
+      trackEvent('cyo_email_captured', {
+        step,
+        destinationCount: selections.destinations.length,
+        hasName: !!emailCaptureName,
+      });
+      toast({ title: 'Trip plan sent!', description: `Sent to ${emailCaptureEmail}` });
+      setTimeout(() => {
+        setShowEmailCapture(false);
+        setEmailSent(false);
+      }, 3000);
+    } catch {
+      toast({ title: 'Couldn\u2019t send email', description: 'Check the address and try again', variant: 'destructive' });
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  // ── PDF download handler ────────────────────────────────────────────────
+
+  const handleDownloadPDF = async () => {
+    setPdfGenerating(true);
+    try {
+      // Generate a simple client-side printable page as a PDF substitute
+      const destInfo = selectedDests.map((d, i) => `${i + 1}. ${d.name} — ${d.desc}`).join('\n');
+      const tripTypeLabel = (selections.tripType || '').charAt(0).toUpperCase() + (selections.tripType || '').slice(1);
+      const printContent = `
+        <html>
+        <head>
+          <title>Trip Plan - Peacock Drivers</title>
+          <style>
+            body { font-family: Georgia, serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
+            h1 { color: #2D6A4F; border-bottom: 2px solid #E9C46A; padding-bottom: 12px; }
+            h2 { color: #2D6A4F; margin-top: 32px; }
+            .meta { color: #666; font-size: 14px; margin-bottom: 32px; }
+            .box { background: #F8F5F0; border-radius: 8px; padding: 20px; margin: 16px 0; }
+            .box p { margin: 6px 0; }
+            .dest { padding: 8px 0; border-bottom: 1px solid #eee; }
+            .dest:last-child { border-bottom: none; }
+            .cta { background: #2D6A4F; color: white; padding: 14px 28px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 24px; }
+            .footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #ddd; color: #888; font-size: 12px; text-align: center; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>PEACOCK DRIVERS</h1>
+          <p class="meta">Sri Lanka's Premium Chauffeur Service</p>
+
+          <h2>Your Sri Lanka Trip Plan</h2>
+          <p>${selectedDestNames.join(' \u2192 ')} \u00b7 ${selections.days} days \u00b7 ${selections.pax} travellers</p>
+
+          <div class="box">
+            ${tripTypeLabel ? `<p><strong>Trip type:</strong> ${tripTypeLabel}</p>` : ''}
+            <p><strong>Duration:</strong> ${selections.days} days</p>
+            <p><strong>Travellers:</strong> ${selections.pax}</p>
+            <p><strong>Vehicle:</strong> ${selections.vehicle}</p>
+            <p><strong>Budget:</strong> ${selections.budget}</p>
+            ${selections.travelStyle.length ? `<p><strong>Travel style:</strong> ${selections.travelStyle.join(', ')}</p>` : ''}
+            ${selections.interests.length ? `<p><strong>Interests:</strong> ${selections.interests.join(', ')}</p>` : ''}
+            ${selections.startDate ? `<p><strong>Start date:</strong> ${selections.startDate}</p>` : ''}
+            ${selections.flexibleDates ? `<p><strong>Date flexibility:</strong> Yes</p>` : ''}
+            ${selections.specialRequests ? `<p><strong>Special requests:</strong> ${selections.specialRequests}</p>` : ''}
+          </div>
+
+          <h2>Selected Destinations</h2>
+          ${selectedDests.map((d, i) => `
+            <div class="dest">
+              <strong>${i + 1}. ${d.name}</strong>
+              <br/><span style="color:#666">${d.desc}</span>
+            </div>
+          `).join('')}
+          ${selections.otherPlaces ? `<div class="dest"><strong>Also visiting:</strong> ${selections.otherPlaces}</div>` : ''}
+
+          <h2>What happens next?</h2>
+          <p><strong>1. Submit your trip for a quote</strong> \u2014 Our team will review your selections and create a detailed itinerary with exact pricing.</p>
+          <p><strong>2. Review your personalised quote</strong> \u2014 We'll email you a custom quote within 24\u201348 hours.</p>
+          <p><strong>3. Book and meet your driver</strong> \u2014 Pay securely online and we'll assign your personal driver.</p>
+
+          <p style="margin-top:32px"><strong>Questions? Get in touch</strong></p>
+          <p>Email: hello@peacockdrivers.com<br/>Website: peacockdrivers.com</p>
+
+          <div class="footer">
+            <p>Peacock Drivers \u00b7 Private driver tours across Sri Lanka</p>
+            <p>Created on ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 500);
+      }
+
+      trackEvent('cyo_pdf_downloaded', { step, destinationCount: selections.destinations.length });
+    } catch {
+      toast({ title: 'Couldn\u2019t generate PDF', description: 'Please try again', variant: 'destructive' });
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
+
+  // ── Submit request handler ──────────────────────────────────────────────
+
+  const handleSubmit = async () => {
+    setSubmitError('');
+    setSubmitting(true);
+    try {
+      const locations = [
+        ...selectedDestNames,
+        ...(selections.otherPlaces ? [selections.otherPlaces] : []),
+      ];
+      const result = await api.post<any>('/custom-requests', {
+        tripType: selections.tripType,
+        locations,
+        preferredDates: selections.startDate || undefined,
+        durationDays: selections.days,
+        flexibility: selections.flexibleDates,
+        vehiclePreference: selections.vehicle,
+        passengers: selections.pax,
+        budgetRange: selections.budget,
+        travelStyle: selections.travelStyle,
+        interests: selections.interests,
+        specialRequests: selections.specialRequests || undefined,
+      });
+      const ref = result.referenceCode || result.id || `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+      setCyoRef(ref);
+      setSubmitted(true);
+      clearWizardState();
+
+      analytics.cyoRequestSubmitted(locations, selections.days);
+      trackEvent('cyo_request_submitted', {
+        destinationCount: selections.destinations.length,
+        duration: selections.days,
+        vehicleType: selections.vehicle,
+      });
+    } catch (err: any) {
+      setSubmitError(err.message || 'Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ── Close email capture on outside click ────────────────────────────────
+
+  useEffect(() => {
+    if (!showEmailCapture) return;
+    const handler = (e: MouseEvent) => {
+      if (emailCaptureRef.current && !emailCaptureRef.current.contains(e.target as Node)) {
+        setShowEmailCapture(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showEmailCapture]);
+
+  // ── Close auth modal on escape ──────────────────────────────────────────
+
+  useEffect(() => {
+    if (!showAuthModal) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowAuthModal(false);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [showAuthModal]);
+
+  // ── Pre-fill email capture from user ────────────────────────────────────
+
+  useEffect(() => {
+    if (user?.email) setEmailCaptureEmail(user.email);
+  }, [user]);
+
+  // ── Track wizard start ──────────────────────────────────────────────────
+
+  useEffect(() => {
+    trackEvent('cyo_wizard_started');
+  }, []);
+
+  // ── Submitted success screen ────────────────────────────────────────────
+
   if (submitted) {
-    const refId = cyoRef;
     return (
       <div className="min-h-screen bg-cream pt-24 pb-32">
         <div className="max-w-[600px] mx-auto px-6 text-center">
@@ -137,7 +624,7 @@ export default function CYOWizard() {
           </div>
           <h1 className="font-display text-4xl text-forest-600 mb-3">Request submitted!</h1>
           <p className="font-body text-warm-500 text-lg mb-2">Your reference number:</p>
-          <p className="font-mono text-2xl text-forest-600 bg-white px-6 py-3 rounded-xl border border-warm-200 inline-block mb-8">{refId}</p>
+          <p className="font-mono text-2xl text-forest-600 bg-white px-6 py-3 rounded-xl border border-warm-200 inline-block mb-8">{cyoRef}</p>
           <p className="font-body text-warm-500 mb-10">Our team will review your request and send you a personalised quote within 24–48 hours.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/"><Button variant="outline" className="font-body">Back to Home</Button></Link>
@@ -148,6 +635,13 @@ export default function CYOWizard() {
     );
   }
 
+  // ── Determine which actions to show in summary bar ──────────────────────
+
+  const showSummaryBar = step >= 2 && selections.destinations.length > 0;
+  const showSaveAction = step >= 2 && step <= 4;
+  const showEmailAction = step >= 2;
+  const showDownloadAction = step === 5;
+
   return (
     <div className="min-h-screen bg-cream pt-24 pb-32">
       <div className="max-w-[1000px] mx-auto px-6">
@@ -156,6 +650,26 @@ export default function CYOWizard() {
           <p className="font-body text-warm-500">Design your perfect Sri Lankan journey in 5 simple steps.</p>
         </div>
 
+        {/* Recovery banner */}
+        {showRecovery && (
+          <div className="bg-cream border border-warm-200 rounded-xl p-4 mb-6 flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="w-10 h-10 rounded-full bg-forest-50 flex items-center justify-center shrink-0">
+              <RotateCcw className="w-5 h-5 text-forest-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-body text-sm font-medium text-forest-600">Welcome back! You have an unsaved trip</p>
+              <p className="font-body text-xs text-warm-500">
+                {recoveryData ? `${recoveryData.selections.destinations.length} destination${recoveryData.selections.destinations.length !== 1 ? 's' : ''} selected` : ''}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <Button size="sm" onClick={handleRecoveryContinue} className="font-body">Continue</Button>
+              <button onClick={handleRecoveryFresh} className="font-body text-xs text-warm-400 hover:text-warm-600 transition-colors">Start fresh</button>
+            </div>
+          </div>
+        )}
+
+        {/* Step indicator */}
         <div className="bg-white rounded-full p-1.5 shadow-sm border border-warm-100 flex justify-between mb-10 overflow-x-auto hide-scrollbar">
           {stepLabels.map((s, i) => {
             const num = i + 1;
@@ -179,6 +693,7 @@ export default function CYOWizard() {
 
         <div className="bg-white rounded-[32px] shadow-sm border border-warm-100 p-8 md:p-12 min-h-[500px]">
 
+          {/* ── STEP 1: Basics ─────────────────────────────────────────── */}
           {step === 1 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h2 className="font-display text-3xl text-forest-600 mb-8">What kind of trip?</h2>
@@ -223,6 +738,7 @@ export default function CYOWizard() {
             </div>
           )}
 
+          {/* ── STEP 2: Destinations ───────────────────────────────────── */}
           {step === 2 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="flex justify-between items-start mb-6">
@@ -237,9 +753,7 @@ export default function CYOWizard() {
                 )}
               </div>
 
-              {/* Split: destinations left, live map right */}
               <div className="flex flex-col xl:flex-row gap-6">
-                {/* Left: destination grid */}
                 <div className="flex-1 min-w-0">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
                     {DESTINATIONS.map(d => {
@@ -278,7 +792,6 @@ export default function CYOWizard() {
                   </div>
                 </div>
 
-                {/* Right: live map — always visible */}
                 <div className="xl:w-[420px] shrink-0">
                   <div className="sticky top-24">
                     <MapView
@@ -309,6 +822,7 @@ export default function CYOWizard() {
             </div>
           )}
 
+          {/* ── STEP 3: Dates ──────────────────────────────────────────── */}
           {step === 3 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h2 className="font-display text-3xl text-forest-600 mb-8">When & how long?</h2>
@@ -352,6 +866,7 @@ export default function CYOWizard() {
             </div>
           )}
 
+          {/* ── STEP 4: Preferences ────────────────────────────────────── */}
           {step === 4 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h2 className="font-display text-3xl text-forest-600 mb-8">Your preferences</h2>
@@ -426,10 +941,26 @@ export default function CYOWizard() {
             </div>
           )}
 
+          {/* ── STEP 5: Review & Submit ────────────────────────────────── */}
           {step === 5 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="font-display text-3xl text-forest-600 mb-8">Review & submit</h2>
+              <h2 className="font-display text-3xl text-forest-600 mb-2">Review your trip</h2>
+              <p className="font-body text-warm-500 text-sm mb-8">
+                {selectedDestNames.join(' \u2192 ')} · {selections.days} days · {selections.pax} traveller{selections.pax !== 1 ? 's' : ''}
+              </p>
 
+              {/* Trip plan hero map */}
+              {cyoMapMarkers.length >= 2 && (
+                <div className="mb-8 rounded-xl overflow-hidden">
+                  <MapView
+                    markers={cyoMapMarkers}
+                    showRoute={true}
+                    height="200px"
+                  />
+                </div>
+              )}
+
+              {/* Full trip summary */}
               <div className="bg-warm-50 rounded-2xl p-6 mb-8 border border-warm-200 space-y-4">
                 <div className="grid grid-cols-2 gap-4 font-body text-sm">
                   <div>
@@ -448,6 +979,16 @@ export default function CYOWizard() {
                     <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Budget</span>
                     <span className="text-forest-600 font-medium capitalize">{selections.budget}</span>
                   </div>
+                  {selections.startDate && (
+                    <div>
+                      <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Start date</span>
+                      <span className="text-forest-600 font-medium">{selections.startDate}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Vehicle</span>
+                    <span className="text-forest-600 font-medium capitalize">{selections.vehicle}</span>
+                  </div>
                 </div>
                 <div>
                   <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Destinations</span>
@@ -458,6 +999,16 @@ export default function CYOWizard() {
                     {selections.otherPlaces && <span className="px-3 py-1 bg-amber-100 rounded-pill text-xs font-medium text-amber-700 font-body">{selections.otherPlaces}</span>}
                   </div>
                 </div>
+                {selections.travelStyle.length > 0 && (
+                  <div>
+                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Travel style</span>
+                    <div className="flex flex-wrap gap-2">
+                      {selections.travelStyle.map(s => (
+                        <span key={s} className="px-3 py-1 bg-forest-100 rounded-pill text-xs font-medium text-forest-600 font-body">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {selections.interests.length > 0 && (
                   <div>
                     <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Interests</span>
@@ -468,8 +1019,24 @@ export default function CYOWizard() {
                     </div>
                   </div>
                 )}
+                {selections.specialRequests && (
+                  <div>
+                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Special requests</span>
+                    <p className="font-body text-sm text-forest-600">{selections.specialRequests}</p>
+                  </div>
+                )}
               </div>
 
+              {/* "Not ready" nudge */}
+              <p className="font-body text-sm text-warm-400 mb-6">
+                Not ready to submit? You can also{' '}
+                <button onClick={() => setShowEmailCapture(true)} className="text-forest-500 hover:underline">email yourself this trip</button>
+                {' '}or{' '}
+                <button onClick={handleDownloadPDF} className="text-forest-500 hover:underline">download a PDF</button>
+                {' '}to review later.
+              </p>
+
+              {/* Contact info form */}
               <div className="grid sm:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Full name *</label>
@@ -533,7 +1100,130 @@ export default function CYOWizard() {
             <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 font-body text-sm text-red-600">{submitError}</div>
           )}
 
-          <div className="flex justify-between mt-10 pt-6 border-t border-warm-100">
+          {/* ── Trip Summary Bar ────────────────────────────────────────── */}
+          {showSummaryBar && (
+            <div className="mt-6 pt-4 border-t border-warm-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {/* Left: trip summary indicators */}
+                <div className="flex items-center gap-3 flex-wrap text-xs font-body text-warm-600">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-warm-400" />
+                    {getDestSummary(selections.destinations)}
+                  </span>
+                  {selections.days && (
+                    <>
+                      <span className="text-warm-300">·</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-warm-400" />
+                        {selections.days} days
+                      </span>
+                    </>
+                  )}
+                  <span className="text-warm-300">·</span>
+                  <span className="flex items-center gap-1">
+                    <Car className="w-3.5 h-3.5 text-warm-400" />
+                    <span className="capitalize">{selections.vehicle}</span>
+                  </span>
+                  <span className="text-warm-300">·</span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5 text-warm-400" />
+                    {selections.pax} traveller{selections.pax !== 1 ? 's' : ''}
+                  </span>
+                  {/* Auto-save indicator */}
+                  {user && isSaved && (
+                    <>
+                      <span className="text-warm-300">·</span>
+                      <span className="text-warm-400 text-[11px]">Auto-saved ✓</span>
+                    </>
+                  )}
+                </div>
+
+                {/* Right: action buttons */}
+                <div className="flex items-center gap-2 relative">
+                  {showSaveAction && (
+                    <button
+                      onClick={handleSaveTrip}
+                      disabled={isSaved && !!user}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium text-forest-500 hover:bg-forest-50 transition-colors disabled:opacity-50 disabled:cursor-default"
+                    >
+                      <Bookmark className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">{isSaved && user ? 'Saved ✓' : 'Save trip'}</span>
+                    </button>
+                  )}
+
+                  {showEmailAction && (
+                    <div className="relative" ref={emailCaptureRef}>
+                      <button
+                        onClick={() => setShowEmailCapture(!showEmailCapture)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium text-forest-500 hover:bg-forest-50 transition-colors"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Email me this trip</span>
+                      </button>
+
+                      {/* Email capture inline form */}
+                      {showEmailCapture && (
+                        <div className="absolute bottom-full right-0 mb-2 w-80 bg-white rounded-xl shadow-lg border border-warm-100 p-4 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                          {emailSent ? (
+                            <div className="text-center py-3">
+                              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <Check className="w-5 h-5 text-emerald-600" />
+                              </div>
+                              <p className="font-body text-sm font-medium text-forest-600">Trip plan sent! Check your email</p>
+                            </div>
+                          ) : (
+                            <form onSubmit={handleEmailCapture}>
+                              <p className="font-body text-sm font-medium text-forest-600 mb-3">Get your trip plan by email</p>
+                              <input
+                                type="email"
+                                required
+                                value={emailCaptureEmail}
+                                onChange={e => setEmailCaptureEmail(e.target.value)}
+                                className="w-full bg-white border border-warm-200 rounded-lg py-2 px-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none mb-2"
+                                placeholder="your@email.com"
+                                autoFocus
+                              />
+                              <input
+                                type="text"
+                                value={emailCaptureName}
+                                onChange={e => setEmailCaptureName(e.target.value)}
+                                className="w-full bg-white border border-warm-200 rounded-lg py-2 px-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none mb-3"
+                                placeholder="Your name (optional)"
+                              />
+                              <Button
+                                type="submit"
+                                disabled={emailSending}
+                                className="w-full h-10 bg-amber-200 text-forest-600 hover:bg-amber-300 font-body text-sm"
+                              >
+                                {emailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send my trip'}
+                              </Button>
+                              <p className="font-body text-[11px] text-warm-400 mt-2">
+                                We'll send your trip plan and may follow up with a quote. Unsubscribe anytime.
+                              </p>
+                            </form>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {showDownloadAction && (
+                    <button
+                      onClick={handleDownloadPDF}
+                      disabled={pdfGenerating}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium text-forest-500 hover:bg-forest-50 transition-colors"
+                    >
+                      {pdfGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                      <span className="hidden sm:inline">Download PDF</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Navigation buttons ─────────────────────────────────────── */}
+          <div className="flex justify-between mt-6 pt-6 border-t border-warm-100">
             {step > 1 ? (
               <Button variant="ghost" onClick={() => setStep(s => s - 1)} className="font-body">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
@@ -553,35 +1243,7 @@ export default function CYOWizard() {
             ) : (
               <Button
                 size="lg"
-                onClick={async () => {
-                  setSubmitError('');
-                  setSubmitting(true);
-                  try {
-                    const locations = [
-                      ...selectedDestNames,
-                      ...(selections.otherPlaces ? [selections.otherPlaces] : []),
-                    ];
-                    const result = await api.post<any>('/custom-requests', {
-                      tripType: selections.tripType,
-                      locations,
-                      preferredDates: selections.startDate || undefined,
-                      durationDays: selections.days,
-                      flexibility: selections.flexibleDates,
-                      vehiclePreference: selections.vehicle,
-                      passengers: selections.pax,
-                      budgetRange: selections.budget,
-                      travelStyle: selections.travelStyle,
-                      interests: selections.interests,
-                      specialRequests: selections.specialRequests || undefined,
-                    });
-                    setCyoRef(result.referenceCode || result.id || `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`);
-                    setSubmitted(true);
-                  } catch (err: any) {
-                    setSubmitError(err.message || 'Failed to submit. Please try again.');
-                  } finally {
-                    setSubmitting(false);
-                  }
-                }}
+                onClick={handleSubmit}
                 disabled={!canProceed() || submitting}
                 className="h-14 px-10 text-lg bg-amber-400 text-forest-600 hover:bg-amber-300 font-body"
               >
@@ -591,6 +1253,99 @@ export default function CYOWizard() {
           </div>
         </div>
       </div>
+
+      {/* ── Auth Modal (for Save Trip when not logged in) ──────────────── */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowAuthModal(false)} />
+          <div className="relative bg-white rounded-2xl max-w-[440px] w-full p-8 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 p-1.5 text-warm-400 hover:text-warm-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="font-display text-2xl text-forest-600 mb-1">Save your trip</h2>
+            <p className="font-body text-sm text-warm-500 mb-6">
+              {authMode === 'register'
+                ? 'Create a free account to save this trip and access it anytime'
+                : 'Log in to save this trip to your account'
+              }
+            </p>
+
+            {authError && (
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 font-body text-sm text-red-600 mb-4">
+                {authError}
+              </div>
+            )}
+
+            <form onSubmit={handleAuthSubmit} className="space-y-3">
+              {authMode === 'register' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    required
+                    value={authFirstName}
+                    onChange={e => setAuthFirstName(e.target.value)}
+                    className="bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                    placeholder="First name"
+                  />
+                  <input
+                    type="text"
+                    value={authLastName}
+                    onChange={e => setAuthLastName(e.target.value)}
+                    className="bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                    placeholder="Last name"
+                  />
+                </div>
+              )}
+              <input
+                type="email"
+                required
+                value={authEmail}
+                onChange={e => setAuthEmail(e.target.value)}
+                className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                placeholder="Email address"
+                autoFocus
+              />
+              <input
+                type="password"
+                required
+                value={authPassword}
+                onChange={e => setAuthPassword(e.target.value)}
+                className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                placeholder="Password"
+              />
+              <Button
+                type="submit"
+                disabled={authLoading}
+                className="w-full h-12 font-body text-base"
+              >
+                {authLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : authMode === 'register' ? (
+                  'Create account & save'
+                ) : (
+                  'Log in & save'
+                )}
+              </Button>
+            </form>
+
+            <p className="font-body text-sm text-warm-500 text-center mt-4">
+              {authMode === 'register' ? (
+                <>Already have an account? <button onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-forest-500 hover:underline font-medium">Log in</button></>
+              ) : (
+                <>Need an account? <button onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-forest-500 hover:underline font-medium">Register</button></>
+              )}
+            </p>
+
+            <p className="font-body text-xs text-warm-400 text-center mt-4">
+              Your trip selections won't be lost — keep building!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

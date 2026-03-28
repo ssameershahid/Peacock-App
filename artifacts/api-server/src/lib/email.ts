@@ -268,6 +268,61 @@ export async function sendCancellationConfirmation(params: {
   });
 }
 
+export async function sendTripPlanEmail(params: {
+  to: string;
+  name: string | null;
+  tripData: any;
+  leadId: string;
+}) {
+  const { tripData, leadId } = params;
+  const greeting = params.name ? `Hi ${params.name}` : "Hi there";
+  const destinations: string[] = (tripData.destinations || []).map((id: string) => {
+    const nameMap: Record<string, string> = {
+      colombo: "Colombo", sigiriya: "Sigiriya", kandy: "Kandy", ella: "Ella",
+      galle: "Galle", yala: "Yala", trincomalee: "Trincomalee", negombo: "Negombo",
+      "nuwara-eliya": "Nuwara Eliya", tangalle: "Tangalle", anuradhapura: "Anuradhapura", haputale: "Haputale",
+    };
+    return nameMap[id] || id;
+  });
+  const destList = destinations.length > 0 ? destinations.join(" &rarr; ") : "Not yet selected";
+  const resumeUrl = `${FRONTEND_URL}/tours/custom?resume=${leadId}`;
+
+  const tripTypeLabel = (tripData.tripType || "").charAt(0).toUpperCase() + (tripData.tripType || "").slice(1);
+  const budgetLabel = (tripData.budget || "").charAt(0).toUpperCase() + (tripData.budget || "").slice(1);
+
+  return getResend().emails.send({
+    from: FROM,
+    to: params.to,
+    subject: "Your Sri Lanka trip plan from Peacock Drivers",
+    html: baseTemplate(`
+      <h2>Your Sri Lanka Trip Plan</h2>
+      <p>${greeting}, here's a summary of the trip you've been designing!</p>
+
+      <div class="box">
+        ${tripTypeLabel ? `<p><strong>Trip type:</strong> ${tripTypeLabel}</p>` : ""}
+        <p><strong>Destinations:</strong> ${destList}</p>
+        ${tripData.otherPlaces ? `<p><strong>Also visiting:</strong> ${tripData.otherPlaces}</p>` : ""}
+        <p><strong>Duration:</strong> ${tripData.days || 7} days</p>
+        <p><strong>Travellers:</strong> ${tripData.pax || 2}</p>
+        ${tripData.vehicle ? `<p><strong>Vehicle preference:</strong> ${tripData.vehicle}</p>` : ""}
+        ${budgetLabel ? `<p><strong>Budget:</strong> ${budgetLabel}</p>` : ""}
+        ${(tripData.travelStyle || []).length > 0 ? `<p><strong>Travel style:</strong> ${tripData.travelStyle.join(", ")}</p>` : ""}
+        ${(tripData.interests || []).length > 0 ? `<p><strong>Interests:</strong> ${tripData.interests.join(", ")}</p>` : ""}
+        ${tripData.specialRequests ? `<p><strong>Special requests:</strong> ${tripData.specialRequests}</p>` : ""}
+      </div>
+
+      <h2 style="margin-top:32px">Ready to make this trip happen?</h2>
+      <p>Our team will create a personalised quote with exact pricing, suggested itinerary, and driver assignment.</p>
+      <a class="button" href="${resumeUrl}">Get a free quote &rarr;</a>
+
+      <p style="margin-top:24px;font-size:13px;color:#666">Or simply reply to this email and we'll help you plan.</p>
+
+      <hr class="divider">
+      <p style="font-size:12px;color:#999">Questions? WhatsApp us or email <a href="mailto:hello@peacockdrivers.com">hello@peacockdrivers.com</a></p>
+    `),
+  });
+}
+
 export async function sendPasswordReset(params: {
   to: string;
   firstName: string;
