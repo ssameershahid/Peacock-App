@@ -10,5 +10,10 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "tsx": "catalog:"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "catalog:",
+    "pg": "^8.16.3"
   }
 }
