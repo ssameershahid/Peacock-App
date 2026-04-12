@@ -233,11 +233,10 @@ export default function Transfers() {
     return `${h}:${m}`;
   });
 
-  const getOpts = (id: string): RouteOptions => ({
-    ...DEFAULT_ROUTE_OPTIONS,
-    vehicleId: vehicles?.[0]?.id ?? 'car',
-    ...routeOptions[id],
-  });
+  const getOpts = (id: string): RouteOptions => {
+    const defaults = { ...DEFAULT_ROUTE_OPTIONS, vehicleId: vehicles?.[0]?.id ?? 'car' };
+    return { ...defaults, ...routeOptions[id] };
+  };
 
   const patchOpts = (id: string, patch: Partial<RouteOptions>) =>
     setRouteOptions(prev => ({ ...prev, [id]: { ...getOpts(id), ...patch } }));
