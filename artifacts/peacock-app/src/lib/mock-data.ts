@@ -1,10 +1,10 @@
 // Mock data fallbacks — used when API returns empty or fails
 export const VEHICLES: any[] = [
-  { id: 'car', name: 'Car', model: 'Toyota Prius', image: '/vehicles/car-new.png', capacity: '1–3 pax', maxPassengers: 3, pricePerDay: 45 },
-  { id: 'minivan', name: 'Minivan', model: 'Toyota HiAce', image: '/vehicles/minivan-new.png', capacity: '1–6 pax', maxPassengers: 6, pricePerDay: 65 },
-  { id: 'large-van', name: 'Large Minivan', model: 'Toyota HiAce HR', image: '/vehicles/large-minivan-new.png', capacity: '1–10 pax', maxPassengers: 10, pricePerDay: 85 },
-  { id: 'small-bus', name: 'Small Bus', model: 'Toyota Coaster', image: '/vehicles/small-bus-new.png', capacity: '1–20 pax', maxPassengers: 20, pricePerDay: 120 },
-  { id: 'medium-bus', name: 'Medium Bus', model: 'King Long', image: '/vehicles/medium-bus-new.png', capacity: '1–35 pax', maxPassengers: 35, pricePerDay: 175 },
+  { id: 'car', name: 'Car', model: 'Toyota Prius', image: '/vehicles/car-new.png', capacity: '3–4 pax', maxPassengers: 4, maxLuggage: 3, luggageLabel: '2–3 suitcases', pricePerDay: 45 },
+  { id: 'minivan', name: 'Minivan', model: 'Toyota HiAce', image: '/vehicles/minivan-new.png', capacity: '6–7 pax', maxPassengers: 7, maxLuggage: 5, luggageLabel: '4–5 suitcases', pricePerDay: 65 },
+  { id: 'large-van', name: 'Large Minivan', model: 'Toyota HiAce HR', image: '/vehicles/large-minivan-new.png', capacity: 'up to 10 pax', maxPassengers: 10, maxLuggage: 10, luggageLabel: '6–10 suitcases', pricePerDay: 85 },
+  { id: 'small-bus', name: 'Small Bus', model: 'Toyota Coaster', image: '/vehicles/small-bus-new.png', capacity: 'up to 20 pax', maxPassengers: 20, maxLuggage: 15, luggageLabel: '10–15 suitcases', pricePerDay: 120 },
+  { id: 'medium-bus', name: 'Medium Bus', model: 'King Long', image: '/vehicles/medium-bus-new.png', capacity: 'up to 35 pax', maxPassengers: 35, maxLuggage: 25, luggageLabel: 'up to 25 suitcases', pricePerDay: 175 },
 ];
 
 export const TOURS: any[] = [
@@ -181,11 +181,11 @@ export const TRANSFERS: any[] = [
 ];
 
 export const POPULAR_ROUTES: any[] = [
-  { id: 'colombo-galle', from: 'Colombo', to: 'Galle', description: 'Scenic coastal drive along the southern expressway to the historic Dutch fort city.' },
-  { id: 'colombo-kandy', from: 'Colombo', to: 'Kandy', description: 'Journey through lush hill country to Sri Lanka\'s cultural capital and the Temple of the Tooth.' },
-  { id: 'colombo-sigiriya', from: 'Colombo', to: 'Sigiriya', description: 'Travel to the ancient rock fortress, a UNESCO World Heritage Site rising from the jungle.' },
-  { id: 'kandy-ella', from: 'Kandy', to: 'Ella', description: 'Wind through tea plantations and misty mountains to the charming hill station of Ella.' },
-  { id: 'galle-ella', from: 'Galle', to: 'Ella', description: 'From the coastal fort town, climb into the highlands past waterfalls and paddy fields.' },
+  { id: 'colombo-galle', from: 'Colombo', to: 'Galle', distance: 130, estimatedTime: '2.5–3 hours', prices: { car: 72, minivan: 98, 'large-van': 124, 'small-bus': 156, 'medium-bus': 195 }, description: 'Scenic coastal drive along the southern expressway to the historic Dutch fort city.' },
+  { id: 'colombo-kandy', from: 'Colombo', to: 'Kandy', distance: 120, estimatedTime: '3–3.5 hours', prices: { car: 66, minivan: 90, 'large-van': 114, 'small-bus': 144, 'medium-bus': 180 }, description: 'Journey through lush hill country to Sri Lanka\'s cultural capital and the Temple of the Tooth.' },
+  { id: 'colombo-sigiriya', from: 'Colombo', to: 'Sigiriya', distance: 170, estimatedTime: '4–4.5 hours', prices: { car: 94, minivan: 128, 'large-van': 162, 'small-bus': 204, 'medium-bus': 255 }, description: 'Travel to the ancient rock fortress, a UNESCO World Heritage Site rising from the jungle.' },
+  { id: 'kandy-ella', from: 'Kandy', to: 'Ella', distance: 140, estimatedTime: '4–5 hours', prices: { car: 77, minivan: 105, 'large-van': 133, 'small-bus': 168, 'medium-bus': 210 }, description: 'Wind through tea plantations and misty mountains to the charming hill station of Ella.' },
+  { id: 'galle-ella', from: 'Galle', to: 'Ella', distance: 200, estimatedTime: '5–6 hours', prices: { car: 110, minivan: 150, 'large-van': 190, 'small-bus': 240, 'medium-bus': 300 }, description: 'From the coastal fort town, climb into the highlands past waterfalls and paddy fields.' },
 ];
 
 export const CURRENCIES: any[] = [];

@@ -1,61 +1,229 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import React, { useState, useRef, useCallback } from 'react';
+import { useLocation } from 'wouter';
 import { SectionHeading } from '@/components/shared/SectionHeading';
-import { MapView, type MapMarker } from '@/components/shared/MapView';
+import { MapView } from '@/components/shared/MapView';
 import { PlacesAutocomplete, type PlaceResult } from '@/components/shared/PlacesAutocomplete';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTransfers, usePopularRoutes, useVehicles } from '@/hooks/use-app-data';
 import { Button } from '@/components/ui/button';
-import { Plane, Clock, MapPin, ChevronDown, ChevronUp, ArrowRight, Calendar, Users, Luggage } from 'lucide-react';
+import {
+  Plane, Clock, MapPin, ChevronDown, ChevronUp,
+  ArrowRight, Calendar, Users, Luggage, Plus, Minus,
+} from 'lucide-react';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface RouteOptions {
+  vehicleId: string;
+  time: string;
+  passengers: number;
+  luggage: number;
+}
+
+const DEFAULT_ROUTE_OPTIONS: RouteOptions = {
+  vehicleId: 'car',
+  time: '08:00',
+  passengers: 2,
+  luggage: 2,
+};
+
+// ── Stepper ───────────────────────────────────────────────────────────────────
+
+function Stepper({
+  label, value, onChange, min = 0, max = 35, icon: Icon,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  icon: React.ElementType;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="font-body text-xs text-warm-400 flex items-center gap-1">
+        <Icon className="w-3 h-3" /> {label}
+      </span>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - 1))}
+          className="w-7 h-7 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
+        >
+          <Minus className="w-3 h-3" />
+        </button>
+        <span className="font-body text-sm font-semibold text-forest-600 w-6 text-center">{value}</span>
+        <button
+          type="button"
+          onClick={() => onChange(Math.min(max, value + 1))}
+          className="w-7 h-7 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
+        >
+          <Plus className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── BookingPanel ──────────────────────────────────────────────────────────────
+
+function BookingPanel({
+  prices,
+  vehicles,
+  options,
+  timeSlots,
+  onPatch,
+  onBook,
+  format,
+}: {
+  prices: Record<string, number>;
+  vehicles: any[];
+  options: RouteOptions;
+  timeSlots: string[];
+  onPatch: (patch: Partial<RouteOptions>) => void;
+  onBook: (opts: RouteOptions) => void;
+  format: (n: number) => string;
+}) {
+  const price = prices?.[options.vehicleId] ?? 0;
+  const selectedVehicleData = vehicles.find((v: any) => v.id === options.vehicleId);
+
+  const autoUpgrade = (pax: number, bags: number): string => {
+    const sorted = [...vehicles].sort((a: any, b: any) => a.maxPassengers - b.maxPassengers);
+    const fits = sorted.find((v: any) => v.maxPassengers >= pax && v.maxLuggage >= bags);
+    return fits?.id ?? sorted[sorted.length - 1].id;
+  };
+
+  return (
+    <div className="pt-4 space-y-4 border-t border-warm-100 mt-1">
+      {/* Vehicle slider — greyed out if too small for selected pax/luggage */}
+      <div>
+        <p className="font-body text-[11px] font-medium uppercase tracking-wider text-warm-400 mb-2">
+          Select vehicle
+        </p>
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+          {vehicles.map((v: any) => {
+            const tooSmall = v.maxPassengers < options.passengers || v.maxLuggage < options.luggage;
+            return (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => !tooSmall && onPatch({ vehicleId: v.id })}
+                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border-2 shrink-0 min-w-[84px] transition-all focus:outline-none ${
+                  tooSmall
+                    ? 'border-warm-100 bg-warm-50 opacity-40 cursor-not-allowed'
+                    : options.vehicleId === v.id
+                    ? 'border-forest-500 bg-forest-50 cursor-pointer'
+                    : 'border-warm-200 bg-white hover:border-forest-300 cursor-pointer'
+                }`}
+              >
+                <img src={v.image} alt={v.name} className="w-14 h-8 object-contain" />
+                <span className="font-body text-[11px] font-semibold text-forest-600 text-center leading-tight mt-0.5">
+                  {v.name}
+                </span>
+                <span className="font-body text-[10px] text-warm-400">{v.capacity}</span>
+                <span className="font-body text-[11px] font-bold text-forest-600">
+                  {format(prices?.[v.id] ?? 0)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {selectedVehicleData && (
+          <p className="font-body text-xs text-forest-500 mt-1.5">
+            ✓ <span className="font-medium">{selectedVehicleData.name}</span> — {selectedVehicleData.capacity} · {selectedVehicleData.luggageLabel}
+          </p>
+        )}
+      </div>
+
+      {/* Time · Passengers · Luggage — single inline row */}
+      <div className="flex flex-wrap items-end gap-5">
+        <div className="flex flex-col gap-1.5">
+          <span className="font-body text-xs text-warm-400 flex items-center gap-1">
+            <Clock className="w-3 h-3" /> Pickup time
+          </span>
+          <select
+            value={options.time}
+            onChange={e => onPatch({ time: e.target.value })}
+            className="bg-white border border-warm-200 rounded-xl py-1.5 px-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none appearance-none min-w-[90px]"
+          >
+            {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+
+        <Stepper
+          label="Passengers"
+          value={options.passengers}
+          onChange={v => {
+            const vehicleId = autoUpgrade(v, options.luggage);
+            onPatch({ passengers: v, vehicleId });
+          }}
+          min={1} max={35}
+          icon={Users}
+        />
+        <Stepper
+          label="Luggage bags"
+          value={options.luggage}
+          onChange={v => {
+            const vehicleId = autoUpgrade(options.passengers, v);
+            onPatch({ luggage: v, vehicleId });
+          }}
+          min={0} max={20}
+          icon={Luggage}
+        />
+      </div>
+
+      {/* CTA */}
+      <Button className="w-full font-body" onClick={() => onBook(options)}>
+        Book now — {format(price)} <ArrowRight className="w-4 h-4 ml-2" />
+      </Button>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Transfers() {
   const { format } = useCurrency();
   const { data: routes } = useTransfers();
   const { data: popularRoutes } = usePopularRoutes();
   const { data: vehicles } = useVehicles();
+  const [, setLocation] = useLocation();
 
+  // Airport section
   const [expandedRoute, setExpandedRoute] = useState<string | null>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState('car');
+  const [showAllAirportRoutes, setShowAllAirportRoutes] = useState(false);
+
+  // Popular routes section
+  const [expandedPopularRoute, setExpandedPopularRoute] = useState<string | null>(null);
+  const [showAllPopularRoutes, setShowAllPopularRoutes] = useState(false);
+
+  // Per-route booking options (shared map for both airport + popular)
+  const [routeOptions, setRouteOptions] = useState<Record<string, RouteOptions>>({});
+
+  // Custom route state
+  const [customVehicle, setCustomVehicle] = useState('car');
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
   const [pickupCoords, setPickupCoords] = useState<[number, number] | null>(null);
   const [dropoffCoords, setDropoffCoords] = useState<[number, number] | null>(null);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('08:00');
-  const [passengers, setPassengers] = useState(2);
-  const [luggage, setLuggage] = useState(2);
+  const [customDate, setCustomDate] = useState('');
+  const [customTime, setCustomTime] = useState('08:00');
+  const [customPassengers, setCustomPassengers] = useState(2);
+  const [customLuggage, setCustomLuggage] = useState(2);
 
-  const [, setLocation] = useLocation();
-  const selectedVehicleData = vehicles?.find((v: any) => v.id === selectedVehicle);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const todayStr = new Date().toISOString().split('T')[0];
 
-  const bookTransfer = (opts: {
-    name: string;
-    vehicleType: string;
-    vehicleName: string;
-    price: number;
-    startDate?: string;
-    passengers?: number;
-    routeId?: string;
-  }) => {
-    const data = {
-      type: 'TRANSFER',
-      transferRouteId: opts.routeId,
-      tourName: opts.name,
-      vehicleType: opts.vehicleType,
-      vehicleName: opts.vehicleName,
-      startDate: opts.startDate || '',
-      numDays: 1,
-      passengers: opts.passengers ?? passengers,
-      vehicleRate: opts.price,
-      vehicleTotal: opts.price,
-      addOnsTotal: 0,
-      selectedAddOns: [],
-      totalPrice: opts.price,
-    };
-    sessionStorage.setItem('peacock_booking', JSON.stringify(data));
-    setLocation('/checkout');
-  };
-  const perKmRate = selectedVehicleData ? selectedVehicleData.pricePerDay / 100 : 0.55;
+  const customVehicleData = vehicles?.find((v: any) => v.id === customVehicle);
+  const perKmRate = customVehicleData ? customVehicleData.pricePerDay / 100 : 0.55;
+
+  const autoSelectVehicle = useCallback((pax: number, bags: number, currentVehicle: string) => {
+    if (!vehicles) return currentVehicle;
+    const sorted = [...vehicles].sort((a: any, b: any) => a.maxPassengers - b.maxPassengers);
+    const fits = sorted.find((v: any) => v.maxPassengers >= pax && v.maxLuggage >= bags);
+    return fits ? fits.id : sorted[sorted.length - 1].id;
+  }, [vehicles]);
+
   const estimatedDistance = pickup && dropoff ? 80 + Math.floor(Math.random() * 120) : 0;
   const estimatedPrice = Math.round(estimatedDistance * perKmRate);
 
@@ -65,87 +233,242 @@ export default function Transfers() {
     return `${h}:${m}`;
   });
 
+  const getOpts = (id: string): RouteOptions => ({
+    ...DEFAULT_ROUTE_OPTIONS,
+    vehicleId: vehicles?.[0]?.id ?? 'car',
+    ...routeOptions[id],
+  });
+
+  const patchOpts = (id: string, patch: Partial<RouteOptions>) =>
+    setRouteOptions(prev => ({ ...prev, [id]: { ...getOpts(id), ...patch } }));
+
+  const bookTransfer = (opts: {
+    name: string;
+    vehicleType: string;
+    vehicleName: string;
+    price: number;
+    startDate?: string;
+    pickupTime?: string;
+    passengers?: number;
+    luggage?: number;
+    routeId?: string;
+  }) => {
+    const data = {
+      type: 'TRANSFER',
+      transferRouteId: opts.routeId,
+      tourName: opts.name,
+      vehicleType: opts.vehicleType,
+      vehicleName: opts.vehicleName,
+      startDate: opts.startDate || '',
+      pickupTime: opts.pickupTime || '',
+      numDays: 1,
+      passengers: opts.passengers ?? 2,
+      luggage: opts.luggage ?? 2,
+      vehicleRate: opts.price,
+      vehicleTotal: opts.price,
+      addOnsTotal: 0,
+      selectedAddOns: [],
+      totalPrice: opts.price,
+    };
+    sessionStorage.setItem('peacock_booking', JSON.stringify(data));
+    setLocation('/checkout');
+  };
+
   return (
     <div className="pt-24 pb-32 min-h-screen">
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div className="bg-forest-600 py-16 -mt-24 pt-36 mb-16">
         <div className="max-w-[1200px] mx-auto px-6 text-center">
           <p className="font-body text-xs uppercase tracking-[0.2em] text-amber-200 mb-3">GET THERE</p>
-          <h1 className="font-display text-5xl md:text-6xl text-white mb-4">Island <em className="italic text-amber-200">transfers</em></h1>
+          <h1 className="font-display text-5xl md:text-6xl text-white mb-4">
+            Island <em className="italic text-amber-200">transfers</em>
+          </h1>
           <p className="font-body text-lg text-white/80 max-w-2xl mx-auto">
-            Private driver transfers to any destination in Sri Lanka. Airport pickups, city-to-city routes, and custom journeys — all with English-speaking drivers.
+            Private driver transfers to any destination in Sri Lanka. Airport pickups, city-to-city
+            routes, and custom journeys — all with English-speaking drivers.
           </p>
         </div>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6">
+
+        {/* ── Airport pickup & drop-off ─────────────────────────────────── */}
         <div className="mb-16">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-forest-500 rounded-full flex items-center justify-center">
-              <Plane className="w-5 h-5 text-white" />
+          <div className="flex flex-col mb-8">
+            <span className="font-body text-[12px] font-medium tracking-[0.08em] uppercase text-amber-200 mb-3">
+              AIRPORT
+            </span>
+            <div className="flex items-center gap-3">
+              <Plane className="w-7 h-7 text-forest-600 shrink-0" />
+              <h2 className="font-display font-normal text-[28px] md:text-[40px] text-warm-900 leading-[1.15]">
+                Airport pickup <em className="italic">& drop-off</em>
+              </h2>
             </div>
-            <h2 className="font-display text-3xl text-forest-600">Airport pickup & drop-off</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {routes?.map((route: any) => (
-              <div key={route.id} className="bg-white rounded-2xl border border-warm-200 overflow-hidden shadow-sm hover:shadow-card-hover transition-shadow">
-                <button
-                  onClick={() => setExpandedRoute(expandedRoute === route.id ? null : route.id)}
-                  className="w-full flex items-center justify-between p-5 text-left focus:outline-none"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-display text-xl text-forest-600">{route.from} → {route.to}</h3>
-                    <div className="flex gap-4 mt-2">
-                      <span className="font-body text-xs text-warm-400 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {route.distance}
-                      </span>
-                      <span className="font-body text-xs text-warm-400 flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {route.time}
-                      </span>
-                    </div>
+          {/* Single column — expansion never pushes a sibling card */}
+          <div className="flex flex-col gap-3">
+            {(showAllAirportRoutes ? routes : routes?.slice(0, 5))?.map((route: any) => (
+              <div
+                key={route.id}
+                className="bg-white rounded-2xl border border-warm-200 overflow-hidden hover:shadow-card-hover transition-shadow"
+              >
+                <div className="p-5">
+                  <h3 className="font-display text-xl text-forest-600 mb-1">
+                    {route.from} → {route.to}
+                  </h3>
+                  <div className="flex gap-4 mb-4">
+                    <span className="font-body text-xs text-warm-400 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> {route.distance}
+                    </span>
+                    <span className="font-body text-xs text-warm-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {route.time}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-body text-sm font-semibold text-forest-600">From {format(route.price)}</span>
-                    {expandedRoute === route.id ? <ChevronUp className="w-5 h-5 text-warm-400" /> : <ChevronDown className="w-5 h-5 text-warm-400" />}
-                  </div>
-                </button>
+                  <button
+                    onClick={() => setExpandedRoute(expandedRoute === route.id ? null : route.id)}
+                    className="w-full flex items-center justify-between text-left focus:outline-none"
+                  >
+                    <span className="font-body text-sm font-semibold text-forest-600">
+                      From {format(route.prices?.car ?? route.price ?? 0)}
+                    </span>
+                    {expandedRoute === route.id
+                      ? <ChevronUp className="w-4 h-4 text-warm-400" />
+                      : <ChevronDown className="w-4 h-4 text-warm-400" />}
+                  </button>
+                </div>
 
                 {expandedRoute === route.id && (
-                  <div className="px-5 pb-5 pt-1 border-t border-warm-100 animate-in slide-in-from-top-2 duration-200">
-                    <div className="space-y-2">
-                      {vehicles?.map((v: any) => (
-                        <div key={v.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-warm-50">
-                          <div className="flex items-center gap-3">
-                            <img src={v.image} alt={v.name} className="w-12 h-8 object-contain" />
-                            <div>
-                              <p className="font-body text-sm font-medium text-forest-600">{v.name}</p>
-                              <p className="font-body text-xs text-warm-400">{v.capacity} pax</p>
-                            </div>
-                          </div>
-                          <span className="font-body text-sm font-semibold text-forest-600">{format(route.prices[v.id])}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      className="w-full mt-4 font-body"
-                      onClick={() => bookTransfer({
-                        name: `${route.from} → ${route.to}`,
-                        routeId: route.id,
-                        vehicleType: selectedVehicle,
-                        vehicleName: selectedVehicleData?.name || 'Private Transfer',
-                        price: route.prices?.[selectedVehicle] ?? route.price ?? 0,
-                        passengers,
-                      })}
-                    >
-                      Book now <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
+                  <div className="px-5 pb-5 animate-in slide-in-from-top-2 duration-200">
+                    <BookingPanel
+                      prices={route.prices ?? {}}
+                      vehicles={vehicles ?? []}
+                      options={getOpts(route.id)}
+                      timeSlots={timeSlots}
+                      onPatch={patch => patchOpts(route.id, patch)}
+                      onBook={opts => {
+                        const v = vehicles?.find((v: any) => v.id === opts.vehicleId);
+                        bookTransfer({
+                          name: `${route.from} → ${route.to}`,
+                          routeId: route.id,
+                          vehicleType: opts.vehicleId,
+                          vehicleName: v?.name ?? 'Private Transfer',
+                          price: route.prices?.[opts.vehicleId] ?? route.price ?? 0,
+                          pickupTime: opts.time,
+                          passengers: opts.passengers,
+                          luggage: opts.luggage,
+                        });
+                      }}
+                      format={format}
+                    />
                   </div>
                 )}
               </div>
             ))}
           </div>
+
+          {routes && routes.length > 5 && (
+            <div className="mt-5 text-center">
+              <button
+                onClick={() => setShowAllAirportRoutes(v => !v)}
+                className="inline-flex items-center gap-2 font-body text-sm text-forest-600 hover:text-forest-700 font-medium"
+              >
+                {showAllAirportRoutes
+                  ? <><ChevronUp className="w-4 h-4" /> Show less</>
+                  : <><ChevronDown className="w-4 h-4" /> See {routes.length - 5} more routes</>}
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* ── Most booked routes ────────────────────────────────────────── */}
+        <div className="mb-16">
+          <SectionHeading
+            overline="POPULAR"
+            title="Most booked *routes*"
+            className="mb-8"
+          />
+          {/* Single column — each card is self-contained, no shared grid heights */}
+          <div className="flex flex-col gap-3">
+            {(showAllPopularRoutes ? popularRoutes : popularRoutes?.slice(0, 5))?.map((route: any) => (
+              <div
+                key={route.id}
+                className="bg-white rounded-2xl border border-warm-200 overflow-hidden hover:shadow-card-hover transition-shadow"
+              >
+                <div className="p-5">
+                  <h3 className="font-display text-xl text-forest-600 mb-1">
+                    {route.from} → {route.to}
+                  </h3>
+                  <div className="flex gap-3 mb-2">
+                    <span className="font-body text-xs text-warm-400 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> {route.distance} km
+                    </span>
+                    <span className="font-body text-xs text-warm-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {route.estimatedTime}
+                    </span>
+                  </div>
+                  <p className="font-body text-sm text-warm-500 mb-4 line-clamp-2">
+                    {route.description}
+                  </p>
+                  <button
+                    onClick={() => setExpandedPopularRoute(
+                      expandedPopularRoute === route.id ? null : route.id
+                    )}
+                    className="w-full flex items-center justify-between text-left focus:outline-none"
+                  >
+                    <span className="font-body text-sm font-semibold text-forest-600">
+                      From {format(route.prices?.car ?? route.priceFrom ?? route.price ?? 0)}
+                    </span>
+                    {expandedPopularRoute === route.id
+                      ? <ChevronUp className="w-4 h-4 text-warm-400" />
+                      : <ChevronDown className="w-4 h-4 text-warm-400" />}
+                  </button>
+                </div>
+
+                {expandedPopularRoute === route.id && (
+                  <div className="px-5 pb-5 animate-in slide-in-from-top-2 duration-200">
+                    <BookingPanel
+                      prices={route.prices ?? {}}
+                      vehicles={vehicles ?? []}
+                      options={getOpts(route.id)}
+                      timeSlots={timeSlots}
+                      onPatch={patch => patchOpts(route.id, patch)}
+                      onBook={opts => {
+                        const v = vehicles?.find((v: any) => v.id === opts.vehicleId);
+                        bookTransfer({
+                          name: `${route.from} → ${route.to}`,
+                          routeId: route.id,
+                          vehicleType: opts.vehicleId,
+                          vehicleName: v?.name ?? 'Private Transfer',
+                          price: route.prices?.[opts.vehicleId] ?? route.priceFrom ?? route.price ?? 0,
+                          pickupTime: opts.time,
+                          passengers: opts.passengers,
+                          luggage: opts.luggage,
+                        });
+                      }}
+                      format={format}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {popularRoutes && popularRoutes.length > 5 && (
+            <div className="mt-5 text-center">
+              <button
+                onClick={() => setShowAllPopularRoutes(v => !v)}
+                className="inline-flex items-center gap-2 font-body text-sm text-forest-600 hover:text-forest-700 font-medium"
+              >
+                {showAllPopularRoutes
+                  ? <><ChevronUp className="w-4 h-4" /> Show less</>
+                  : <><ChevronDown className="w-4 h-4" /> See {popularRoutes.length - 5} more routes</>}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Custom route ──────────────────────────────────────────────── */}
         <div className="bg-cream rounded-[32px] p-8 md:p-12 mb-16">
           <SectionHeading
             overline="CUSTOM ROUTE"
@@ -157,67 +480,100 @@ export default function Transfers() {
 
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex-1 space-y-5">
+              {/* Locations */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Pickup location</label>
+                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
+                    Pickup location
+                  </label>
                   <PlacesAutocomplete
                     value={pickup}
                     onChange={val => { setPickup(val); if (!val) setPickupCoords(null); }}
-                    onPlaceSelect={(p: PlaceResult) => { setPickup(p.name); setPickupCoords([p.lng, p.lat]); }}
+                    onPlaceSelect={(p: PlaceResult) => {
+                      setPickup(p.name);
+                      setPickupCoords([p.lng, p.lat]);
+                    }}
                     placeholder="e.g. Colombo Fort"
                     icon={<MapPin className="w-4 h-4 text-emerald-500" />}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Drop-off location</label>
+                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
+                    Drop-off location
+                  </label>
                   <PlacesAutocomplete
                     value={dropoff}
                     onChange={val => { setDropoff(val); if (!val) setDropoffCoords(null); }}
-                    onPlaceSelect={(p: PlaceResult) => { setDropoff(p.name); setDropoffCoords([p.lng, p.lat]); }}
+                    onPlaceSelect={(p: PlaceResult) => {
+                      setDropoff(p.name);
+                      setDropoffCoords([p.lng, p.lat]);
+                    }}
                     placeholder="e.g. Galle Fort"
                     icon={<MapPin className="w-4 h-4 text-red-400" />}
                   />
                 </div>
               </div>
 
+              {/* Vehicle slider */}
               <div>
-                <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Vehicle</label>
+                <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
+                  Vehicle
+                </label>
                 <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
-                  {vehicles?.map((v: any) => (
-                    <div
-                      key={v.id}
-                      onClick={() => setSelectedVehicle(v.id)}
-                      className={`flex flex-col items-center p-3 rounded-xl border-2 cursor-pointer transition-all shrink-0 min-w-[100px] ${
-                        selectedVehicle === v.id
-                          ? 'border-forest-500 bg-forest-50'
-                          : 'border-warm-200 hover:border-forest-300 bg-white'
-                      }`}
-                    >
-                      <img src={v.image} alt={v.name} className="w-16 h-10 object-contain mb-1" />
-                      <p className="font-body text-xs font-medium text-forest-600 text-center">{v.name}</p>
-                    </div>
-                  ))}
+                  {vehicles?.map((v: any) => {
+                    const tooSmall = v.maxPassengers < customPassengers || v.maxLuggage < customLuggage;
+                    return (
+                      <div
+                        key={v.id}
+                        onClick={() => !tooSmall && setCustomVehicle(v.id)}
+                        className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all shrink-0 min-w-[100px] ${
+                          tooSmall
+                            ? 'border-warm-100 bg-warm-50 opacity-40 cursor-not-allowed'
+                            : customVehicle === v.id
+                            ? 'border-forest-500 bg-forest-50 cursor-pointer'
+                            : 'border-warm-200 hover:border-forest-300 bg-white cursor-pointer'
+                        }`}
+                      >
+                        <img src={v.image} alt={v.name} className="w-16 h-10 object-contain mb-1" />
+                        <p className="font-body text-xs font-medium text-forest-600 text-center">{v.name}</p>
+                        <p className="font-body text-[10px] text-warm-400">{v.capacity}</p>
+                      </div>
+                    );
+                  })}
                 </div>
+                {customVehicleData && (
+                  <p className="font-body text-xs text-forest-500 mt-1.5">
+                    ✓ <span className="font-medium">{customVehicleData.name}</span> — {customVehicleData.capacity} · {customVehicleData.luggageLabel}
+                  </p>
+                )}
               </div>
 
+              {/* Date · Pickup time · Passengers · Luggage */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Date</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                  <div
+                    className="relative cursor-pointer"
+                    onClick={() => dateRef.current?.showPicker()}
+                  >
+                    <Calendar className="absolute left-3 top-3 w-4 h-4 text-warm-400 pointer-events-none" />
                     <input
+                      ref={dateRef}
                       type="date"
-                      value={date}
-                      onChange={e => setDate(e.target.value)}
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                      min={todayStr}
+                      value={customDate}
+                      onChange={e => setCustomDate(e.target.value)}
+                      onKeyDown={e => e.preventDefault()}
+                      onClick={() => dateRef.current?.showPicker()}
+                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Time</label>
+                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Pickup time</label>
                   <select
-                    value={time}
-                    onChange={e => setTime(e.target.value)}
+                    value={customTime}
+                    onChange={e => setCustomTime(e.target.value)}
                     className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none appearance-none"
                   >
                     {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
@@ -225,47 +581,80 @@ export default function Transfers() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Passengers</label>
-                  <div className="relative">
-                    <Users className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                    <input
-                      type="number"
-                      min={1}
-                      max={35}
-                      value={passengers}
-                      onChange={e => setPassengers(Number(e.target.value))}
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                    />
+                  <div className="flex items-center gap-2 h-[46px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = Math.max(1, customPassengers - 1);
+                        setCustomPassengers(next);
+                        setCustomVehicle(autoSelectVehicle(next, customLuggage, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="font-body text-sm font-semibold text-forest-600 w-6 text-center">{customPassengers}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = Math.min(35, customPassengers + 1);
+                        setCustomPassengers(next);
+                        setCustomVehicle(autoSelectVehicle(next, customLuggage, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Luggage</label>
-                  <div className="relative">
-                    <Luggage className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                    <input
-                      type="number"
-                      min={0}
-                      max={20}
-                      value={luggage}
-                      onChange={e => setLuggage(Number(e.target.value))}
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                    />
+                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Luggage bags</label>
+                  <div className="flex items-center gap-2 h-[46px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = Math.max(0, customLuggage - 1);
+                        setCustomLuggage(next);
+                        setCustomVehicle(autoSelectVehicle(customPassengers, next, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="font-body text-sm font-semibold text-forest-600 w-6 text-center">{customLuggage}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = Math.min(20, customLuggage + 1);
+                        setCustomLuggage(next);
+                        setCustomVehicle(autoSelectVehicle(customPassengers, next, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
                   </div>
                 </div>
               </div>
 
+              {/* Price estimate + book CTA */}
               {pickup && dropoff && (
                 <div className="bg-white rounded-2xl p-6 border border-forest-200 text-center">
                   <p className="font-body text-sm text-warm-400 mb-1">Estimated price</p>
                   <p className="font-display text-5xl text-forest-600 mb-2">{format(estimatedPrice)}</p>
-                  <p className="font-body text-xs text-warm-400">~{estimatedDistance} km · {selectedVehicleData?.name || 'Car'}</p>
+                  <p className="font-body text-xs text-warm-400">
+                    ~{estimatedDistance} km · {customVehicleData?.name || 'Car'}
+                  </p>
                   <Button
                     onClick={() => bookTransfer({
                       name: `${pickup} → ${dropoff}`,
-                      vehicleType: selectedVehicle,
-                      vehicleName: selectedVehicleData?.name || 'Private Transfer',
+                      vehicleType: customVehicle,
+                      vehicleName: customVehicleData?.name || 'Private Transfer',
                       price: estimatedPrice,
-                      startDate: date,
-                      passengers,
+                      startDate: customDate,
+                      pickupTime: customTime,
+                      passengers: customPassengers,
+                      luggage: customLuggage,
                     })}
                     className="mt-4 h-12 px-8 text-base bg-amber-200 text-forest-600 hover:bg-amber-300 font-body"
                   >
@@ -275,7 +664,7 @@ export default function Transfers() {
               )}
             </div>
 
-            {/* Map — always visible; shows route when both coords are known */}
+            {/* Map — always visible; shows route when both coords are set */}
             <div className="lg:w-[360px] shrink-0">
               <div className="sticky top-24">
                 <MapView
@@ -305,43 +694,6 @@ export default function Transfers() {
           </div>
         </div>
 
-        <div>
-          <SectionHeading
-            overline="POPULAR"
-            title="Most booked *routes*"
-            className="mb-8"
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {popularRoutes?.map((route: any) => (
-              <div key={route.id} className="bg-white rounded-2xl p-5 border border-warm-200 hover:shadow-card-hover transition-shadow">
-                <h3 className="font-display text-lg text-forest-600 mb-1">{route.from} → {route.to}</h3>
-                <div className="flex gap-3 mb-3">
-                  <span className="font-body text-xs text-warm-400 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> {route.distance} km
-                  </span>
-                  <span className="font-body text-xs text-warm-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {route.estimatedTime}
-                  </span>
-                </div>
-                <p className="font-body text-sm text-warm-500 mb-4 line-clamp-2">{route.description}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="font-body text-xs w-full"
-                  onClick={() => bookTransfer({
-                    name: `${route.from} → ${route.to}`,
-                    vehicleType: selectedVehicle,
-                    vehicleName: selectedVehicleData?.name || 'Private Transfer',
-                    price: route.priceFrom ?? route.price ?? 0,
-                    passengers,
-                  })}
-                >
-                  Book this route <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
