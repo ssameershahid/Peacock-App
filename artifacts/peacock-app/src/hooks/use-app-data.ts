@@ -161,6 +161,67 @@ export function useTours() {
   });
 }
 
+// Returns 6 tour groups each with their 4 duration variants
+export function useTourGroups() {
+  return useQuery({
+    queryKey: ["tour-groups"],
+    queryFn: async () => {
+      const groups = await api.get<any[]>("/tours/groups");
+      return groups;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+// Fetches a specific variant by groupSlug + duration days
+export function useTourVariant(groupSlug: string, duration: number) {
+  return useQuery({
+    queryKey: ["tours", groupSlug, duration],
+    queryFn: async () => {
+      const tour = await api.get<any>(`/tours/${groupSlug}/${duration}`);
+      return normalizeTour(tour);
+    },
+    enabled: !!groupSlug && !!duration,
+  });
+}
+
+// Mutations for admin itinerary management
+export function useUpdateTourItinerary() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tourId, days }: { tourId: string; days: any[] }) =>
+      api.put<any>(`/tours/${tourId}/itinerary`, { days }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tours"] });
+      queryClient.invalidateQueries({ queryKey: ["tour-groups"] });
+    },
+  });
+}
+
+export function useUpdateTourMeta() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tourId, data }: { tourId: string; data: any }) =>
+      api.put<any>(`/tours/${tourId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tours"] });
+      queryClient.invalidateQueries({ queryKey: ["tour-groups"] });
+    },
+  });
+}
+
+export function useUpdateTourVehicleRates() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tourId, rates }: { tourId: string; rates: any[] }) =>
+      api.put<any>(`/tours/${tourId}/vehicle-rates`, { rates }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tours"] });
+      queryClient.invalidateQueries({ queryKey: ["tour-groups"] });
+    },
+  });
+}
+
 export function useTour(slug: string) {
   return useQuery({
     queryKey: ["tours", slug],

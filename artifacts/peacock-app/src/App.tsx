@@ -9,6 +9,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import Home from "@/pages/Home";
 import Tours from "@/pages/Tours";
 import TourDetail from "@/pages/TourDetail";
+import TourVariantDetail from "@/pages/TourVariantDetail";
 import CYOWizard from "@/pages/CYOWizard";
 import Transfers from "@/pages/Transfers";
 import Checkout from "@/pages/Checkout";
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/" component={() => <PublicRoute component={Home} />} />
       <Route path="/tours" component={() => <PublicRoute component={Tours} />} />
       <Route path="/tours/custom" component={() => <PublicRoute component={CYOWizard} />} />
+      <Route path="/tours/:groupSlug/:duration" component={() => <PublicRoute component={TourVariantDetail} />} />
       <Route path="/tours/:slug" component={() => <PublicRoute component={TourDetail} />} />
       <Route path="/destinations" component={() => <PublicRoute component={DestinationsGuide} />} />
       <Route path="/destinations/:slug" component={() => <PublicRoute component={DestinationDetail} />} />

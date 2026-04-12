@@ -4,9 +4,9 @@ import { Container } from '@/components/peacock/Container';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-const DesignAdventureCTA = () => {
+const DesignAdventureCTA = ({ className = 'bg-background' }: { className?: string }) => {
   return (
-    <div className="bg-background">
+    <div className={className}>
       <Container className="pt-[50px] pb-[70px]">
         <div className="relative rounded-3xl p-8 md:p-16 overflow-hidden text-center bg-black h-[620px]">
           {/* Background Video */}

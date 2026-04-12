@@ -16,6 +16,9 @@ export const toursTable = pgTable("tours", {
     .primaryKey()
     .$defaultFn(() => randomUUID()),
   slug: text("slug").notNull().unique(),
+  // Group fields — all variants of the same tour share groupId + groupSlug
+  groupId: text("group_id"),
+  groupSlug: text("group_slug"),
   name: text("name").notNull(),
   tagline: text("tagline"),
   description: text("description").notNull(),

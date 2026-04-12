@@ -119,6 +119,18 @@ function PricingTab() {
   const [seasons, setSeasons] = useState<SeasonLocal[]>([]);
   const [saved, setSaved] = useState(false);
 
+  // Location surcharge rate (£ per 50km block beyond the free 50km zone)
+  const [surchargeRate, setSurchargeRate] = useState<number>(() =>
+    Number(localStorage.getItem('peacock_location_surcharge_rate') ?? '20')
+  );
+  const [surchargeSaved, setSurchargeSaved] = useState(false);
+
+  function saveSurchargeRate() {
+    localStorage.setItem('peacock_location_surcharge_rate', String(surchargeRate));
+    setSurchargeSaved(true);
+    setTimeout(() => setSurchargeSaved(false), 2000);
+  }
+
   // Seed from API data
   useEffect(() => {
     if (apiSeasons && apiSeasons.length > 0) {
@@ -198,6 +210,40 @@ function PricingTab() {
 
   return (
     <div className="space-y-6">
+      {/* Location surcharge rate */}
+      <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-3">
+        <div>
+          <h3 className="font-body text-sm font-semibold text-forest-600 mb-1">Custom location surcharge</h3>
+          <p className="font-body text-xs text-warm-500 leading-relaxed">
+            When a customer selects an alternative start or end location, the first 50 km from the original
+            location is free. Beyond that, a surcharge applies for every additional 50 km block.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="font-body text-sm text-warm-600 w-56 shrink-0">Rate per 50 km block (£)</label>
+          <div className="flex items-center border border-warm-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-forest-300">
+            <span className="px-3 py-2.5 bg-warm-50 font-body text-sm text-warm-400 border-r border-warm-200">£</span>
+            <input
+              type="number"
+              min={0}
+              step={5}
+              value={surchargeRate}
+              onChange={e => setSurchargeRate(Number(e.target.value))}
+              className="w-24 px-3 py-2.5 font-body text-sm focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={saveSurchargeRate}
+            className="px-5 py-2.5 bg-forest-600 hover:bg-forest-500 text-white font-body text-sm font-medium rounded-full transition-all"
+          >
+            {surchargeSaved ? 'Saved!' : 'Save rate'}
+          </button>
+        </div>
+        <p className="font-body text-[11px] text-warm-400">
+          Example at £{surchargeRate}/block: 51–100 km → +£{surchargeRate}, 101–150 km → +£{surchargeRate * 2}, 151–200 km → +£{surchargeRate * 3}
+        </p>
+      </div>
+
       {/* Description */}
       <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-4">
         <div>
