@@ -11,7 +11,7 @@ import { SRI_LANKA_CITIES, findCity, type SLCity } from '@/lib/sriLankaCities';
 import {
   MapPin, Clock, Calendar as CalendarIcon, Users, Check, X,
   ChevronDown, ChevronUp, Shield, ArrowRight, AlertCircle, Navigation,
-  Mail, Bookmark, BookmarkCheck, Sparkles,
+  Mail, Bookmark, BookmarkCheck, Sparkles, Maximize2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmailTripPlan, useCreateSavedTrip } from '@/hooks/use-app-data';
@@ -385,6 +385,15 @@ export default function TourVariantDetail() {
   const [selectedAddOns, setSelectedAddOns] = useState<Record<string, boolean>>({});
 
   const startDateRef = useRef<HTMLInputElement>(null);
+  const [mapExpanded, setMapExpanded] = useState(false);
+
+  // Close map lightbox on Escape
+  React.useEffect(() => {
+    if (!mapExpanded) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setMapExpanded(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [mapExpanded]);
 
   // Alternative location state
   const [showAltLocation, setShowAltLocation] = useState(false);
@@ -581,6 +590,7 @@ export default function TourVariantDetail() {
                           {day.day}
                         </div>
                         <div>
+                          <p className="font-body text-[10px] font-semibold text-warm-400 uppercase tracking-widest mb-0.5">Day {day.dayNumber ?? day.day}</p>
                           <h4 className="font-display text-xl text-forest-600">{day.title}</h4>
                           <p className="font-body text-xs text-warm-400 mt-0.5 flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
@@ -617,17 +627,29 @@ export default function TourVariantDetail() {
             {/* Map */}
             <div className="lg:w-[320px] shrink-0">
               <div className="sticky top-24">
-                <MapView
-                  markers={itineraryMarkers}
-                  activeMarkerId={
-                    expandedDay !== null
-                      ? (itineraryMarkers.find(m => m.label === locations[expandedDay - 1])?.id ?? undefined)
-                      : undefined
-                  }
-                  height="560px"
-                  showRoute
-                  className="shadow-xl"
-                />
+                {/* Map with expand button */}
+                <div className="relative group">
+                  <MapView
+                    markers={itineraryMarkers}
+                    activeMarkerId={
+                      expandedDay !== null
+                        ? (itineraryMarkers.find(m => m.label === locations[expandedDay - 1])?.id ?? undefined)
+                        : undefined
+                    }
+                    height="560px"
+                    showRoute
+                    className="shadow-xl"
+                  />
+                  {/* Expand button */}
+                  <button
+                    onClick={() => setMapExpanded(true)}
+                    className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-lg shadow-md border border-warm-200 font-body text-xs font-medium text-forest-600 transition-all"
+                    title="Expand map"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" /> Expand
+                  </button>
+                </div>
+
                 {itineraryMarkers.length > 0 && (
                   <div className="mt-3 bg-warm-50 rounded-xl p-3 border border-warm-100">
                     <p className="font-body text-xs font-semibold text-forest-600 mb-2 uppercase tracking-wide">Route stops</p>
@@ -647,6 +669,59 @@ export default function TourVariantDetail() {
                 )}
               </div>
             </div>
+
+            {/* Map lightbox */}
+            {mapExpanded && (
+              <div
+                className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+                onClick={() => setMapExpanded(false)}
+              >
+                <div
+                  className="relative w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl"
+                  style={{ height: '85vh' }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  {/* Close button */}
+                  <button
+                    onClick={() => setMapExpanded(false)}
+                    className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-warm-50 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-forest-600" />
+                  </button>
+
+                  {/* Route stops sidebar */}
+                  {itineraryMarkers.length > 0 && (
+                    <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-4 max-h-[calc(85vh-2rem)] overflow-y-auto w-52">
+                      <p className="font-body text-xs font-semibold text-forest-600 mb-3 uppercase tracking-wide">Route stops</p>
+                      <div className="space-y-2">
+                        {itineraryMarkers.map((m, i) => (
+                          <div key={m.id} className="flex items-center gap-2.5">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 shrink-0 ${
+                              i === 0 ? 'bg-forest-600 border-forest-600 text-white' :
+                              i === itineraryMarkers.length - 1 ? 'bg-amber-400 border-amber-400 text-forest-800' :
+                              'bg-white border-forest-400 text-forest-600'
+                            }`}>{i + 1}</div>
+                            <span className="font-body text-xs text-warm-700 leading-tight">{m.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="font-body text-[10px] text-warm-400 mt-3 pt-3 border-t border-warm-100">Press Esc to close</p>
+                    </div>
+                  )}
+
+                  <MapView
+                    markers={itineraryMarkers}
+                    activeMarkerId={
+                      expandedDay !== null
+                        ? (itineraryMarkers.find(m => m.label === locations[expandedDay - 1])?.id ?? undefined)
+                        : undefined
+                    }
+                    height="100%"
+                    showRoute
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Included / Not Included */}

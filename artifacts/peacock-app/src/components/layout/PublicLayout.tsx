@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Footer from '@/components/peacock/Footer';
 
 const SERVICE_LINKS = [
-  { href: '/tours', label: 'Ready Tours', icon: Map, desc: 'Expertly crafted island itineraries' },
+  { href: '/tours', label: 'Ready To Go', icon: Map, desc: 'Expertly crafted island itineraries' },
   { href: '/transfers', label: 'Island Transfers', icon: Plane, desc: 'Airport & point-to-point rides' },
   { href: '/tours/custom', label: 'Trip Wizard', icon: Sparkles, desc: 'Build your bespoke journey' },
 ];
