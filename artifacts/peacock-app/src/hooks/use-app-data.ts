@@ -183,8 +183,43 @@ export function useTourVariant(groupSlug: string, duration: number) {
   return useQuery({
     queryKey: ["tours", groupSlug, duration],
     queryFn: async () => {
-      const tour = await api.get<any>(`/tours/${groupSlug}/${duration}`);
-      return normalizeTour(tour);
+      try {
+        const tour = await api.get<any>(`/tours/${groupSlug}/${duration}`);
+        return normalizeTour(tour);
+      } catch {
+        // Fallback: construct from mock group data when API is unavailable
+        const group = MOCK_TOUR_GROUPS.find((g: any) => g.groupSlug === groupSlug);
+        if (!group) return null;
+        const variant = group.variants.find((v: any) => v.durationDays === duration)
+          ?? group.variants[0];
+        return normalizeTour({
+          ...group,
+          durationDays: variant?.durationDays ?? duration,
+          vehicleRates: variant?.vehicleRates ?? [],
+          itinerary: Array.from({ length: variant?.durationDays ?? duration }, (_, i) => ({
+            dayNumber: i + 1,
+            title: `Day ${i + 1}`,
+            location: '',
+            description: '',
+          })),
+          whatsIncluded: [
+            'Private vehicle & driver for the entire tour',
+            'All fuel & tolls',
+            'Driver accommodation & meals',
+            'Airport pickup & drop-off',
+            'Bottled water daily',
+          ],
+          whatsNotIncluded: [
+            'Hotel accommodation',
+            'Meals for travellers',
+            'Entrance fees to attractions',
+            'Tips for driver',
+            'Travel insurance',
+          ],
+          addOns: [],
+          minLeadTimeDays: 3,
+        });
+      }
     },
     enabled: !!groupSlug && !!duration,
   });
