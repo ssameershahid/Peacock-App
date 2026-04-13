@@ -81,7 +81,7 @@ async function buildAll() {
     entryPoints: [path.resolve(__dirname, "src/app.ts")],
     platform: "node",
     bundle: true,
-    format: "cjs",
+    format: "esm",
     outfile: path.resolve(__dirname, "api/index.js"),
     define: {
       "process.env.NODE_ENV": '"production"',
@@ -89,6 +89,8 @@ async function buildAll() {
     minify: false,
     external: vercelExternals,
     logLevel: "info",
+    // pg uses require() internally; provide shim for ESM bundle
+    banner: { js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" },
   });
   console.log("done.");
 }
