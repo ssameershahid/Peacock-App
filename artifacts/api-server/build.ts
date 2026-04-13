@@ -48,12 +48,14 @@ async function buildAll() {
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.devDependencies || {}),
   ];
+  // Externals: non-allowlisted, non-workspace deps
   const externals = allDeps.filter(
     (dep) =>
       !allowlist.includes(dep) &&
       !(pkg.dependencies?.[dep]?.startsWith("workspace:")),
   );
 
+  // ── Dev/local server bundle ────────────────────────────────────────────
   await esbuild({
     entryPoints: [path.resolve(__dirname, "src/index.ts")],
     platform: "node",
@@ -67,6 +69,28 @@ async function buildAll() {
     external: externals,
     logLevel: "info",
   });
+
+  // ── Vercel serverless function bundle ──────────────────────────────────
+  // Bundle workspace packages in — they can't be resolved on Vercel at runtime.
+  // Everything else (native Node modules, npm packages) stays external.
+  console.log("building vercel function bundle...");
+  const vercelExternals = externals.filter(
+    (dep) => !dep.startsWith("@workspace/")
+  );
+  await esbuild({
+    entryPoints: [path.resolve(__dirname, "api/index.ts")],
+    platform: "node",
+    bundle: true,
+    format: "cjs",
+    outfile: path.resolve(__dirname, "api/index.js"),
+    define: {
+      "process.env.NODE_ENV": '"production"',
+    },
+    minify: false,
+    external: vercelExternals,
+    logLevel: "info",
+  });
+  console.log("done.");
 }
 
 buildAll().catch((err) => {
