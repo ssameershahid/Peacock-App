@@ -400,7 +400,7 @@ export default function CYOWizard() {
   const stepLabels = [
     { icon: <Map className="w-4 h-4" />, label: 'Basics' },
     { icon: <Sparkles className="w-4 h-4" />, label: 'Places' },
-    { icon: <Calendar className="w-4 h-4" />, label: 'Dates' },
+    { icon: <Users className="w-4 h-4" />, label: 'Group & Dates' },
     { icon: <Settings2 className="w-4 h-4" />, label: 'Style' },
     { icon: <Send className="w-4 h-4" />, label: 'Submit' },
   ];
@@ -812,14 +812,13 @@ export default function CYOWizard() {
               <p className="font-body text-warm-500 text-sm mb-8">Pick a ready-to-go template, or design your own trip from scratch.</p>
 
               {/* ── Tour template grid ── */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
                 {isLoadingGroups
                   ? Array.from({ length: 6 }).map((_, i) => (
-                      <div key={i} className="h-[200px] bg-warm-100 rounded-2xl animate-pulse" />
+                      <div key={i} className="h-[160px] bg-warm-100 rounded-2xl animate-pulse" />
                     ))
                   : (tourGroups ?? []).map((group: any) => {
                       const isSelected = selections.tripType === group.groupSlug;
-                      const dur = templateDurations[group.groupSlug] ?? 7;
                       const heroImg = group.heroImages?.[0] ?? '';
                       return (
                         <div
@@ -831,162 +830,45 @@ export default function CYOWizard() {
                               : 'border-transparent hover:border-forest-300'
                           }`}
                         >
-                          {/* Image */}
-                          <div className="relative h-[110px]">
-                            <img src={heroImg} alt={group.name} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-forest-700/80 to-transparent" />
+                          <div
+                            className="relative h-[160px] w-full"
+                            style={{ background: `url(${heroImg}) center/cover no-repeat` }}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-forest-700/85 via-forest-700/20 to-transparent" />
                             {isSelected && (
-                              <div className="absolute top-2 right-2 w-5 h-5 bg-forest-500 rounded-full flex items-center justify-center shadow">
-                                <Check className="w-3 h-3 text-white" />
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-forest-500 rounded-full flex items-center justify-center shadow">
+                                <Check className="w-3.5 h-3.5 text-white" />
                               </div>
                             )}
-                            <div className="absolute bottom-2 left-3 right-3">
-                              <p className="font-display text-sm text-white leading-tight line-clamp-1">{group.name}</p>
-                            </div>
-                          </div>
-                          {/* Duration pills */}
-                          <div className="p-3 bg-white">
-                            <p className="font-body text-[10px] text-warm-400 mb-1.5">Duration</p>
-                            <div className="flex gap-1 flex-wrap">
-                              {DURATIONS.map(d => {
-                                const hasVariant = group.variants?.some((v: any) => v.durationDays === d);
-                                if (!hasVariant) return null;
-                                return (
-                                  <button
-                                    key={d}
-                                    type="button"
-                                    onClick={e => { e.stopPropagation(); setTemplateDurationFor(group.groupSlug, d); }}
-                                    className={`px-2 py-0.5 rounded-full font-body text-[10px] font-medium border transition-all ${
-                                      dur === d && isSelected
-                                        ? 'bg-forest-500 text-white border-forest-500'
-                                        : dur === d
-                                        ? 'bg-forest-50 text-forest-600 border-forest-300'
-                                        : 'bg-white text-warm-500 border-warm-200 hover:border-forest-400 hover:text-forest-600'
-                                    }`}
-                                  >
-                                    {d}d
-                                  </button>
-                                );
-                              })}
+                            <div className="absolute bottom-3 left-3 right-3">
+                              <p className="font-display text-xl text-white leading-tight line-clamp-2">{group.name}</p>
                             </div>
                           </div>
                         </div>
                       );
                     })
                 }
-
-                {/* Create from scratch */}
-                <div
-                  onClick={() => setSelections(s => ({ ...s, tripType: 'scratch' }))}
-                  className={`rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center p-5 min-h-[180px] ${
-                    selections.tripType === 'scratch'
-                      ? 'border-forest-500 bg-forest-50 shadow-sm'
-                      : 'border-dashed border-warm-300 hover:border-forest-400 bg-warm-50/50'
-                  }`}
-                >
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-3 ${
-                    selections.tripType === 'scratch' ? 'bg-forest-500 text-white' : 'bg-warm-100 text-warm-400'
-                  }`}>
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <p className="font-body text-sm font-semibold text-forest-600">Create from scratch</p>
-                  <p className="font-body text-xs text-warm-400 mt-1 leading-snug">Design your own custom itinerary</p>
-                </div>
               </div>
 
-              {/* ── Travellers + Vehicle ── */}
-              <div className="border-t border-warm-100 pt-8">
-                <div className="grid md:grid-cols-2 gap-10">
-
-                  {/* Travellers */}
-                  <div>
-                    <label className="block text-sm font-medium text-forest-600 mb-4 font-body">Who's travelling?</label>
-                    <div className="space-y-1">
-                      {/* Adults */}
-                      <div className="flex items-center justify-between py-2">
-                        <div>
-                          <p className="font-body text-sm font-medium text-forest-600">Adults</p>
-                          <p className="font-body text-xs text-warm-400">Age 18+</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button type="button" onClick={() => setAdults(Math.max(1, selections.adults - 1))}
-                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 disabled:opacity-30 transition-all">
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{selections.adults}</span>
-                          <button type="button" onClick={() => setAdults(Math.min(12, selections.adults + 1))}
-                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="border-t border-warm-100" />
-
-                      {/* Children */}
-                      <div className="flex items-center justify-between py-2">
-                        <div>
-                          <p className="font-body text-sm font-medium text-forest-600">Children</p>
-                          <p className="font-body text-xs text-warm-400">Age 0–17</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button type="button" onClick={() => setChildren(Math.max(0, selections.children - 1))}
-                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 disabled:opacity-30 transition-all">
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{selections.children}</span>
-                          <button type="button" onClick={() => setChildren(Math.min(8, selections.children + 1))}
-                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Child ages */}
-                      {selections.children > 0 && (
-                        <div className="pt-3 border-t border-warm-100 space-y-3">
-                          <p className="font-body text-xs text-warm-500 font-medium">Age of each child at time of travel</p>
-                          {Array.from({ length: selections.children }, (_, i) => (
-                            <div key={i} className="flex items-center justify-between gap-3">
-                              <label className="font-body text-sm text-warm-600 shrink-0">Child {i + 1}</label>
-                              <select
-                                value={selections.childAges[i] ?? ''}
-                                onChange={e => setChildAge(i, e.target.value)}
-                                className={`flex-1 max-w-[180px] px-3 py-2 border rounded-xl font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 appearance-none cursor-pointer ${
-                                  !selections.childAges[i] ? 'border-amber-300 bg-amber-50 text-warm-500' : 'border-warm-200 text-forest-600'
-                                }`}
-                              >
-                                <option value="">Select age</option>
-                                <option value="0">Under 1 (Infant)</option>
-                                <option value="1">1 year old</option>
-                                {Array.from({ length: 16 }, (_, j) => j + 2).map(age => (
-                                  <option key={age} value={String(age)}>{age} years old</option>
-                                ))}
-                              </select>
-                            </div>
-                          ))}
-                          {!selections.childAges.slice(0, selections.children).every(a => a !== '') && (
-                            <p className="font-body text-[11px] text-amber-600">Please select an age for each child</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Vehicle */}
-                  <div>
-                    <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Vehicle</label>
-                    <VehicleSelector
-                      vehicles={vehicles || []}
-                      selected={selections.vehicle}
-                      onSelect={(id) => setSelections(s => ({ ...s, vehicle: id }))}
-                    />
-                    <p className="font-body text-xs text-warm-400 mt-3">
-                      <span className="text-forest-500 font-medium">Auto-selected</span> based on {selections.pax} traveller{selections.pax !== 1 ? 's' : ''} — you can override above
-                    </p>
-                  </div>
-
+              {/* ── Create from scratch — full width ── */}
+              <div
+                onClick={() => setSelections(s => ({ ...s, tripType: 'scratch' }))}
+                className={`rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-center gap-4 px-6 py-5 ${
+                  selections.tripType === 'scratch'
+                    ? 'border-forest-500 bg-forest-50 shadow-sm'
+                    : 'border-dashed border-warm-300 hover:border-forest-400 bg-warm-50/50'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                  selections.tripType === 'scratch' ? 'bg-forest-500 text-white' : 'bg-warm-100 text-warm-400'
+                }`}>
+                  <Sparkles className="w-5 h-5" />
                 </div>
+                <div>
+                  <p className="font-body text-sm font-semibold text-forest-600">Create from scratch</p>
+                  <p className="font-body text-xs text-warm-400 leading-snug">Design your own fully custom itinerary</p>
+                </div>
+                {selections.tripType === 'scratch' && <Check className="w-5 h-5 text-forest-500 ml-auto" />}
               </div>
             </div>
           )}
@@ -1118,6 +1000,33 @@ export default function CYOWizard() {
           {/* Template scenario (Scenario 2 — coming soon) */}
           {step === 2 && selections.tripType !== 'scratch' && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+              {/* Duration picker for template tours */}
+              <div className="mb-8 pb-8 border-b border-warm-100">
+                <h2 className="font-display text-3xl text-forest-600 mb-1">How long is your trip?</h2>
+                <p className="font-body text-warm-500 text-sm mb-5">Pick a duration for your {(tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType)?.name ?? 'tour'}.</p>
+                <div className="flex gap-3 flex-wrap">
+                  {DURATIONS.map(d => {
+                    const selectedGroup = (tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType);
+                    const hasVariant = selectedGroup?.variants?.some((v: any) => v.durationDays === d);
+                    if (!hasVariant) return null;
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setTemplateDurationFor(selections.tripType, d)}
+                        className={`px-6 py-3 rounded-full font-body text-sm font-medium border-2 transition-all ${
+                          (templateDurations[selections.tripType] ?? 7) === d
+                            ? 'bg-forest-500 text-white border-forest-500 shadow-sm'
+                            : 'bg-white text-warm-600 border-warm-200 hover:border-forest-400 hover:text-forest-600'
+                        }`}
+                      >
+                        {d} days
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h2 className="font-display text-3xl text-forest-600 mb-1">Customise your stops</h2>
@@ -1199,49 +1108,156 @@ export default function CYOWizard() {
             </div>
           )}
 
-          {/* ── STEP 3: Dates ──────────────────────────────────────────── */}
-          {step === 3 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="font-display text-3xl text-forest-600 mb-8">When & how long?</h2>
-              <div className="grid md:grid-cols-2 gap-10">
-                <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date</label>
-                  <input
-                    type="date"
-                    value={selections.startDate}
-                    onChange={e => setSelections(s => ({ ...s, startDate: e.target.value }))}
-                    className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body focus:ring-2 focus:ring-forest-500 outline-none"
-                  />
-                  <label className="flex items-center gap-3 mt-4 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selections.flexibleDates}
-                      onChange={e => setSelections(s => ({ ...s, flexibleDates: e.target.checked }))}
-                      className="w-4 h-4 rounded accent-forest-600"
+          {/* ── STEP 3: Group & Dates ──────────────────────────────────── */}
+          {step === 3 && (() => {
+            const endDate = (() => {
+              if (!selections.startDate || !displayDays) return '';
+              const d = new Date(selections.startDate);
+              d.setDate(d.getDate() + displayDays - 1);
+              return d.toISOString().split('T')[0];
+            })();
+            const fmtDate = (iso: string) => {
+              if (!iso) return '';
+              const [y, m, day] = iso.split('-');
+              return new Date(Number(y), Number(m) - 1, Number(day)).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            };
+            return (
+              <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                <h2 className="font-display text-3xl text-forest-600 mb-8">Who's travelling & when?</h2>
+
+                {/* ── Travellers + Vehicle ── */}
+                <div className="grid md:grid-cols-2 gap-10 mb-10 pb-10 border-b border-warm-100">
+                  {/* Travellers */}
+                  <div>
+                    <label className="block text-sm font-medium text-forest-600 mb-4 font-body">Who's travelling?</label>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between py-2">
+                        <div>
+                          <p className="font-body text-sm font-medium text-forest-600">Adults</p>
+                          <p className="font-body text-xs text-warm-400">Age 18+</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button type="button" onClick={() => setAdults(Math.max(1, selections.adults - 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 disabled:opacity-30 transition-all">
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{selections.adults}</span>
+                          <button type="button" onClick={() => setAdults(Math.min(12, selections.adults + 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="border-t border-warm-100" />
+                      <div className="flex items-center justify-between py-2">
+                        <div>
+                          <p className="font-body text-sm font-medium text-forest-600">Children</p>
+                          <p className="font-body text-xs text-warm-400">Age 0–17</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button type="button" onClick={() => setChildren(Math.max(0, selections.children - 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 disabled:opacity-30 transition-all">
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{selections.children}</span>
+                          <button type="button" onClick={() => setChildren(Math.min(8, selections.children + 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {selections.children > 0 && (
+                        <div className="pt-3 border-t border-warm-100 space-y-3">
+                          <p className="font-body text-xs text-warm-500 font-medium">Age of each child at time of travel</p>
+                          {Array.from({ length: selections.children }, (_, i) => (
+                            <div key={i} className="flex items-center justify-between gap-3">
+                              <label className="font-body text-sm text-warm-600 shrink-0">Child {i + 1}</label>
+                              <select
+                                value={selections.childAges[i] ?? ''}
+                                onChange={e => setChildAge(i, e.target.value)}
+                                className={`flex-1 max-w-[180px] px-3 py-2 border rounded-xl font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 appearance-none cursor-pointer ${
+                                  !selections.childAges[i] ? 'border-amber-300 bg-amber-50 text-warm-500' : 'border-warm-200 text-forest-600'
+                                }`}
+                              >
+                                <option value="">Select age</option>
+                                <option value="0">Under 1 (Infant)</option>
+                                <option value="1">1 year old</option>
+                                {Array.from({ length: 16 }, (_, j) => j + 2).map(age => (
+                                  <option key={age} value={String(age)}>{age} years old</option>
+                                ))}
+                              </select>
+                            </div>
+                          ))}
+                          {!selections.childAges.slice(0, selections.children).every(a => a !== '') && (
+                            <p className="font-body text-[11px] text-amber-600">Please select an age for each child</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Vehicle */}
+                  <div>
+                    <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Vehicle</label>
+                    <VehicleSelector
+                      vehicles={vehicles || []}
+                      selected={selections.vehicle}
+                      onSelect={(id) => setSelections(s => ({ ...s, vehicle: id }))}
                     />
-                    <span className="font-body text-sm text-warm-600">My dates are flexible</span>
-                  </label>
+                    <p className="font-body text-xs text-warm-400 mt-3">
+                      <span className="text-forest-500 font-medium">Auto-selected</span> based on {selections.pax} traveller{selections.pax !== 1 ? 's' : ''} — you can override above
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
-                    How many days? <span className="text-amber-200 font-display text-lg">{selections.days}</span>
-                  </label>
-                  <input
-                    type="range"
-                    min={3}
-                    max={21}
-                    value={selections.days}
-                    onChange={e => setSelections(s => ({ ...s, days: Number(e.target.value) }))}
-                    className="w-full accent-forest-500"
-                  />
-                  <div className="flex justify-between font-body text-xs text-warm-400 mt-1">
-                    <span>3 days</span>
-                    <span>21 days</span>
+
+                {/* ── Dates ── */}
+                <div className="grid md:grid-cols-2 gap-10">
+                  <div>
+                    <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date</label>
+                    <input
+                      type="date"
+                      value={selections.startDate}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={e => setSelections(s => ({ ...s, startDate: e.target.value }))}
+                      onKeyDown={e => e.preventDefault()}
+                      className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
+                    />
+                    {endDate && (
+                      <p className="font-body text-sm text-warm-500 mt-2">
+                        End date: <span className="text-forest-600 font-medium">{fmtDate(endDate)}</span>
+                      </p>
+                    )}
+                    <label className="flex items-center gap-3 mt-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selections.flexibleDates}
+                        onChange={e => setSelections(s => ({ ...s, flexibleDates: e.target.checked }))}
+                        className="w-4 h-4 rounded accent-forest-600"
+                      />
+                      <span className="font-body text-sm text-warm-600">My dates are flexible</span>
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Trip duration</label>
+                    <div className="flex items-center gap-3 bg-warm-50 border border-warm-200 rounded-xl py-3 px-4">
+                      <Calendar className="w-4 h-4 text-forest-500 shrink-0" />
+                      <span className="font-body text-sm text-forest-600 font-medium">{displayDays} day{displayDays !== 1 ? 's' : ''}</span>
+                      <span className="font-body text-xs text-warm-400">
+                        — {selections.tripType === 'scratch' ? 'from your itinerary' : 'from your template'}
+                      </span>
+                    </div>
+                    {selections.startDate && endDate && (
+                      <div className="mt-4 bg-sage rounded-xl p-4">
+                        <p className="font-body text-xs text-warm-500 mb-1">Your trip window</p>
+                        <p className="font-body text-sm text-forest-600 font-medium">{fmtDate(selections.startDate)} → {fmtDate(endDate)}</p>
+                        <p className="font-body text-xs text-warm-400 mt-1">{displayDays} days · {displayDays - 1} nights</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── STEP 4: Preferences ────────────────────────────────────── */}
           {step === 4 && (
