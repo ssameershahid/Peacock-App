@@ -419,6 +419,65 @@ export default function CYOWizard() {
     }));
   };
 
+  // ── Optimise Route — nearest-neighbour reorder of itinerary days ───────────
+  // Self-contained: delete the button + this function to remove the feature entirely.
+  const handleOptimiseRoute = () => {
+    const allDests = DESTINATIONS;
+    const startLat = selections.startFromId
+      ? allDests.find(d => d.id === selections.startFromId)?.lat ?? selections.startFromLat
+      : selections.startFromLat;
+    const startLng = selections.startFromId
+      ? allDests.find(d => d.id === selections.startFromId)?.lng ?? selections.startFromLng
+      : selections.startFromLng;
+
+    const haversine = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+      const R = 6371, toRad = (v: number) => (v * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    };
+
+    const getCoords = (day: typeof selections.itinerary[0]) => {
+      if (day.toId) {
+        const d = allDests.find(x => x.id === day.toId);
+        if (d) return { lat: d.lat, lng: d.lng };
+      }
+      if (day.toLat !== undefined && day.toLng !== undefined) return { lat: day.toLat, lng: day.toLng };
+      return null;
+    };
+
+    const resolvable = selections.itinerary.filter(d => getCoords(d) !== null);
+    const unresolvable = selections.itinerary.filter(d => getCoords(d) === null);
+    if (resolvable.length <= 1) return;
+
+    let curLat = startLat ?? getCoords(resolvable[0])!.lat;
+    let curLng = startLng ?? getCoords(resolvable[0])!.lng;
+    const remaining = [...resolvable];
+    const ordered: typeof resolvable = [];
+
+    while (remaining.length > 0) {
+      let bestIdx = 0, bestDist = Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const c = getCoords(remaining[i])!;
+        const dist = haversine(curLat, curLng, c.lat, c.lng);
+        if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+      }
+      const next = remaining.splice(bestIdx, 1)[0];
+      ordered.push(next);
+      const nc = getCoords(next)!;
+      curLat = nc.lat; curLng = nc.lng;
+    }
+
+    const sfCoords = !selections.startFromId && startLat !== undefined && startLng !== undefined
+      ? { lat: startLat, lng: startLng } : undefined;
+    setSelections(s => ({
+      ...s,
+      itinerary: [...ordered, ...unresolvable],
+      startFromLat: sfCoords?.lat,
+      startFromLng: sfCoords?.lng,
+    }));
+  };
+
   const toggleInterest = (interest: string) => {
     setSelections(s => ({
       ...s,
@@ -458,7 +517,10 @@ export default function CYOWizard() {
     { icon: <Send className="w-4 h-4" />, label: 'Submit' },
   ];
 
-  const selectedDests = DESTINATIONS.filter(d => selections.destinations.includes(d.id));
+  // Preserve tap order (selections.destinations stores ids in tap sequence)
+  const selectedDests = selections.destinations
+    .map(id => DESTINATIONS.find(d => d.id === id))
+    .filter((d): d is typeof DESTINATIONS[0] => d !== undefined);
   const selectedDestNames = selectedDests.map(d => d.name);
   const cyoMapMarkers: MapMarker[] = selectedDests.map((d, i) => ({
     id: d.id,
@@ -1027,6 +1089,17 @@ export default function CYOWizard() {
                           {scratchMapMarkers.length} stops · route updating live
                         </p>
                       </div>
+                    )}
+                    {/* ── Optimise Route button — delete this block to remove the feature ── */}
+                    {scratchMapMarkers.length >= 3 && (
+                      <button
+                        type="button"
+                        onClick={handleOptimiseRoute}
+                        className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-warm-200 hover:border-forest-400 hover:bg-forest-50 bg-white text-warm-500 hover:text-forest-600 transition-all font-body text-xs font-medium"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Optimise route order
+                      </button>
                     )}
                   </div>
                 </div>
