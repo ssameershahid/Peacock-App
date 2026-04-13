@@ -1,5 +1,5 @@
 {
-  "installCommand": "echo 'pre-built bundle, no install needed'",
+  "installCommand": "cp package.deploy.json package.json",
   "buildCommand": "echo 'pre-built'",
   "outputDirectory": "."
 }
