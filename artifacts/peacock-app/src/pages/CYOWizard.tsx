@@ -902,6 +902,39 @@ export default function CYOWizard() {
                 }
               </div>
 
+              {/* ── Duration picker — shown when a template is selected ── */}
+              {selections.tripType && selections.tripType !== 'scratch' && (() => {
+                const selectedGroup = (tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType);
+                const activeDur = templateDurations[selections.tripType] ?? 7;
+                return (
+                  <div className="my-5 p-5 bg-sage rounded-2xl border border-forest-100 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <p className="font-body text-sm font-medium text-forest-600 mb-3">
+                      How many days for your <span className="font-semibold">{selectedGroup?.name}</span>?
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {DURATIONS.map(d => {
+                        const hasVariant = selectedGroup?.variants?.some((v: any) => v.durationDays === d);
+                        if (!hasVariant) return null;
+                        return (
+                          <button
+                            key={d}
+                            type="button"
+                            onClick={() => setTemplateDurationFor(selections.tripType, d)}
+                            className={`px-5 py-2 rounded-full font-body text-sm font-medium border-2 transition-all ${
+                              activeDur === d
+                                ? 'bg-forest-500 text-white border-forest-500 shadow-sm'
+                                : 'bg-white text-warm-600 border-warm-200 hover:border-forest-400 hover:text-forest-600'
+                            }`}
+                          >
+                            {d} days
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* ── Create from scratch — full width ── */}
               <div
                 onClick={() => setSelections(s => ({ ...s, tripType: 'scratch' }))}
@@ -1052,35 +1085,6 @@ export default function CYOWizard() {
           {/* Template scenario — pre-loaded itinerary, fully editable */}
           {step === 2 && selections.tripType !== 'scratch' && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              {/* Duration picker */}
-              <div className="mb-8 pb-8 border-b border-warm-100">
-                <h2 className="font-display text-3xl text-forest-600 mb-1">How long is your trip?</h2>
-                <p className="font-body text-warm-500 text-sm mb-5">
-                  Pick a duration for your {(tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType)?.name ?? 'tour'}.
-                </p>
-                <div className="flex gap-3 flex-wrap">
-                  {DURATIONS.map(d => {
-                    const selectedGroup = (tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType);
-                    const hasVariant = selectedGroup?.variants?.some((v: any) => v.durationDays === d);
-                    if (!hasVariant) return null;
-                    return (
-                      <button
-                        key={d}
-                        type="button"
-                        onClick={() => setTemplateDurationFor(selections.tripType, d)}
-                        className={`px-6 py-3 rounded-full font-body text-sm font-medium border-2 transition-all ${
-                          (templateDurations[selections.tripType] ?? 7) === d
-                            ? 'bg-forest-500 text-white border-forest-500 shadow-sm'
-                            : 'bg-white text-warm-600 border-warm-200 hover:border-forest-400 hover:text-forest-600'
-                        }`}
-                      >
-                        {d} days
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Loading skeleton */}
               {templateItineraryLoading && (
                 <div className="flex flex-col gap-3">
