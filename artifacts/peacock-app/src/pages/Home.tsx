@@ -49,7 +49,7 @@ export default function Home() {
               Experience Sri Lanka's <br /> beauty like a <em className="italic">true native</em>
             </h1>
             <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
-              Plan a Sri Lanka trip with local experts. Custom itineraries, vetted drivers, transparent pricing.
+              Plan a Sri Lanka trip with local experts. Custom itineraries, concierge drivers, transparent pricing.
             </P>
           </div>
 
@@ -76,20 +76,8 @@ export default function Home() {
         </Container>
       </div>
 
-      {/* About Peacock — Intro (word-by-word reveal) */}
-      <StoryIntroSection />
-
-      {/* Spread Cards Gallery (3 images) */}
-      <SpreadCardsSection />
-
-      {/* Our Philosophy (Tropical Paradise + Philosophy content) */}
-      <TropicalParadiseSection />
-
-      {/* Orbit Showcase — Experience categories */}
-      <OrbitShowcaseSection />
-
-      {/* Three Product Cards */}
-      <section className="py-24 px-6 bg-white relative -mt-16 z-20 rounded-t-[40px]">
+      {/* Three Product Cards — "What We Do" (2nd section, right after hero) */}
+      <section className="py-24 px-6 bg-white relative z-20">
         <div className="max-w-[1200px] mx-auto">
           <SectionHeading overline="WHAT WE DO" title="Your journey, your *way*" subtitle="Whether you want a ready-made itinerary, a fully custom adventure, or a simple airport transfer — we've got you covered." align="center" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -109,8 +97,8 @@ export default function Home() {
                   <Star className="w-6 h-6 text-amber-200" />
                 </div>
                 <h3 className="font-display text-3xl text-forest-600 mb-3">Create Your <em className="italic">Own</em></h3>
-                <p className="font-body text-warm-600 mb-8 leading-relaxed">Tell us where you want to go and what you love. We'll build a completely bespoke itinerary just for you.</p>
-                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-200 transition-colors">Design your perfect trip <ArrowRight className="w-4 h-4" /></span>
+                <p className="font-body text-warm-600 mb-8 leading-relaxed">Build your own itinerary day-by-day using our trip wizard — then our team steps in to refine and perfect it for you.</p>
+                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold text-forest-500 group-hover:text-amber-200 transition-colors">Launch trip wizard <ArrowRight className="w-4 h-4" /></span>
               </div>
             </Link>
             <Link href="/transfers" className="block">
@@ -126,6 +114,18 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* About Peacock — Intro (word-by-word reveal) */}
+      <StoryIntroSection />
+
+      {/* Spread Cards Gallery (3 images) */}
+      <SpreadCardsSection />
+
+      {/* Our Philosophy (Tropical Paradise + Philosophy content) */}
+      <TropicalParadiseSection />
+
+      {/* Orbit Showcase — Experience categories */}
+      <OrbitShowcaseSection />
 
       {/* How It Works */}
       <section className="py-24 px-6 bg-white">
@@ -323,7 +323,7 @@ export default function Home() {
         <div className="overflow-hidden pb-24">
           <Container className="pt-4">
             <div className="text-center mb-12">
-              <Kicker>Social Proof</Kicker>
+              <Kicker>Our Traveller Journeys</Kicker>
               <H2 className="mb-4" style={{ fontSize: "60px", color: "rgba(12, 36, 33, 1)" }}>
                 Stories from the Road
               </H2>
