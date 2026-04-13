@@ -165,10 +165,12 @@ function TravellersSelector({
 
 // ── Tour group card ───────────────────────────────────────────────────────────
 
-function TourGroupCard({ group, travellers }: { group: any; travellers: TravellerState }) {
+function TourGroupCard({ group, travellers, activeDuration }: { group: any; travellers: TravellerState; activeDuration: number | null }) {
   const [, navigate] = useLocation();
   const { format } = useCurrency();
-  const [selectedDuration, setSelectedDuration] = useState<number>(group.variants[0]?.durationDays ?? 5);
+
+  // Use the page-level duration filter if set, otherwise default to first variant
+  const selectedDuration = activeDuration ?? group.variants[0]?.durationDays ?? 5;
 
   const selectedVariant = group.variants.find((v: any) => v.durationDays === selectedDuration) ?? group.variants[0];
   const perDay = selectedVariant?.vehicleRates?.find((r: any) => r.vehicleType === 'car')?.pricePerDay
@@ -204,35 +206,8 @@ function TourGroupCard({ group, travellers }: { group: any; travellers: Travelle
 
       {/* Body */}
       <div className="p-5">
-        {/* Duration pills */}
-        <div className="mb-4">
-          <p className="font-body text-xs text-warm-400 mb-2">Select duration</p>
-          <div className="flex gap-2 flex-wrap">
-            {DURATIONS.map(d => {
-              const hasVariant = group.variants.some((v: any) => v.durationDays === d);
-              if (!hasVariant) return null;
-              return (
-                <button
-                  key={d}
-                  onClick={() => setSelectedDuration(d)}
-                  className={`px-3 py-1 rounded-full font-body text-xs font-medium border transition-all ${
-                    selectedDuration === d
-                      ? 'bg-forest-500 text-white border-forest-500 shadow-sm'
-                      : 'bg-white text-warm-600 border-warm-200 hover:border-forest-400 hover:text-forest-600'
-                  }`}
-                >
-                  {d} days
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Regions */}
         <div className="flex flex-wrap gap-1.5 mb-4">
-          <span className="px-2.5 py-1 bg-sage rounded-pill text-xs font-medium text-forest-600 font-body">
-            {group.difficulty}
-          </span>
           {group.regions?.slice(0, 2).map((r: string) => (
             <span key={r} className="px-2.5 py-1 bg-warm-50 rounded-pill text-xs font-medium text-warm-400 font-body">
               {r}
@@ -266,7 +241,6 @@ export default function Tours() {
   const { data: groups, isLoading } = useTourGroups();
   const [duration, setDuration] = useState<number | null>(null);
   const [region, setRegion] = useState('All');
-  const [difficulty, setDifficulty] = useState('All');
   const [travellers, setTravellers] = useState<TravellerState>({ adults: 2, children: 0, childAges: [] });
 
   const allRegions = useMemo(() => {
@@ -281,10 +255,9 @@ export default function Tours() {
     return groups.filter((g: any) => {
       if (duration && !g.variants.some((v: any) => v.durationDays === duration)) return false;
       if (region !== 'All' && !g.regions?.some((r: string) => r.toLowerCase().includes(region.toLowerCase()))) return false;
-      if (difficulty !== 'All' && g.difficulty !== difficulty) return false;
       return true;
     });
-  }, [groups, duration, region, difficulty]);
+  }, [groups, duration, region]);
 
   return (
     <div className="pt-24 pb-32 bg-cream min-h-screen">
@@ -358,16 +331,6 @@ export default function Tours() {
             ))}
           </select>
 
-          <select
-            value={difficulty}
-            onChange={e => setDifficulty(e.target.value)}
-            className="px-4 py-2 bg-white border border-warm-200 rounded-pill font-body text-sm text-warm-600 focus:ring-2 focus:ring-forest-500 outline-none appearance-none cursor-pointer shadow-sm"
-          >
-            <option value="All">All difficulties</option>
-            <option value="Easy">Easy</option>
-            <option value="Moderate">Moderate</option>
-            <option value="Challenging">Challenging</option>
-          </select>
         </div>
 
         {/* Tour grid */}
@@ -379,13 +342,13 @@ export default function Tours() {
           ) : filtered.length === 0 ? (
             <div className="col-span-2 text-center py-20">
               <p className="font-body text-warm-400 text-lg">No tours match your filters.</p>
-              <Button variant="ghost" onClick={() => { setDuration(null); setRegion('All'); setDifficulty('All'); }} className="mt-4">
+              <Button variant="ghost" onClick={() => { setDuration(null); setRegion('All'); }} className="mt-4">
                 Clear filters
               </Button>
             </div>
           ) : (
             filtered.map((group: any) => (
-              <TourGroupCard key={group.groupId} group={group} travellers={travellers} />
+              <TourGroupCard key={group.groupId} group={group} travellers={travellers} activeDuration={duration} />
             ))
           )}
         </div>
