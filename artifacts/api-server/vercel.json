@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install --ignore-scripts",
+  "installCommand": "echo 'pre-built bundle, no install needed'",
   "buildCommand": "echo 'pre-built'",
   "outputDirectory": "."
 }
