@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Plus, X, ChevronDown, ArrowRight, Search, Info } from 'lucide-react';
+import { geocodeLocation, getCoords } from '@/lib/mapbox';
+import {
+  DndContext, closestCenter, PointerSensor, TouchSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext, useSortable, verticalListSortingStrategy, arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -15,6 +24,9 @@ export interface ItineraryDay {
   id: string;
   to: string;
   toId: string;
+  /** Resolved coordinates for custom (non-dropdown) locations */
+  toLat?: number;
+  toLng?: number;
 }
 
 // Airport is a special start location not in the main DESTINATIONS list
@@ -245,21 +257,18 @@ interface DayRowProps {
   expanded: boolean;
   isDay1: boolean;
   isDragging: boolean;
-  isDragOver: boolean;
   onExpand: () => void;
   onRemove: () => void;
   onPickerOpen: (field: 'from' | 'to') => void;
-  onDragStart: (e: React.DragEvent) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragEnd: () => void;
-  onDrop: (e: React.DragEvent) => void;
+  dragHandleListeners?: Record<string, unknown>;
+  dragHandleAttributes?: Record<string, unknown>;
 }
 
 function DayRow({
   dayNumber, fromLabel, toLabel, expanded, isDay1,
-  isDragging, isDragOver,
+  isDragging,
   onExpand, onRemove, onPickerOpen,
-  onDragStart, onDragOver, onDragEnd, onDrop,
+  dragHandleListeners, dragHandleAttributes,
 }: DayRowProps) {
   const title = toLabel
     ? `${fromLabel || '?'} to ${toLabel}`
@@ -269,24 +278,19 @@ function DayRow({
 
   return (
     <div
-      draggable
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
-      onDrop={onDrop}
       className={`rounded-2xl border-2 bg-white transition-all duration-200 ${
         isDragging
-          ? 'opacity-40 scale-[0.98] border-warm-200'
-          : isDragOver
-          ? 'border-forest-400 bg-forest-50 shadow-lg'
+          ? 'opacity-40 scale-[0.98] border-warm-200 shadow-xl'
           : 'border-warm-200 hover:border-warm-300'
       }`}
     >
       {/* Collapsed header */}
       <div className="flex items-center gap-3 p-4 cursor-pointer select-none" onClick={onExpand}>
-        {/* Drag handle — 6-dot grid */}
+        {/* Drag handle — 6-dot grid; listeners make it the dnd-kit handle */}
         <div
-          className="shrink-0 cursor-grab active:cursor-grabbing opacity-30 hover:opacity-60 transition-opacity"
+          {...dragHandleListeners}
+          {...dragHandleAttributes}
+          className="shrink-0 cursor-grab active:cursor-grabbing opacity-30 hover:opacity-60 transition-opacity touch-none"
           onClick={e => e.stopPropagation()}
         >
           <div className="grid grid-cols-2 gap-[3px]">
@@ -383,19 +387,64 @@ function DayRow({
   );
 }
 
+// ── SortableDayRow — dnd-kit wrapper around DayRow ───────────────────────────
+
+function SortableDayRow({
+  dayId,
+  ...props
+}: { dayId: string } & Omit<DayRowProps, 'isDragging' | 'dragHandleListeners' | 'dragHandleAttributes'>) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: dayId });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 20 : undefined,
+        position: isDragging ? 'relative' : undefined,
+      }}
+    >
+      <DayRow
+        {...props}
+        isDragging={isDragging}
+        dragHandleListeners={listeners as Record<string, unknown> | undefined}
+        dragHandleAttributes={attributes as unknown as Record<string, unknown>}
+      />
+    </div>
+  );
+}
+
 // ── ItineraryBuilder (exported) ───────────────────────────────────────────────
 
 interface ItineraryBuilderProps {
   startFrom: string;
   startFromId: string;
+  /** Resolved coords for a custom-typed startFrom (no id) */
+  startFromLat?: number;
+  startFromLng?: number;
   itinerary: ItineraryDay[];
   knownDestinations: DestInfo[];
-  onChange: (itinerary: ItineraryDay[], startFrom: string, startFromId: string) => void;
+  onChange: (
+    itinerary: ItineraryDay[],
+    startFrom: string,
+    startFromId: string,
+    startFromCoords?: { lat: number; lng: number }
+  ) => void;
 }
 
 export function ItineraryBuilder({
   startFrom,
   startFromId,
+  startFromLat,
+  startFromLng,
   itinerary,
   knownDestinations,
   onChange,
@@ -403,8 +452,11 @@ export function ItineraryBuilder({
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerField, setPickerField] = useState<'from' | 'to'>('to');
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dropIndex, setDropIndex] = useState<number | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
 
   // Airport prepended to all known destinations for the picker
   const allDests: DestInfo[] = [AIRPORT, ...knownDestinations];
@@ -414,11 +466,29 @@ export function ItineraryBuilder({
 
   // Reference coords for distance display in picker (= the FROM of the day being edited)
   function getRefCoords(dayIdx: number, field: 'from' | 'to'): { lat: number; lng: number } | null {
-    if (field === 'from') return null; // no reference for the very first from
-    const refId = dayIdx === 0 ? startFromId : (itinerary[dayIdx - 1]?.toId ?? '');
-    if (!refId) return null;
-    const d = allDests.find(x => x.id === refId);
-    return d ? { lat: d.lat, lng: d.lng } : null;
+    if (field === 'from') return null;
+    if (dayIdx === 0) {
+      if (startFromId) {
+        const d = allDests.find(x => x.id === startFromId);
+        return d ? { lat: d.lat, lng: d.lng } : null;
+      }
+      // Custom startFrom — use stored coords if available
+      if (startFromLat !== undefined && startFromLng !== undefined) {
+        return { lat: startFromLat, lng: startFromLng };
+      }
+      return null;
+    }
+    const prevDay = itinerary[dayIdx - 1];
+    if (!prevDay) return null;
+    if (prevDay.toId) {
+      const d = allDests.find(x => x.id === prevDay.toId);
+      return d ? { lat: d.lat, lng: d.lng } : null;
+    }
+    // Custom "to" location — use stored coords
+    if (prevDay.toLat !== undefined && prevDay.toLng !== undefined) {
+      return { lat: prevDay.toLat, lng: prevDay.toLng };
+    }
+    return null;
   }
 
   function openPicker(dayIdx: number, field: 'from' | 'to') {
@@ -427,16 +497,53 @@ export function ItineraryBuilder({
     setExpandedDay(dayIdx);
   }
 
-  function handleSelect(name: string, id: string) {
-    if (pickerField === 'from' && pickerDay === 0) {
-      onChange(itinerary, name, id);
-    } else if (pickerField === 'to' && pickerDay !== null) {
-      const next = itinerary.map((d, i) =>
-        i === pickerDay ? { ...d, to: name, toId: id } : d
-      );
-      onChange(next, startFrom, startFromId);
-    }
+  async function handleSelect(name: string, id: string) {
+    // Capture picker state immediately before any async work
+    const field = pickerField;
+    const dayIdx = pickerDay;
     setPickerDay(null);
+
+    // Preserve current startFrom coords to pass through on "to" changes
+    const currentStartFromCoords: { lat: number; lng: number } | undefined =
+      !startFromId && startFromLat !== undefined && startFromLng !== undefined
+        ? { lat: startFromLat, lng: startFromLng }
+        : undefined;
+
+    if (id) {
+      // Known dropdown destination — no geocoding needed
+      if (field === 'from' && dayIdx === 0) {
+        // Known location for startFrom — clear any custom coords
+        onChange(itinerary, name, id, undefined);
+      } else if (field === 'to' && dayIdx !== null) {
+        const next = itinerary.map((d, i) =>
+          i === dayIdx ? { ...d, to: name, toId: id, toLat: undefined, toLng: undefined } : d
+        );
+        onChange(next, startFrom, startFromId, currentStartFromCoords);
+      }
+      return;
+    }
+
+    // Custom location (id === '') — resolve coordinates
+    let coords: { lat: number; lng: number } | undefined;
+    const synced = getCoords(name); // fast text lookup in known coords table
+    if (synced) {
+      coords = { lat: synced[1], lng: synced[0] };
+    } else {
+      // Fall back to Mapbox Geocoding API (Sri Lanka bounding box)
+      const gc = await geocodeLocation(name);
+      if (gc) coords = { lat: gc[1], lng: gc[0] };
+    }
+
+    if (field === 'from' && dayIdx === 0) {
+      onChange(itinerary, name, '', coords);
+    } else if (field === 'to' && dayIdx !== null) {
+      const next = itinerary.map((d, i) =>
+        i === dayIdx
+          ? { ...d, to: name, toId: '', toLat: coords?.lat, toLng: coords?.lng }
+          : d
+      );
+      onChange(next, startFrom, startFromId, currentStartFromCoords);
+    }
   }
 
   function addDay() {
@@ -459,17 +566,17 @@ export function ItineraryBuilder({
     if (expandedDay === i) { setExpandedDay(null); setPickerDay(null); }
   }
 
-  function handleDrop(dropIdx: number) {
-    if (dragIndex === null || dragIndex === dropIdx) {
-      setDragIndex(null); setDropIndex(null);
-      return;
-    }
-    const next = [...itinerary];
-    const [moved] = next.splice(dragIndex, 1);
-    next.splice(dropIdx, 0, moved);
-    onChange(next, startFrom, startFromId);
-    setDragIndex(null); setDropIndex(null);
-    setExpandedDay(null); setPickerDay(null);
+  function handleDndEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = itinerary.findIndex(d => d.id === String(active.id));
+    const newIdx = itinerary.findIndex(d => d.id === String(over.id));
+    if (oldIdx === -1 || newIdx === -1) return;
+    const sfCoords = !startFromId && startFromLat !== undefined && startFromLng !== undefined
+      ? { lat: startFromLat, lng: startFromLng } : undefined;
+    onChange(arrayMove(itinerary, oldIdx, newIdx), startFrom, startFromId, sfCoords);
+    setExpandedDay(null);
+    setPickerDay(null);
   }
 
   const refCoords = pickerDay !== null ? getRefCoords(pickerDay, pickerField) : null;
@@ -488,43 +595,42 @@ export function ItineraryBuilder({
       </div>
 
       <div className="space-y-2">
-        {itinerary.map((day, i) => (
-          <div key={day.id}>
-            <DayRow
-              dayNumber={i + 1}
-              fromLabel={fromLabels[i] ?? ''}
-              toLabel={day.to}
-              expanded={expandedDay === i}
-              isDay1={i === 0}
-              isDragging={dragIndex === i}
-              isDragOver={dropIndex === i && dragIndex !== i}
-              onExpand={() => {
-                if (expandedDay === i) { setExpandedDay(null); setPickerDay(null); }
-                else { setExpandedDay(i); setPickerDay(null); }
-              }}
-              onRemove={() => removeDay(i)}
-              onPickerOpen={field => openPicker(i, field)}
-              onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDragIndex(i); }}
-              onDragOver={e => { e.preventDefault(); setDropIndex(i); }}
-              onDragEnd={() => { setDragIndex(null); setDropIndex(null); }}
-              onDrop={e => { e.preventDefault(); handleDrop(i); }}
-            />
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDndEnd}>
+          <SortableContext items={itinerary.map(d => d.id)} strategy={verticalListSortingStrategy}>
+            {itinerary.map((day, i) => (
+              <div key={day.id}>
+                <SortableDayRow
+                  dayId={day.id}
+                  dayNumber={i + 1}
+                  fromLabel={fromLabels[i] ?? ''}
+                  toLabel={day.to}
+                  expanded={expandedDay === i}
+                  isDay1={i === 0}
+                  onExpand={() => {
+                    if (expandedDay === i) { setExpandedDay(null); setPickerDay(null); }
+                    else { setExpandedDay(i); setPickerDay(null); }
+                  }}
+                  onRemove={() => removeDay(i)}
+                  onPickerOpen={field => openPicker(i, field)}
+                />
 
-            {/* Picker shown inline below the active expanded day */}
-            {pickerDay === i && expandedDay === i && (
-              <LocationPickerDropdown
-                value={pickerField === 'from' ? startFrom : day.to}
-                valueId={pickerField === 'from' ? startFromId : day.toId}
-                placeholder={pickerField === 'from' ? 'Search start location...' : 'Search destination...'}
-                refLat={refCoords?.lat}
-                refLng={refCoords?.lng}
-                pickerDests={allDests}
-                onSelect={handleSelect}
-                onClose={() => setPickerDay(null)}
-              />
-            )}
-          </div>
-        ))}
+                {/* Picker shown inline below the active expanded day */}
+                {pickerDay === i && expandedDay === i && (
+                  <LocationPickerDropdown
+                    value={pickerField === 'from' ? startFrom : day.to}
+                    valueId={pickerField === 'from' ? startFromId : day.toId}
+                    placeholder={pickerField === 'from' ? 'Search start location...' : 'Search destination...'}
+                    refLat={refCoords?.lat}
+                    refLng={refCoords?.lng}
+                    pickerDests={allDests}
+                    onSelect={handleSelect}
+                    onClose={() => setPickerDay(null)}
+                  />
+                )}
+              </div>
+            ))}
+          </SortableContext>
+        </DndContext>
 
         {itinerary.length === 0 && (
           <div className="rounded-2xl border-2 border-dashed border-warm-200 p-8 text-center">
@@ -561,7 +667,8 @@ export function itineraryToMapMarkers(
   startFrom: string,
   startFromId: string,
   itinerary: ItineraryDay[],
-  knownDestinations: DestInfo[]
+  knownDestinations: DestInfo[],
+  startFromCoords?: { lat: number; lng: number }
 ) {
   const allDests = [AIRPORT, ...knownDestinations];
   const markers: { id: string; lng: number; lat: number; label: string; index: number }[] = [];
@@ -569,12 +676,18 @@ export function itineraryToMapMarkers(
   if (startFromId) {
     const d = allDests.find(x => x.id === startFromId);
     if (d) markers.push({ id: 'start', lng: d.lng, lat: d.lat, label: d.name, index: 0 });
+  } else if (startFrom && startFromCoords) {
+    // Custom startFrom with resolved coordinates
+    markers.push({ id: 'start', lng: startFromCoords.lng, lat: startFromCoords.lat, label: startFrom, index: 0 });
   }
 
   itinerary.forEach((day, i) => {
     if (day.toId) {
       const d = allDests.find(x => x.id === day.toId);
       if (d) markers.push({ id: day.id, lng: d.lng, lat: d.lat, label: d.name, index: i + 1 });
+    } else if (day.to && day.toLat !== undefined && day.toLng !== undefined) {
+      // Custom "to" location with resolved coordinates
+      markers.push({ id: day.id, lng: day.toLng, lat: day.toLat, label: day.to, index: i + 1 });
     }
   });
 

@@ -6,7 +6,7 @@ import { MapView, type MapMarker } from '@/components/shared/MapView';
 import {
   Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft,
   RotateCcw, MapPin, Car, Users,
-  Bookmark, Mail, Download, X, Loader2, Eye, Minus, Plus,
+  Bookmark, Mail, Download, X, Loader2, Eye, Minus, Plus, Maximize2,
 } from 'lucide-react';
 import { useVehicles, useTourGroups, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip } from '@/hooks/use-app-data';
 import { ItineraryBuilder, itineraryToMapMarkers, type ItineraryDay } from '@/components/wizard/ItineraryBuilder';
@@ -48,6 +48,8 @@ type WizardSelections = {
   // Scratch itinerary
   startFrom: string;
   startFromId: string;
+  startFromLat?: number;
+  startFromLng?: number;
   itinerary: ItineraryDay[];
   // Template destinations (non-scratch)
   destinations: string[];
@@ -74,6 +76,8 @@ const DEFAULT_SELECTIONS: WizardSelections = {
   vehicle: 'minivan',
   startFrom: '',
   startFromId: '',
+  startFromLat: undefined,
+  startFromLng: undefined,
   itinerary: [],
   destinations: [],
   otherPlaces: '',
@@ -156,6 +160,7 @@ export default function CYOWizard() {
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [scratchMapExpanded, setScratchMapExpanded] = useState(false);
   const [cyoRef, setCyoRef] = useState('');
   const [submitError, setSubmitError] = useState('');
 
@@ -193,6 +198,14 @@ export default function CYOWizard() {
   const emailTripPlan = useEmailTripPlan();
 
   const emailCaptureRef = useRef<HTMLDivElement>(null);
+
+  // ── Close expanded map on Escape ───────────────────────────────────────
+  useEffect(() => {
+    if (!scratchMapExpanded) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setScratchMapExpanded(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [scratchMapExpanded]);
 
   // ── Resume from URL param ───────────────────────────────────────────────
 
@@ -409,8 +422,11 @@ export default function CYOWizard() {
       selections.startFromId,
       selections.itinerary,
       DESTINATIONS,
+      selections.startFromLat !== undefined && selections.startFromLng !== undefined
+        ? { lat: selections.startFromLat, lng: selections.startFromLng }
+        : undefined,
     ),
-    [selections.startFrom, selections.startFromId, selections.itinerary]
+    [selections.startFrom, selections.startFromId, selections.startFromLat, selections.startFromLng, selections.itinerary]
   );
 
   const activeMapMarkers = selections.tripType === 'scratch' ? scratchMapMarkers : cyoMapMarkers;
@@ -554,11 +570,11 @@ export default function CYOWizard() {
           <p class="meta">Sri Lanka's Premium Chauffeur Service</p>
 
           <h2>Your Sri Lanka Trip Plan</h2>
-          <p>${scratchDestNames.join(' → ')} · ${selections.days} days · ${selections.pax} travellers</p>
+          <p>${scratchDestNames.join(' → ')} · ${displayDays} day${displayDays !== 1 ? 's' : ''} · ${selections.pax} travellers</p>
 
           <div class="box">
             ${tripTypeLabel ? `<p><strong>Trip type:</strong> ${tripTypeLabel}</p>` : ''}
-            <p><strong>Duration:</strong> ${selections.days} days</p>
+            <p><strong>Duration:</strong> ${displayDays} day${displayDays !== 1 ? 's' : ''}</p>
             <p><strong>Travellers:</strong> ${selections.pax}</p>
             <p><strong>Vehicle:</strong> ${selections.vehicle}</p>
             <p><strong>Budget:</strong> ${selections.budget}</p>
@@ -721,6 +737,11 @@ export default function CYOWizard() {
         ...selections.itinerary.filter(d => d.to).map(d => d.to),
       ]
     : selectedDestNames;
+
+  // Actual day count: for scratch use itinerary length, for templates use selections.days
+  const displayDays = selections.tripType === 'scratch'
+    ? selections.itinerary.length
+    : selections.days;
 
   // ── Determine which actions to show in summary bar ──────────────────────
 
@@ -986,10 +1007,19 @@ export default function CYOWizard() {
                   <ItineraryBuilder
                     startFrom={selections.startFrom}
                     startFromId={selections.startFromId}
+                    startFromLat={selections.startFromLat}
+                    startFromLng={selections.startFromLng}
                     itinerary={selections.itinerary}
                     knownDestinations={DESTINATIONS}
-                    onChange={(itinerary, startFrom, startFromId) =>
-                      setSelections(s => ({ ...s, itinerary, startFrom, startFromId }))
+                    onChange={(itinerary, startFrom, startFromId, startFromCoords) =>
+                      setSelections(s => ({
+                        ...s,
+                        itinerary,
+                        startFrom,
+                        startFromId,
+                        startFromLat: startFromCoords?.lat,
+                        startFromLng: startFromCoords?.lng,
+                      }))
                     }
                   />
                 </div>
@@ -997,22 +1027,32 @@ export default function CYOWizard() {
                 {/* Right: live map */}
                 <div className="xl:w-[420px] shrink-0">
                   <div className="sticky top-24">
-                    <MapView
-                      markers={scratchMapMarkers}
-                      showRoute={scratchMapMarkers.length >= 2}
-                      height="520px"
-                      className="shadow-xl"
-                    />
-                    {scratchMapMarkers.length === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none rounded-2xl">
-                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-4 text-center shadow-lg">
-                          <p className="font-display text-lg text-forest-600 mb-1">Build your route</p>
-                          <p className="font-body text-xs text-warm-500">
-                            Add days &amp; pick destinations<br />and watch your journey form
-                          </p>
+                    <div className="relative">
+                      <MapView
+                        markers={scratchMapMarkers}
+                        showRoute={scratchMapMarkers.length >= 2}
+                        height="520px"
+                        className="shadow-xl"
+                      />
+                      {/* Expand button */}
+                      <button
+                        onClick={() => setScratchMapExpanded(true)}
+                        className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-lg shadow-md border border-warm-200 font-body text-xs font-medium text-forest-600 transition-all"
+                        title="Expand map"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" /> Expand
+                      </button>
+                      {scratchMapMarkers.length === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none rounded-2xl">
+                          <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-4 text-center shadow-lg">
+                            <p className="font-display text-lg text-forest-600 mb-1">Build your route</p>
+                            <p className="font-body text-xs text-warm-500">
+                              Add days &amp; pick destinations<br />and watch your journey form
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                     {scratchMapMarkers.length >= 2 && (
                       <div className="mt-2 flex items-center justify-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-forest-500" />
@@ -1023,6 +1063,54 @@ export default function CYOWizard() {
                     )}
                   </div>
                 </div>
+
+                {/* Map lightbox */}
+                {scratchMapExpanded && (
+                  <div
+                    className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+                    onClick={() => setScratchMapExpanded(false)}
+                  >
+                    <div
+                      className="relative w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl"
+                      style={{ height: '85vh' }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {/* Close button */}
+                      <button
+                        onClick={() => setScratchMapExpanded(false)}
+                        className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-warm-50 transition-colors"
+                      >
+                        <X className="w-5 h-5 text-forest-600" />
+                      </button>
+
+                      {/* Route stops sidebar */}
+                      {scratchMapMarkers.length > 0 && (
+                        <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-4 max-h-[calc(85vh-2rem)] overflow-y-auto w-52">
+                          <p className="font-body text-xs font-semibold text-forest-600 mb-3 uppercase tracking-wide">Route stops</p>
+                          <div className="space-y-2">
+                            {scratchMapMarkers.map((m, i) => (
+                              <div key={m.id} className="flex items-center gap-2.5">
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 shrink-0 ${
+                                  i === 0 ? 'bg-forest-600 border-forest-600 text-white' :
+                                  i === scratchMapMarkers.length - 1 ? 'bg-amber-400 border-amber-400 text-forest-800' :
+                                  'bg-white border-forest-400 text-forest-600'
+                                }`}>{i + 1}</div>
+                                <span className="font-body text-xs text-warm-700 leading-tight">{m.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="font-body text-[10px] text-warm-400 mt-3 pt-3 border-t border-warm-100">Press Esc to close</p>
+                        </div>
+                      )}
+
+                      <MapView
+                        markers={scratchMapMarkers}
+                        showRoute={scratchMapMarkers.length >= 2}
+                        height="100%"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1235,7 +1323,7 @@ export default function CYOWizard() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h2 className="font-display text-3xl text-forest-600 mb-2">Review your trip</h2>
               <p className="font-body text-warm-500 text-sm mb-8">
-                {scratchDestNames.join(' → ')} · {selections.days} days · {selections.adults} Adult{selections.adults !== 1 ? 's' : ''}{selections.children > 0 ? `, ${selections.children} Child${selections.children !== 1 ? 'ren' : ''}` : ''}
+                {scratchDestNames.join(' → ')} · {displayDays} day{displayDays !== 1 ? 's' : ''} · {selections.adults} Adult{selections.adults !== 1 ? 's' : ''}{selections.children > 0 ? `, ${selections.children} Child${selections.children !== 1 ? 'ren' : ''}` : ''}
               </p>
 
               {/* Trip plan hero map */}
@@ -1417,12 +1505,12 @@ export default function CYOWizard() {
                       ? scratchDestNames.join(', ')
                       : `${scratchDestNames[0]}, ${scratchDestNames[1]}, +${scratchDestNames.length - 2} more`}
                   </span>
-                  {selections.days && (
+                  {displayDays > 0 && (
                     <>
                       <span className="text-warm-300">·</span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-warm-400" />
-                        {selections.days} days
+                        {displayDays} day{displayDays !== 1 ? 's' : ''}
                       </span>
                     </>
                   )}
