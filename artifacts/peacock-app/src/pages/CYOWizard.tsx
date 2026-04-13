@@ -38,6 +38,23 @@ const DURATIONS = [5, 7, 10, 14] as const;
 
 const STORAGE_KEY = 'cyo_wizard_state';
 
+// ── Convert API itinerary days → ItineraryDay[] ─────────────────────────────
+
+function tourDaysToItinerary(days: any[], knownDests: typeof DESTINATIONS): import('@/components/wizard/ItineraryBuilder').ItineraryDay[] {
+  return days.map((d, i) => {
+    const matched = knownDests.find(dest =>
+      dest.name.toLowerCase() === (d.location ?? '').toLowerCase()
+    );
+    return {
+      id: `template-day-${i + 1}`,
+      to: d.location ?? '',
+      toId: matched?.id ?? '',
+      toLat: d.lat ?? matched?.lat,
+      toLng: d.lng ?? matched?.lng,
+    };
+  });
+}
+
 type WizardSelections = {
   tripType: string;           // tour group slug, or 'scratch'
   pax: number;                // derived: adults + children (kept for API compat)
@@ -320,17 +337,54 @@ export default function CYOWizard() {
   // Per-template duration selection (independent of main selections.days)
   const [templateDurations, setTemplateDurations] = useState<Record<string, number>>({});
 
+  // Template itinerary fetch state
+  const [templateItineraryLoading, setTemplateItineraryLoading] = useState(false);
+  const itineraryInitialized = useRef<string>(''); // tracks "{slug}-{duration}" to avoid re-fetch
+
+  // ── Fetch & load template itinerary when entering step 2 ───────────────
+  useEffect(() => {
+    const slug = selections.tripType;
+    if (step !== 2 || slug === '' || slug === 'scratch') return;
+    const duration = templateDurations[slug] ?? 7;
+    const key = `${slug}-${duration}`;
+    if (itineraryInitialized.current === key) return; // already loaded this combo
+
+    setTemplateItineraryLoading(true);
+    api.get<any>(`/tours/${slug}/${duration}`)
+      .then(data => {
+        const days: any[] = data.itinerary ?? [];
+        const converted = tourDaysToItinerary(days, DESTINATIONS);
+        itineraryInitialized.current = key;
+        setSelections(s => ({
+          ...s,
+          itinerary: converted,
+          startFrom: 'Airport (BIA)',
+          startFromId: 'airport',
+          startFromLat: 7.1807,
+          startFromLng: 79.8842,
+          days: duration,
+        }));
+      })
+      .catch(() => {
+        // If API fails, leave itinerary empty so user can build manually
+        itineraryInitialized.current = key;
+      })
+      .finally(() => setTemplateItineraryLoading(false));
+  }, [step, selections.tripType, templateDurations]);
+
   // ── Template + traveller helpers ────────────────────────────────────────
 
   const selectTemplate = (slug: string) => {
     const dur = templateDurations[slug] ?? 7;
-    setSelections(s => ({ ...s, tripType: slug, days: dur }));
+    itineraryInitialized.current = ''; // force re-fetch for new template
+    setSelections(s => ({ ...s, tripType: slug, days: dur, itinerary: [], startFrom: '', startFromId: '' }));
   };
 
   const setTemplateDurationFor = (slug: string, days: number) => {
     setTemplateDurations(prev => ({ ...prev, [slug]: days }));
+    itineraryInitialized.current = ''; // force re-fetch for new duration
     if (selections.tripType === slug) {
-      setSelections(s => ({ ...s, days }));
+      setSelections(s => ({ ...s, days, itinerary: [], startFrom: '', startFromId: '' }));
     }
   };
 
@@ -386,10 +440,9 @@ export default function CYOWizard() {
   const canProceed = () => {
     if (step === 1) return selections.tripType !== '';
     if (step === 2) {
-      if (selections.tripType === 'scratch') {
-        return selections.itinerary.length > 0 && selections.itinerary.some(d => d.to !== '');
-      }
-      return selections.destinations.length > 0;
+      if (templateItineraryLoading) return false;
+      // Both scratch and template now use the itinerary
+      return selections.itinerary.length > 0 && selections.itinerary.some(d => d.to !== '');
     }
     if (step === 3) return true;
     if (step === 4) return selections.budget !== '';
@@ -429,7 +482,8 @@ export default function CYOWizard() {
     [selections.startFrom, selections.startFromId, selections.startFromLat, selections.startFromLng, selections.itinerary]
   );
 
-  const activeMapMarkers = selections.tripType === 'scratch' ? scratchMapMarkers : cyoMapMarkers;
+  // Both scratch and template now use the shared itinerary → same markers
+  const activeMapMarkers = scratchMapMarkers;
 
   // ── Recovery banner handlers ────────────────────────────────────────────
 
@@ -738,16 +792,14 @@ export default function CYOWizard() {
       ]
     : selectedDestNames;
 
-  // Actual day count: for scratch use itinerary length, for templates use selections.days
-  const displayDays = selections.tripType === 'scratch'
+  // Both scratch and template now use itinerary — fall back to selections.days if not yet loaded
+  const displayDays = selections.itinerary.length > 0
     ? selections.itinerary.length
     : selections.days;
 
   // ── Determine which actions to show in summary bar ──────────────────────
 
-  const hasPlaces = selections.tripType === 'scratch'
-    ? selections.itinerary.some(d => d.to !== '')
-    : selections.destinations.length > 0;
+  const hasPlaces = selections.itinerary.some(d => d.to !== '');
 
   const showSummaryBar = step >= 2 && hasPlaces;
   const showSaveAction = step >= 2 && step <= 4;
@@ -997,13 +1049,15 @@ export default function CYOWizard() {
             </div>
           )}
 
-          {/* Template scenario (Scenario 2 — coming soon) */}
+          {/* Template scenario — pre-loaded itinerary, fully editable */}
           {step === 2 && selections.tripType !== 'scratch' && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              {/* Duration picker for template tours */}
+              {/* Duration picker */}
               <div className="mb-8 pb-8 border-b border-warm-100">
                 <h2 className="font-display text-3xl text-forest-600 mb-1">How long is your trip?</h2>
-                <p className="font-body text-warm-500 text-sm mb-5">Pick a duration for your {(tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType)?.name ?? 'tour'}.</p>
+                <p className="font-body text-warm-500 text-sm mb-5">
+                  Pick a duration for your {(tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType)?.name ?? 'tour'}.
+                </p>
                 <div className="flex gap-3 flex-wrap">
                   {DURATIONS.map(d => {
                     const selectedGroup = (tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType);
@@ -1027,84 +1081,134 @@ export default function CYOWizard() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="font-display text-3xl text-forest-600 mb-1">Customise your stops</h2>
-                  <p className="font-body text-warm-500 text-sm">Select which destinations to include on your tour.</p>
+              {/* Loading skeleton */}
+              {templateItineraryLoading && (
+                <div className="flex flex-col gap-3">
+                  <div className="h-6 w-48 bg-warm-100 rounded-lg animate-pulse" />
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="h-16 bg-warm-100 rounded-2xl animate-pulse" />
+                  ))}
                 </div>
-                {selections.destinations.length > 0 && (
-                  <span className="font-body text-sm font-medium text-forest-500 bg-sage px-4 py-2 rounded-full shrink-0 ml-4">
-                    {selections.destinations.length} stop{selections.destinations.length !== 1 ? 's' : ''}
-                  </span>
-                )}
-              </div>
+              )}
 
-              <div className="flex flex-col xl:flex-row gap-6">
-                <div className="flex-1 min-w-0">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
-                    {DESTINATIONS.map(d => {
-                      const isSelected = selections.destinations.includes(d.id);
-                      const selIdx = selections.destinations.indexOf(d.id);
-                      return (
-                        <div
-                          key={d.id}
-                          onClick={() => toggleDest(d.id)}
-                          className={`relative p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
-                            isSelected
-                              ? 'border-forest-500 bg-forest-50 shadow-sm'
-                              : 'border-warm-200 hover:border-forest-300 bg-warm-50'
-                          }`}
-                        >
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 w-5 h-5 bg-forest-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
-                              {selIdx + 1}
+              {/* Itinerary builder — same as scratch, pre-populated */}
+              {!templateItineraryLoading && (
+                <>
+                  <div className="mb-6">
+                    <h2 className="font-display text-3xl text-forest-600 mb-1">Your itinerary</h2>
+                    <p className="font-body text-warm-500 text-sm">
+                      This is a suggested route — drag to reorder, swap any destination, or add extra days to make it yours.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col xl:flex-row gap-6">
+                    {/* Left: itinerary builder */}
+                    <div className="flex-1 min-w-0">
+                      <ItineraryBuilder
+                        startFrom={selections.startFrom}
+                        startFromId={selections.startFromId}
+                        startFromLat={selections.startFromLat}
+                        startFromLng={selections.startFromLng}
+                        itinerary={selections.itinerary}
+                        knownDestinations={DESTINATIONS}
+                        onChange={(itinerary, startFrom, startFromId, startFromCoords) =>
+                          setSelections(s => ({
+                            ...s,
+                            itinerary,
+                            startFrom,
+                            startFromId,
+                            startFromLat: startFromCoords?.lat,
+                            startFromLng: startFromCoords?.lng,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* Right: live map */}
+                    <div className="xl:w-[420px] shrink-0">
+                      <div className="sticky top-24">
+                        <div className="relative">
+                          <MapView
+                            markers={scratchMapMarkers}
+                            showRoute={scratchMapMarkers.length >= 2}
+                            height="520px"
+                            className="shadow-xl"
+                          />
+                          <button
+                            onClick={() => setScratchMapExpanded(true)}
+                            className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-lg shadow-md border border-warm-200 font-body text-xs font-medium text-forest-600 transition-all"
+                            title="Expand map"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" /> Expand
+                          </button>
+                          {scratchMapMarkers.length === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none rounded-2xl">
+                              <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-4 text-center shadow-lg">
+                                <p className="font-display text-lg text-forest-600 mb-1">Tailor this journey</p>
+                                <p className="font-body text-xs text-warm-500">
+                                  Your route will appear here<br />as you customise your itinerary
+                                </p>
+                              </div>
                             </div>
                           )}
-                          <p className="font-display text-base text-forest-600 pr-5">{d.name}</p>
-                          <p className="font-body text-xs text-warm-500 mt-0.5">{d.desc}</p>
                         </div>
-                      );
-                    })}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Anywhere else?</label>
-                    <input
-                      type="text"
-                      value={selections.otherPlaces}
-                      onChange={e => setSelections(s => ({ ...s, otherPlaces: e.target.value }))}
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                      placeholder="e.g., Mirissa, Arugam Bay, Jaffna..."
-                    />
-                  </div>
-                </div>
+                        {scratchMapMarkers.length >= 2 && (
+                          <div className="mt-2 flex items-center justify-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-forest-500" />
+                            <p className="font-body text-xs text-warm-500">
+                              {scratchMapMarkers.length} stops · route updating live
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                <div className="xl:w-[420px] shrink-0">
-                  <div className="sticky top-24">
-                    <MapView
-                      markers={cyoMapMarkers}
-                      showRoute={cyoMapMarkers.length >= 2}
-                      height="520px"
-                      className="shadow-xl"
-                    />
-                    {cyoMapMarkers.length === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none rounded-2xl">
-                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-4 text-center shadow-lg">
-                          <p className="font-display text-lg text-forest-600 mb-1">Build your route</p>
-                          <p className="font-body text-xs text-warm-500">Select destinations on the left<br />and watch your journey form</p>
+                    {/* Map lightbox — shared with scratch */}
+                    {scratchMapExpanded && (
+                      <div
+                        className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+                        onClick={() => setScratchMapExpanded(false)}
+                      >
+                        <div
+                          className="relative w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl"
+                          style={{ height: '85vh' }}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => setScratchMapExpanded(false)}
+                            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-warm-50 transition-colors"
+                          >
+                            <X className="w-5 h-5 text-forest-600" />
+                          </button>
+                          {scratchMapMarkers.length > 0 && (
+                            <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-4 max-h-[calc(85vh-2rem)] overflow-y-auto w-52">
+                              <p className="font-body text-xs font-semibold text-forest-600 mb-3 uppercase tracking-wide">Route stops</p>
+                              <div className="space-y-2">
+                                {scratchMapMarkers.map((m, i) => (
+                                  <div key={m.id} className="flex items-center gap-2.5">
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 shrink-0 ${
+                                      i === 0 ? 'bg-forest-600 border-forest-600 text-white' :
+                                      i === scratchMapMarkers.length - 1 ? 'bg-amber-400 border-amber-400 text-forest-800' :
+                                      'bg-white border-forest-400 text-forest-600'
+                                    }`}>{i + 1}</div>
+                                    <span className="font-body text-xs text-warm-700 leading-tight">{m.label}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="font-body text-[10px] text-warm-400 mt-3 pt-3 border-t border-warm-100">Press Esc to close</p>
+                            </div>
+                          )}
+                          <MapView
+                            markers={scratchMapMarkers}
+                            showRoute={scratchMapMarkers.length >= 2}
+                            height="100%"
+                          />
                         </div>
                       </div>
                     )}
-                    {cyoMapMarkers.length >= 2 && (
-                      <div className="mt-2 flex items-center justify-center gap-2 text-center">
-                        <div className="w-2 h-2 rounded-full bg-forest-500" />
-                        <p className="font-body text-xs text-warm-500">
-                          {cyoMapMarkers.length} stops · route updating live
-                        </p>
-                      </div>
-                    )}
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           )}
 
