@@ -1,5 +1,9 @@
 {
   "installCommand": "cp package.deploy.json package.json",
   "buildCommand": "echo 'pre-built'",
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/api", "destination": "/api/index.js" }
+  ]
 }
