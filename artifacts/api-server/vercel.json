@@ -1,5 +1,5 @@
 {
-  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
-  "buildCommand": "npx tsx build.ts",
+  "installCommand": "npm install --ignore-scripts",
+  "buildCommand": "echo 'pre-built'",
   "outputDirectory": "."
 }
