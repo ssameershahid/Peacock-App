@@ -89,7 +89,9 @@ async function buildAll() {
     minify: false,
     external: vercelExternals,
     logLevel: "info",
-    // pg uses require() internally; provide shim for ESM bundle
+    // Bundled CJS packages (pg, etc.) use dynamic require(); shim it for ESM context.
+    // package.deploy.json keeps "type":"module" so Vercel doesn't compile this to CJS
+    // (which would break import.meta.url).
     banner: { js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" },
   });
   console.log("done.");
