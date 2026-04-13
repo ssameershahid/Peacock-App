@@ -71,12 +71,9 @@ async function buildAll() {
   });
 
   // ── Vercel serverless function bundle ──────────────────────────────────
-  // Bundle workspace packages in — they can't be resolved on Vercel at runtime.
-  // Everything else (native Node modules, npm packages) stays external.
+  // Vercel has no node_modules — bundle ALL dependencies (workspace + npm).
+  // Only leave out native Node built-ins which are always available.
   console.log("building vercel function bundle...");
-  const vercelExternals = externals.filter(
-    (dep) => !dep.startsWith("@workspace/")
-  );
   await esbuild({
     entryPoints: [path.resolve(__dirname, "src/app.ts")],
     platform: "node",
@@ -87,7 +84,7 @@ async function buildAll() {
       "process.env.NODE_ENV": '"production"',
     },
     minify: false,
-    external: vercelExternals,
+    external: [], // bundle everything; no node_modules on Vercel
     logLevel: "info",
     // Bundled CJS packages (pg, etc.) use dynamic require(); shim it for ESM context.
     // package.deploy.json keeps "type":"module" so Vercel doesn't compile this to CJS
