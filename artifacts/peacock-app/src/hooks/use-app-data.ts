@@ -9,6 +9,7 @@ import {
   CYO_REQUESTS,
   DRIVER_BOOKINGS,
   DRIVER_PROFILE,
+  MOCK_TOUR_GROUPS,
 } from "@/lib/mock-data";
 
 // ── Data normalizers ──────────────────────────────────────────────────────────
@@ -166,8 +167,12 @@ export function useTourGroups() {
   return useQuery({
     queryKey: ["tour-groups"],
     queryFn: async () => {
-      const groups = await api.get<any[]>("/tours/groups");
-      return groups;
+      try {
+        const groups = await api.get<any[]>("/tours/groups");
+        return groups?.length > 0 ? groups : MOCK_TOUR_GROUPS;
+      } catch {
+        return MOCK_TOUR_GROUPS;
+      }
     },
     staleTime: 5 * 60 * 1000,
   });

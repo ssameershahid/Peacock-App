@@ -193,3 +193,103 @@ export const BOOKINGS: any[] = [];
 export const CYO_REQUESTS: any[] = [];
 export const DRIVER_PROFILE = null;
 export const DRIVER_BOOKINGS: any[] = [];
+
+// ── Tour Groups (fallback when API is unavailable) ────────────────────────────
+// vehicleRates is array format to match API shape expected by TourGroupCard
+const VR = (car: number, minivan: number, largeVan: number, smallBus: number, mediumBus: number) => [
+  { vehicleType: 'car', pricePerDay: car },
+  { vehicleType: 'minivan', pricePerDay: minivan },
+  { vehicleType: 'large-van', pricePerDay: largeVan },
+  { vehicleType: 'small-bus', pricePerDay: smallBus },
+  { vehicleType: 'medium-bus', pricePerDay: mediumBus },
+];
+
+function variants(slug: string, rates: any[]) {
+  return [
+    { id: `${slug}-5d`, slug: `${slug}-5d`, durationDays: 5, durationNights: 4, vehicleRates: rates },
+    { id: `${slug}-7d`, slug: `${slug}-7d`, durationDays: 7, durationNights: 6, vehicleRates: rates },
+    { id: `${slug}-10d`, slug: `${slug}-10d`, durationDays: 10, durationNights: 9, vehicleRates: rates },
+    { id: `${slug}-14d`, slug: `${slug}-14d`, durationDays: 14, durationNights: 13, vehicleRates: rates },
+  ];
+}
+
+export const MOCK_TOUR_GROUPS: any[] = [
+  {
+    groupId: 'group-classic-sri-lanka',
+    groupSlug: 'classic-sri-lanka',
+    name: 'Classic Sri Lanka',
+    tagline: "The perfect introduction to the island's highlights.",
+    description: 'Experience the very best of Sri Lanka — ancient cities, misty tea estates, golden beaches, and leopard-spotted plains.',
+    regions: ['Cultural Triangle', 'Hill Country', 'South Coast'],
+    difficulty: 'Easy',
+    heroImages: ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&q=80'],
+    highlights: ['Sigiriya Lion Rock', 'Temple of the Tooth', 'Yala leopard safari', 'Galle Fort', 'Tea country'],
+    sortOrder: 1,
+    variants: variants('classic-sri-lanka', VR(55, 75, 100, 140, 195)),
+  },
+  {
+    groupId: 'group-south-coast-beaches',
+    groupSlug: 'south-coast-beaches',
+    name: 'South Coast & Beaches',
+    tagline: 'Sun, surf and colonial charm.',
+    description: 'Discover the laid-back beauty of Sri Lanka\'s south coast — Galle Fort, whale watching in Mirissa, and secluded coves of Tangalle.',
+    regions: ['South Coast', 'Galle'],
+    difficulty: 'Easy',
+    heroImages: ['https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80'],
+    highlights: ['Galle Fort (UNESCO)', 'Whale watching Mirissa', 'Stilt fishermen', 'Hikkaduwa reef', 'Tangalle beach'],
+    sortOrder: 2,
+    variants: variants('south-coast-beaches', VR(45, 62, 82, 115, 160)),
+  },
+  {
+    groupId: 'group-wildlife-safari',
+    groupSlug: 'wildlife-safari',
+    name: 'Wildlife & Safari',
+    tagline: 'The island\'s wild heart, up close.',
+    description: 'Sri Lanka is one of Asia\'s premier wildlife destinations. This tour focuses on the national parks — Yala, Wilpattu, Udawalawe — for unforgettable game drives.',
+    regions: ['Wildlife Parks', 'South Coast'],
+    difficulty: 'Moderate',
+    heroImages: ['https://images.unsplash.com/photo-1549366021-9f761d450615?w=1200&q=80'],
+    highlights: ['Yala leopard safari', 'Wilpattu National Park', 'Udawalawe elephants', 'Kumana Bird Sanctuary'],
+    sortOrder: 3,
+    variants: variants('wildlife-safari', VR(50, 70, 92, 128, 178)),
+  },
+  {
+    groupId: 'group-hill-country-explorer',
+    groupSlug: 'hill-country-explorer',
+    name: 'Hill Country Explorer',
+    tagline: 'Misty mountains, tea and waterfalls.',
+    description: 'Immerse yourself in the emerald highlands of Sri Lanka. Wind through tea estates, hike to World\'s End, and soak in the cool mountain air of Nuwara Eliya and Ella.',
+    regions: ['Hill Country', 'Cultural Triangle'],
+    difficulty: 'Moderate',
+    heroImages: ['https://images.unsplash.com/photo-1566296440244-0e3e7b3e22ad?w=1200&q=80'],
+    highlights: ['Nine Arches Bridge', 'Horton Plains & World\'s End', 'Tea factory tour', 'Little Adam\'s Peak', 'Nuwara Eliya'],
+    sortOrder: 4,
+    variants: variants('hill-country-explorer', VR(48, 65, 88, 122, 170)),
+  },
+  {
+    groupId: 'group-cultural-triangle',
+    groupSlug: 'cultural-triangle',
+    name: 'Cultural Triangle',
+    tagline: 'Ancient kingdoms and sacred sites.',
+    description: 'Explore the UNESCO-listed ancient cities of the Cultural Triangle — Anuradhapura, Polonnaruwa, and the iconic Sigiriya rock fortress.',
+    regions: ['Cultural Triangle'],
+    difficulty: 'Easy',
+    heroImages: ['https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=1200&q=80'],
+    highlights: ['Sigiriya Rock Fortress', 'Anuradhapura ancient city', 'Polonnaruwa ruins', 'Dambulla Cave Temple', 'Minneriya elephants'],
+    sortOrder: 5,
+    variants: variants('cultural-triangle', VR(45, 62, 82, 115, 160)),
+  },
+  {
+    groupId: 'group-east-coast-escape',
+    groupSlug: 'east-coast-escape',
+    name: 'East Coast Escape',
+    tagline: 'Turquoise bays and tropical vibes.',
+    description: 'The east coast of Sri Lanka is a hidden gem — powdery white sands, world-class surf breaks, ancient Hindu temples, and warm turquoise waters.',
+    regions: ['East Coast'],
+    difficulty: 'Moderate',
+    heroImages: ['https://images.unsplash.com/photo-1519046904884-53103b34b206?w=1200&q=80'],
+    highlights: ['Trincomalee Marble Beach', 'Arugam Bay surf', 'Pasikudah lagoon', 'Pigeon Island reef', 'Batticaloa lagoon'],
+    sortOrder: 6,
+    variants: variants('east-coast-escape', VR(48, 65, 88, 122, 170)),
+  },
+];
