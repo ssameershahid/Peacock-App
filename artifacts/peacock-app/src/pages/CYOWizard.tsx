@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { VehicleSelector } from '@/components/shared/VehicleSelector';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
 import {
   Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft,
-  Briefcase, Palmtree, Star, Trophy, RotateCcw, MapPin, Car, Users,
-  Bookmark, Mail, Download, X, Loader2, Eye
+  RotateCcw, MapPin, Car, Users,
+  Bookmark, Mail, Download, X, Loader2, Eye, Minus, Plus,
 } from 'lucide-react';
-import { useVehicles, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip } from '@/hooks/use-app-data';
+import { useVehicles, useTourGroups, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip } from '@/hooks/use-app-data';
+import { ItineraryBuilder, itineraryToMapMarkers, type ItineraryDay } from '@/components/wizard/ItineraryBuilder';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -33,19 +34,22 @@ export const DESTINATIONS = [
 
 const INTERESTS = ['Nature', 'Wildlife', 'Beaches', 'Food & Cuisine', 'Temples & History', 'Tea Plantations', 'Surfing', 'Hiking', 'Photography'];
 
-const TRIP_TYPES = [
-  { id: 'holiday', label: 'Holiday', icon: <Palmtree className="w-6 h-6" />, desc: 'Leisure & relaxation' },
-  { id: 'business', label: 'Business', icon: <Briefcase className="w-6 h-6" />, desc: 'Corporate travel' },
-  { id: 'seasonal', label: 'Seasonal / Religious', icon: <Star className="w-6 h-6" />, desc: 'Festivals & pilgrimages' },
-  { id: 'sport', label: 'Sport', icon: <Trophy className="w-6 h-6" />, desc: 'Active adventures' },
-];
+const DURATIONS = [5, 7, 10, 14] as const;
 
 const STORAGE_KEY = 'cyo_wizard_state';
 
 type WizardSelections = {
-  tripType: string;
-  pax: number;
+  tripType: string;           // tour group slug, or 'scratch'
+  pax: number;                // derived: adults + children (kept for API compat)
+  adults: number;
+  children: number;
+  childAges: string[];
   vehicle: string;
+  // Scratch itinerary
+  startFrom: string;
+  startFromId: string;
+  itinerary: ItineraryDay[];
+  // Template destinations (non-scratch)
   destinations: string[];
   otherPlaces: string;
   startDate: string;
@@ -64,7 +68,13 @@ type WizardSelections = {
 const DEFAULT_SELECTIONS: WizardSelections = {
   tripType: '',
   pax: 2,
+  adults: 2,
+  children: 0,
+  childAges: [],
   vehicle: 'minivan',
+  startFrom: '',
+  startFromId: '',
+  itinerary: [],
   destinations: [],
   otherPlaces: '',
   startDate: '',
@@ -127,9 +137,17 @@ function getDestSummary(ids: string[]): string {
 
 // ── Main component ──────────────────────────────────────────────────────────
 
+function autoVehicle(totalPax: number, vehicleList: any[]): string {
+  if (!vehicleList?.length) return 'minivan';
+  const sorted = [...vehicleList].sort((a, b) => (a.maxPassengers ?? 35) - (b.maxPassengers ?? 35));
+  const fit = sorted.find(v => (v.maxPassengers ?? 35) >= totalPax);
+  return fit?.id ?? sorted[sorted.length - 1]?.id ?? 'minivan';
+}
+
 export default function CYOWizard() {
   const [step, setStep] = useState(1);
   const { data: vehicles } = useVehicles();
+  const { data: tourGroups, isLoading: isLoadingGroups } = useTourGroups();
   const { user, login, register } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -286,6 +304,43 @@ export default function CYOWizard() {
     return () => clearTimeout(timer);
   }, [step, user]);
 
+  // Per-template duration selection (independent of main selections.days)
+  const [templateDurations, setTemplateDurations] = useState<Record<string, number>>({});
+
+  // ── Template + traveller helpers ────────────────────────────────────────
+
+  const selectTemplate = (slug: string) => {
+    const dur = templateDurations[slug] ?? 7;
+    setSelections(s => ({ ...s, tripType: slug, days: dur }));
+  };
+
+  const setTemplateDurationFor = (slug: string, days: number) => {
+    setTemplateDurations(prev => ({ ...prev, [slug]: days }));
+    if (selections.tripType === slug) {
+      setSelections(s => ({ ...s, days }));
+    }
+  };
+
+  const setAdults = (n: number) => {
+    const total = n + selections.children;
+    const vehicle = autoVehicle(total, vehicles ?? []);
+    setSelections(s => ({ ...s, adults: n, pax: total, vehicle }));
+  };
+
+  const setChildren = (n: number) => {
+    const ages = n > selections.childAges.length
+      ? [...selections.childAges, ...Array(n - selections.childAges.length).fill('')]
+      : selections.childAges.slice(0, n);
+    const total = selections.adults + n;
+    const vehicle = autoVehicle(total, vehicles ?? []);
+    setSelections(s => ({ ...s, children: n, childAges: ages, pax: total, vehicle }));
+  };
+
+  const setChildAge = (i: number, age: string) => {
+    const ages = selections.childAges.map((a, idx) => (idx === i ? age : a));
+    setSelections(s => ({ ...s, childAges: ages }));
+  };
+
   // ── Selection helpers ───────────────────────────────────────────────────
 
   const toggleDest = (id: string) => {
@@ -317,7 +372,12 @@ export default function CYOWizard() {
 
   const canProceed = () => {
     if (step === 1) return selections.tripType !== '';
-    if (step === 2) return selections.destinations.length > 0;
+    if (step === 2) {
+      if (selections.tripType === 'scratch') {
+        return selections.itinerary.length > 0 && selections.itinerary.some(d => d.to !== '');
+      }
+      return selections.destinations.length > 0;
+    }
     if (step === 3) return true;
     if (step === 4) return selections.budget !== '';
     if (step === 5) return selections.name && selections.email;
@@ -341,6 +401,19 @@ export default function CYOWizard() {
     label: d.name,
     index: i,
   }));
+
+  // Scratch mode: derive map markers from itinerary chain
+  const scratchMapMarkers: MapMarker[] = useMemo(() =>
+    itineraryToMapMarkers(
+      selections.startFrom,
+      selections.startFromId,
+      selections.itinerary,
+      DESTINATIONS,
+    ),
+    [selections.startFrom, selections.startFromId, selections.itinerary]
+  );
+
+  const activeMapMarkers = selections.tripType === 'scratch' ? scratchMapMarkers : cyoMapMarkers;
 
   // ── Recovery banner handlers ────────────────────────────────────────────
 
@@ -481,7 +554,7 @@ export default function CYOWizard() {
           <p class="meta">Sri Lanka's Premium Chauffeur Service</p>
 
           <h2>Your Sri Lanka Trip Plan</h2>
-          <p>${selectedDestNames.join(' \u2192 ')} \u00b7 ${selections.days} days \u00b7 ${selections.pax} travellers</p>
+          <p>${scratchDestNames.join(' → ')} · ${selections.days} days · ${selections.pax} travellers</p>
 
           <div class="box">
             ${tripTypeLabel ? `<p><strong>Trip type:</strong> ${tripTypeLabel}</p>` : ''}
@@ -542,10 +615,15 @@ export default function CYOWizard() {
     setSubmitError('');
     setSubmitting(true);
     try {
-      const locations = [
-        ...selectedDestNames,
-        ...(selections.otherPlaces ? [selections.otherPlaces] : []),
-      ];
+      const locations = selections.tripType === 'scratch'
+        ? [
+            ...(selections.startFrom ? [selections.startFrom] : []),
+            ...selections.itinerary.filter(d => d.to).map(d => d.to),
+          ]
+        : [
+            ...selectedDestNames,
+            ...(selections.otherPlaces ? [selections.otherPlaces] : []),
+          ];
       const result = await api.post<any>('/custom-requests', {
         tripType: selections.tripType,
         locations,
@@ -635,9 +713,22 @@ export default function CYOWizard() {
     );
   }
 
+  // ── Scratch-mode derived display names ──────────────────────────────────
+
+  const scratchDestNames = selections.tripType === 'scratch'
+    ? [
+        ...(selections.startFrom ? [selections.startFrom] : []),
+        ...selections.itinerary.filter(d => d.to).map(d => d.to),
+      ]
+    : selectedDestNames;
+
   // ── Determine which actions to show in summary bar ──────────────────────
 
-  const showSummaryBar = step >= 2 && selections.destinations.length > 0;
+  const hasPlaces = selections.tripType === 'scratch'
+    ? selections.itinerary.some(d => d.to !== '')
+    : selections.destinations.length > 0;
+
+  const showSummaryBar = step >= 2 && hasPlaces;
   const showSaveAction = step >= 2 && step <= 4;
   const showEmailAction = step >= 2;
   const showDownloadAction = step === 5;
@@ -696,55 +787,253 @@ export default function CYOWizard() {
           {/* ── STEP 1: Basics ─────────────────────────────────────────── */}
           {step === 1 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="font-display text-3xl text-forest-600 mb-8">What kind of trip?</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                {TRIP_TYPES.map(t => (
-                  <div
-                    key={t.id}
-                    onClick={() => setSelections(s => ({ ...s, tripType: t.id }))}
-                    className={`p-6 rounded-2xl border-2 cursor-pointer text-center transition-all ${
-                      selections.tripType === t.id
-                        ? 'border-forest-500 bg-forest-50 shadow-sm'
-                        : 'border-warm-200 hover:border-forest-300'
-                    }`}
-                  >
-                    <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3 ${selections.tripType === t.id ? 'bg-forest-500 text-white' : 'bg-warm-100 text-warm-500'}`}>
-                      {t.icon}
-                    </div>
-                    <p className="font-body font-semibold text-forest-600 text-sm">{t.label}</p>
-                    <p className="font-body text-xs text-warm-400 mt-1">{t.desc}</p>
+              <h2 className="font-display text-3xl text-forest-600 mb-2">Choose your starting point</h2>
+              <p className="font-body text-warm-500 text-sm mb-8">Pick a ready-to-go template, or design your own trip from scratch.</p>
+
+              {/* ── Tour template grid ── */}
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
+                {isLoadingGroups
+                  ? Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="h-[200px] bg-warm-100 rounded-2xl animate-pulse" />
+                    ))
+                  : (tourGroups ?? []).map((group: any) => {
+                      const isSelected = selections.tripType === group.groupSlug;
+                      const dur = templateDurations[group.groupSlug] ?? 7;
+                      const heroImg = group.heroImages?.[0] ?? '';
+                      return (
+                        <div
+                          key={group.groupSlug}
+                          onClick={() => selectTemplate(group.groupSlug)}
+                          className={`rounded-2xl overflow-hidden cursor-pointer border-2 transition-all ${
+                            isSelected
+                              ? 'border-forest-500 shadow-md ring-2 ring-forest-200'
+                              : 'border-transparent hover:border-forest-300'
+                          }`}
+                        >
+                          {/* Image */}
+                          <div className="relative h-[110px]">
+                            <img src={heroImg} alt={group.name} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-forest-700/80 to-transparent" />
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-5 h-5 bg-forest-500 rounded-full flex items-center justify-center shadow">
+                                <Check className="w-3 h-3 text-white" />
+                              </div>
+                            )}
+                            <div className="absolute bottom-2 left-3 right-3">
+                              <p className="font-display text-sm text-white leading-tight line-clamp-1">{group.name}</p>
+                            </div>
+                          </div>
+                          {/* Duration pills */}
+                          <div className="p-3 bg-white">
+                            <p className="font-body text-[10px] text-warm-400 mb-1.5">Duration</p>
+                            <div className="flex gap-1 flex-wrap">
+                              {DURATIONS.map(d => {
+                                const hasVariant = group.variants?.some((v: any) => v.durationDays === d);
+                                if (!hasVariant) return null;
+                                return (
+                                  <button
+                                    key={d}
+                                    type="button"
+                                    onClick={e => { e.stopPropagation(); setTemplateDurationFor(group.groupSlug, d); }}
+                                    className={`px-2 py-0.5 rounded-full font-body text-[10px] font-medium border transition-all ${
+                                      dur === d && isSelected
+                                        ? 'bg-forest-500 text-white border-forest-500'
+                                        : dur === d
+                                        ? 'bg-forest-50 text-forest-600 border-forest-300'
+                                        : 'bg-white text-warm-500 border-warm-200 hover:border-forest-400 hover:text-forest-600'
+                                    }`}
+                                  >
+                                    {d}d
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                }
+
+                {/* Create from scratch */}
+                <div
+                  onClick={() => setSelections(s => ({ ...s, tripType: 'scratch' }))}
+                  className={`rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center p-5 min-h-[180px] ${
+                    selections.tripType === 'scratch'
+                      ? 'border-forest-500 bg-forest-50 shadow-sm'
+                      : 'border-dashed border-warm-300 hover:border-forest-400 bg-warm-50/50'
+                  }`}
+                >
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-3 ${
+                    selections.tripType === 'scratch' ? 'bg-forest-500 text-white' : 'bg-warm-100 text-warm-400'
+                  }`}>
+                    <Sparkles className="w-5 h-5" />
                   </div>
-                ))}
+                  <p className="font-body text-sm font-semibold text-forest-600">Create from scratch</p>
+                  <p className="font-body text-xs text-warm-400 mt-1 leading-snug">Design your own custom itinerary</p>
+                </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-10">
-                <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-3 font-body">How many travellers?</label>
-                  <div className="flex items-center gap-4 bg-warm-50 p-2 rounded-2xl w-fit border border-warm-200">
-                    <button onClick={() => setSelections(s => ({ ...s, pax: Math.max(1, s.pax - 1) }))} className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-xl text-forest-600 hover:text-amber-200 font-body transition-all duration-200">−</button>
-                    <span className="font-display text-3xl text-forest-600 w-12 text-center">{selections.pax}</span>
-                    <button onClick={() => setSelections(s => ({ ...s, pax: s.pax + 1 }))} className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-xl text-forest-600 hover:text-amber-200 font-body transition-all duration-200">+</button>
+              {/* ── Travellers + Vehicle ── */}
+              <div className="border-t border-warm-100 pt-8">
+                <div className="grid md:grid-cols-2 gap-10">
+
+                  {/* Travellers */}
+                  <div>
+                    <label className="block text-sm font-medium text-forest-600 mb-4 font-body">Who's travelling?</label>
+                    <div className="space-y-1">
+                      {/* Adults */}
+                      <div className="flex items-center justify-between py-2">
+                        <div>
+                          <p className="font-body text-sm font-medium text-forest-600">Adults</p>
+                          <p className="font-body text-xs text-warm-400">Age 18+</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button type="button" onClick={() => setAdults(Math.max(1, selections.adults - 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 disabled:opacity-30 transition-all">
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{selections.adults}</span>
+                          <button type="button" onClick={() => setAdults(Math.min(12, selections.adults + 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-warm-100" />
+
+                      {/* Children */}
+                      <div className="flex items-center justify-between py-2">
+                        <div>
+                          <p className="font-body text-sm font-medium text-forest-600">Children</p>
+                          <p className="font-body text-xs text-warm-400">Age 0–17</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button type="button" onClick={() => setChildren(Math.max(0, selections.children - 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 disabled:opacity-30 transition-all">
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{selections.children}</span>
+                          <button type="button" onClick={() => setChildren(Math.min(8, selections.children + 1))}
+                            className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Child ages */}
+                      {selections.children > 0 && (
+                        <div className="pt-3 border-t border-warm-100 space-y-3">
+                          <p className="font-body text-xs text-warm-500 font-medium">Age of each child at time of travel</p>
+                          {Array.from({ length: selections.children }, (_, i) => (
+                            <div key={i} className="flex items-center justify-between gap-3">
+                              <label className="font-body text-sm text-warm-600 shrink-0">Child {i + 1}</label>
+                              <select
+                                value={selections.childAges[i] ?? ''}
+                                onChange={e => setChildAge(i, e.target.value)}
+                                className={`flex-1 max-w-[180px] px-3 py-2 border rounded-xl font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 appearance-none cursor-pointer ${
+                                  !selections.childAges[i] ? 'border-amber-300 bg-amber-50 text-warm-500' : 'border-warm-200 text-forest-600'
+                                }`}
+                              >
+                                <option value="">Select age</option>
+                                <option value="0">Under 1 (Infant)</option>
+                                <option value="1">1 year old</option>
+                                {Array.from({ length: 16 }, (_, j) => j + 2).map(age => (
+                                  <option key={age} value={String(age)}>{age} years old</option>
+                                ))}
+                              </select>
+                            </div>
+                          ))}
+                          {!selections.childAges.slice(0, selections.children).every(a => a !== '') && (
+                            <p className="font-body text-[11px] text-amber-600">Please select an age for each child</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Preferred vehicle</label>
-                  <VehicleSelector
-                    vehicles={vehicles || []}
-                    selected={selections.vehicle}
-                    onSelect={(id) => setSelections(s => ({ ...s, vehicle: id }))}
-                  />
+
+                  {/* Vehicle */}
+                  <div>
+                    <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Vehicle</label>
+                    <VehicleSelector
+                      vehicles={vehicles || []}
+                      selected={selections.vehicle}
+                      onSelect={(id) => setSelections(s => ({ ...s, vehicle: id }))}
+                    />
+                    <p className="font-body text-xs text-warm-400 mt-3">
+                      <span className="text-forest-500 font-medium">Auto-selected</span> based on {selections.pax} traveller{selections.pax !== 1 ? 's' : ''} — you can override above
+                    </p>
+                  </div>
+
                 </div>
               </div>
             </div>
           )}
 
-          {/* ── STEP 2: Destinations ───────────────────────────────────── */}
-          {step === 2 && (
+          {/* ── STEP 2: Places ─────────────────────────────────────────── */}
+          {step === 2 && selections.tripType === 'scratch' && (
+            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="mb-6">
+                <h2 className="font-display text-3xl text-forest-600 mb-1">Where do you want to go?</h2>
+                <p className="font-body text-warm-500 text-sm">
+                  Add days, pick destinations — your route builds live on the map.
+                </p>
+              </div>
+
+              <div className="flex flex-col xl:flex-row gap-6">
+                {/* Left: itinerary builder */}
+                <div className="flex-1 min-w-0">
+                  <ItineraryBuilder
+                    startFrom={selections.startFrom}
+                    startFromId={selections.startFromId}
+                    itinerary={selections.itinerary}
+                    knownDestinations={DESTINATIONS}
+                    onChange={(itinerary, startFrom, startFromId) =>
+                      setSelections(s => ({ ...s, itinerary, startFrom, startFromId }))
+                    }
+                  />
+                </div>
+
+                {/* Right: live map */}
+                <div className="xl:w-[420px] shrink-0">
+                  <div className="sticky top-24">
+                    <MapView
+                      markers={scratchMapMarkers}
+                      showRoute={scratchMapMarkers.length >= 2}
+                      height="520px"
+                      className="shadow-xl"
+                    />
+                    {scratchMapMarkers.length === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none rounded-2xl">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-4 text-center shadow-lg">
+                          <p className="font-display text-lg text-forest-600 mb-1">Build your route</p>
+                          <p className="font-body text-xs text-warm-500">
+                            Add days &amp; pick destinations<br />and watch your journey form
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {scratchMapMarkers.length >= 2 && (
+                      <div className="mt-2 flex items-center justify-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-forest-500" />
+                        <p className="font-body text-xs text-warm-500">
+                          {scratchMapMarkers.length} stops · route updating live
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Template scenario (Scenario 2 — coming soon) */}
+          {step === 2 && selections.tripType !== 'scratch' && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="font-display text-3xl text-forest-600 mb-1">Where do you want to go?</h2>
-                  <p className="font-body text-warm-500 text-sm">Tap destinations — your route builds live on the map.</p>
+                  <h2 className="font-display text-3xl text-forest-600 mb-1">Customise your stops</h2>
+                  <p className="font-body text-warm-500 text-sm">Select which destinations to include on your tour.</p>
                 </div>
                 {selections.destinations.length > 0 && (
                   <span className="font-body text-sm font-medium text-forest-500 bg-sage px-4 py-2 rounded-full shrink-0 ml-4">
@@ -946,14 +1235,14 @@ export default function CYOWizard() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h2 className="font-display text-3xl text-forest-600 mb-2">Review your trip</h2>
               <p className="font-body text-warm-500 text-sm mb-8">
-                {selectedDestNames.join(' \u2192 ')} · {selections.days} days · {selections.pax} traveller{selections.pax !== 1 ? 's' : ''}
+                {scratchDestNames.join(' → ')} · {selections.days} days · {selections.adults} Adult{selections.adults !== 1 ? 's' : ''}{selections.children > 0 ? `, ${selections.children} Child${selections.children !== 1 ? 'ren' : ''}` : ''}
               </p>
 
               {/* Trip plan hero map */}
-              {cyoMapMarkers.length >= 2 && (
+              {activeMapMarkers.length >= 2 && (
                 <div className="mb-8 rounded-xl overflow-hidden">
                   <MapView
-                    markers={cyoMapMarkers}
+                    markers={activeMapMarkers}
                     showRoute={true}
                     height="200px"
                   />
@@ -964,12 +1253,17 @@ export default function CYOWizard() {
               <div className="bg-warm-50 rounded-2xl p-6 mb-8 border border-warm-200 space-y-4">
                 <div className="grid grid-cols-2 gap-4 font-body text-sm">
                   <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Trip type</span>
-                    <span className="text-forest-600 font-medium capitalize">{selections.tripType || '—'}</span>
+                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Template</span>
+                    <span className="text-forest-600 font-medium capitalize">
+                      {selections.tripType === 'scratch' ? 'Custom trip' : ((tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType)?.name ?? selections.tripType) || '—'}
+                    </span>
                   </div>
                   <div>
                     <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Travellers</span>
-                    <span className="text-forest-600 font-medium">{selections.pax}</span>
+                    <span className="text-forest-600 font-medium">
+                      {selections.adults} Adult{selections.adults !== 1 ? 's' : ''}
+                      {selections.children > 0 && `, ${selections.children} Child${selections.children !== 1 ? 'ren' : ''}`}
+                    </span>
                   </div>
                   <div>
                     <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Duration</span>
@@ -991,12 +1285,23 @@ export default function CYOWizard() {
                   </div>
                 </div>
                 <div>
-                  <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Destinations</span>
+                  <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">
+                    {selections.tripType === 'scratch' ? 'Itinerary' : 'Destinations'}
+                  </span>
                   <div className="flex flex-wrap gap-2">
-                    {selectedDestNames.map(n => (
-                      <span key={n} className="px-3 py-1 bg-sage rounded-pill text-xs font-medium text-forest-600 font-body">{n}</span>
-                    ))}
-                    {selections.otherPlaces && <span className="px-3 py-1 bg-amber-100 rounded-pill text-xs font-medium text-amber-700 font-body">{selections.otherPlaces}</span>}
+                    {selections.tripType === 'scratch'
+                      ? selections.itinerary.filter(d => d.to).map((d, i) => (
+                          <span key={d.id} className="px-3 py-1 bg-sage rounded-pill text-xs font-medium text-forest-600 font-body">
+                            Day {i + 1}: {selections.itinerary[i] && i === 0 && selections.startFrom ? `${selections.startFrom} → ` : ''}{d.to}
+                          </span>
+                        ))
+                      : scratchDestNames.map(n => (
+                          <span key={n} className="px-3 py-1 bg-sage rounded-pill text-xs font-medium text-forest-600 font-body">{n}</span>
+                        ))
+                    }
+                    {selections.tripType !== 'scratch' && selections.otherPlaces && (
+                      <span className="px-3 py-1 bg-amber-100 rounded-pill text-xs font-medium text-amber-700 font-body">{selections.otherPlaces}</span>
+                    )}
                   </div>
                 </div>
                 {selections.travelStyle.length > 0 && (
@@ -1108,7 +1413,9 @@ export default function CYOWizard() {
                 <div className="flex items-center gap-3 flex-wrap text-xs font-body text-warm-600">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-warm-400" />
-                    {getDestSummary(selections.destinations)}
+                    {scratchDestNames.length <= 2
+                      ? scratchDestNames.join(', ')
+                      : `${scratchDestNames[0]}, ${scratchDestNames[1]}, +${scratchDestNames.length - 2} more`}
                   </span>
                   {selections.days && (
                     <>
@@ -1127,7 +1434,8 @@ export default function CYOWizard() {
                   <span className="text-warm-300">·</span>
                   <span className="flex items-center gap-1">
                     <Users className="w-3.5 h-3.5 text-warm-400" />
-                    {selections.pax} traveller{selections.pax !== 1 ? 's' : ''}
+                    {selections.adults} Adult{selections.adults !== 1 ? 's' : ''}
+                    {selections.children > 0 && `, ${selections.children} Child${selections.children !== 1 ? 'ren' : ''}`}
                   </span>
                   {/* Auto-save indicator */}
                   {user && isSaved && (

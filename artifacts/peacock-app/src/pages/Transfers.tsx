@@ -8,7 +8,7 @@ import { useTransfers, usePopularRoutes, useVehicles } from '@/hooks/use-app-dat
 import { Button } from '@/components/ui/button';
 import {
   Plane, Clock, MapPin, ChevronDown, ChevronUp,
-  ArrowRight, Calendar, Users, Luggage, Plus, Minus,
+  ArrowRight, ArrowLeftRight, Calendar, Users, Luggage, Plus, Minus,
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -313,8 +313,8 @@ export default function Transfers() {
                 className="bg-white rounded-2xl border border-warm-200 overflow-hidden hover:shadow-card-hover transition-shadow"
               >
                 <div className="p-5">
-                  <h3 className="font-display text-xl text-forest-600 mb-1">
-                    {route.from} → {route.to}
+                  <h3 className="font-display text-xl text-forest-600 mb-1 flex items-center gap-2">
+                    {route.from} <ArrowLeftRight className="w-4 h-4 text-warm-400 shrink-0" /> {route.to}
                   </h3>
                   <div className="flex gap-4 mb-4">
                     <span className="font-body text-xs text-warm-400 flex items-center gap-1">
@@ -395,8 +395,8 @@ export default function Transfers() {
                 className="bg-white rounded-2xl border border-warm-200 overflow-hidden hover:shadow-card-hover transition-shadow"
               >
                 <div className="p-5">
-                  <h3 className="font-display text-xl text-forest-600 mb-1">
-                    {route.from} → {route.to}
+                  <h3 className="font-display text-xl text-forest-600 mb-1 flex items-center gap-2">
+                    {route.from} <ArrowLeftRight className="w-4 h-4 text-warm-400 shrink-0" /> {route.to}
                   </h3>
                   <div className="flex gap-3 mb-2">
                     <span className="font-body text-xs text-warm-400 flex items-center gap-1">
