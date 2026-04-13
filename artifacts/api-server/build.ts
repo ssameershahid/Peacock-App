@@ -78,7 +78,7 @@ async function buildAll() {
     (dep) => !dep.startsWith("@workspace/")
   );
   await esbuild({
-    entryPoints: [path.resolve(__dirname, "api/index.ts")],
+    entryPoints: [path.resolve(__dirname, "src/app.ts")],
     platform: "node",
     bundle: true,
     format: "cjs",
