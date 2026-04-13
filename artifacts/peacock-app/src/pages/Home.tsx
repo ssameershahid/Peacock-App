@@ -127,29 +127,6 @@ export default function Home() {
       {/* Orbit Showcase — Experience categories */}
       <OrbitShowcaseSection />
 
-      {/* How It Works */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-[1200px] mx-auto">
-          <SectionHeading overline="HOW IT WORKS" title="Three simple *steps*" align="center" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-16 relative">
-            <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-forest-100 border-dashed border-t-2 border-forest-200" />
-            {[
-              { num: 1, title: 'Choose your journey', desc: 'Browse ready-made tours, create your own, or book a simple transfer.' },
-              { num: 2, title: 'Book & pay securely', desc: 'Select your vehicle, add extras, and pay securely online. Stripe-powered checkout.' },
-              { num: 3, title: 'Meet your driver', desc: 'Your personal, English-speaking chauffeur arrives on time, ready to show you the real Sri Lanka.' },
-            ].map((step) => (
-              <div key={step.num} className="relative flex flex-col items-center text-center z-10">
-                <div className="w-24 h-24 rounded-full bg-white border-4 border-forest-100 flex items-center justify-center shadow-sm mb-6 group hover:border-amber-300 transition-colors">
-                  <span className="font-display text-4xl text-forest-500">{step.num}</span>
-                </div>
-                <h3 className="font-display text-2xl text-forest-600 mb-3">{step.title}</h3>
-                <p className="font-body text-warm-500 max-w-xs">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* About Peacock — Story Blocks (sticky image + text) */}
       <StoryBlocksSection />
 
