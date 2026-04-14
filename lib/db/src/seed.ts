@@ -360,6 +360,8 @@ async function seed() {
   const tours = [
     {
       slug: "classic-sri-lanka",
+      groupSlug: "classic-sri-lanka",
+      groupId: "classic-sri-lanka",
       name: "Classic Sri Lanka",
       tagline: "The perfect introduction to the island's highlights.",
       description:
@@ -401,6 +403,8 @@ async function seed() {
     },
     {
       slug: "hill-country-escape",
+      groupSlug: "hill-country-escape",
+      groupId: "hill-country-escape",
       name: "Hill Country Escape",
       tagline: "Tea, trains and breathtaking scenery.",
       description:
@@ -437,6 +441,8 @@ async function seed() {
     },
     {
       slug: "south-coast-beach",
+      groupSlug: "south-coast-beach",
+      groupId: "south-coast-beach",
       name: "South Coast & Beaches",
       tagline: "Sun, surf and colonial charm.",
       description:
@@ -468,6 +474,8 @@ async function seed() {
     },
     {
       slug: "wildlife-safari",
+      groupSlug: "wildlife-safari",
+      groupId: "wildlife-safari",
       name: "Wildlife & Safari",
       tagline: "Encounter leopards, elephants and rare birds.",
       description:
@@ -533,10 +541,14 @@ async function seed() {
   };
 
   for (const tourData of tours) {
+    // Use onConflictDoUpdate so existing rows get groupSlug/groupId patched in
     const [tour] = await db
       .insert(toursTable)
       .values(tourData)
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: toursTable.slug,
+        set: { groupSlug: tourData.groupSlug, groupId: tourData.groupId },
+      })
       .returning();
 
     if (!tour) continue;
