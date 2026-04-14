@@ -6,6 +6,9 @@ import stripeWebhookRouter from "./routes/webhooks/stripe.js";
 
 const app = express();
 
+// Trust Vercel's proxy so express-rate-limit can read X-Forwarded-For correctly
+app.set("trust proxy", 1);
+
 // CORS: support comma-separated FRONTEND_URL and Vercel preview URLs
 const allowedOrigins: (string | RegExp)[] = [
   "http://localhost:5173",
