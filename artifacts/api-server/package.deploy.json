@@ -2,5 +2,8 @@
   "name": "peacock-api-server",
   "version": "0.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "pg": "^8.20.0"
+  }
 }
