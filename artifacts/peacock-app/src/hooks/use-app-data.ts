@@ -222,6 +222,8 @@ export function useTourVariant(groupSlug: string, duration: number) {
       }
     },
     enabled: !!groupSlug && !!duration,
+    // Don't retry 404s — variant simply doesn't exist; the fallback handles it
+    retry: (count: number, error: any) => error?.status !== 404 && count < 2,
   });
 }
 

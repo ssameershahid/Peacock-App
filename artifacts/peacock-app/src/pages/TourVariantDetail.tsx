@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { useTourVariant, useVehicles } from '@/hooks/use-app-data';
+import { useTourVariant, useTourGroups, useVehicles } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
@@ -365,8 +365,24 @@ export default function TourVariantDetail() {
   const duration = Number(params?.duration ?? 7);
 
   const { data: tour, isLoading } = useTourVariant(groupSlug, duration);
+  const { data: tourGroups } = useTourGroups();
   const { data: vehicles } = useVehicles();
   const { format } = useCurrency();
+
+  // Durations that actually exist for this group (from the groups cache)
+  const availableDurations = useMemo<number[]>(() => {
+    const group = tourGroups?.find((g: any) => g.groupSlug === groupSlug);
+    const durations = group?.variants?.map((v: any) => v.durationDays as number) ?? [];
+    return durations.length > 0 ? durations : [];
+  }, [tourGroups, groupSlug]);
+
+  // Auto-redirect if the requested duration has no variant (e.g. /classic-sri-lanka/5 when only 10d exists)
+  React.useEffect(() => {
+    if (availableDurations.length === 0) return;
+    if (!availableDurations.includes(duration)) {
+      setLocation(`/tours/${groupSlug}/${availableDurations[0]}`);
+    }
+  }, [availableDurations, duration, groupSlug, setLocation]);
 
   // Sidebar state — preserved across duration switches
   const [selectedVehicle, setSelectedVehicle] = useState<string>('minivan');
@@ -548,8 +564,17 @@ export default function TourVariantDetail() {
             <div className="flex flex-col gap-1">
               <span className="text-warm-400 text-xs font-body uppercase tracking-wider">Start / End</span>
               <div className="flex items-center gap-2 text-forest-600 font-medium font-body text-sm">
-                <MapPin className="w-4 h-4 text-amber-200" />
-                <span>{infoStartLabel} → {infoEndLabel}</span>
+                {startDate ? (
+                  <><CalendarIcon className="w-4 h-4 text-amber-200 shrink-0" />
+                  <span>
+                    {new Date(startDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    {' → '}
+                    {(() => { const d = new Date(startDate + 'T00:00:00'); d.setDate(d.getDate() + duration - 1); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); })()}
+                  </span></>
+                ) : (
+                  <><MapPin className="w-4 h-4 text-amber-200 shrink-0" />
+                  <span>{infoStartLabel && infoEndLabel ? `${infoStartLabel} → ${infoEndLabel}` : 'Set start date →'}</span></>
+                )}
               </div>
             </div>
             <div className="flex flex-col gap-1 md:col-span-2">
@@ -825,19 +850,23 @@ export default function TourVariantDetail() {
                 Duration: <span className="text-amber-500">{duration} days / {duration - 1} nights</span>
               </label>
               <div className="grid grid-cols-4 gap-1.5 p-1 bg-warm-50 rounded-xl border border-warm-100">
-                {DURATIONS.map(d => (
-                  <button
-                    key={d}
-                    onClick={() => switchDuration(d)}
-                    className={`py-2 rounded-lg font-body text-sm font-medium transition-all ${
-                      duration === d
-                        ? 'bg-forest-500 text-white shadow-sm'
-                        : 'text-warm-500 hover:text-forest-600 hover:bg-white'
-                    }`}
-                  >
-                    {d}d
-                  </button>
-                ))}
+                {DURATIONS.map(d => {
+                  const exists = availableDurations.length === 0 || availableDurations.includes(d);
+                  if (!exists) return null;
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => switchDuration(d)}
+                      className={`py-2 rounded-lg font-body text-sm font-medium transition-all ${
+                        duration === d
+                          ? 'bg-forest-500 text-white shadow-sm'
+                          : 'text-warm-500 hover:text-forest-600 hover:bg-white'
+                      }`}
+                    >
+                      {d}d
+                    </button>
+                  );
+                })}
               </div>
               <p className="font-body text-xs text-warm-400 mt-1.5">Switch duration to see a different itinerary</p>
             </div>
