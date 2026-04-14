@@ -72,13 +72,14 @@ async function buildAll() {
 
   // ── Vercel serverless function bundle ──────────────────────────────────
   // Vercel has no node_modules — bundle ALL dependencies (workspace + npm).
-  // Only leave out native Node built-ins which are always available.
+  // Use CJS format so Vercel's ncc packager doesn't try to re-resolve external
+  // modules; everything is inlined as __commonJS wrappers with no static imports.
   console.log("building vercel function bundle...");
   await esbuild({
     entryPoints: [path.resolve(__dirname, "src/app.ts")],
     platform: "node",
     bundle: true,
-    format: "esm",
+    format: "cjs",
     outfile: path.resolve(__dirname, "api/index.js"),
     define: {
       "process.env.NODE_ENV": '"production"',
@@ -86,10 +87,6 @@ async function buildAll() {
     minify: false,
     external: [], // bundle everything; no node_modules on Vercel
     logLevel: "info",
-    // Bundled CJS packages (pg, etc.) use dynamic require(); shim it for ESM context.
-    // package.deploy.json keeps "type":"module" so Vercel doesn't compile this to CJS
-    // (which would break import.meta.url).
-    banner: { js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" },
   });
   console.log("done.");
 }
