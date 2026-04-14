@@ -279,7 +279,7 @@ const TripSearchHero = () => {
 
   const whenText = useMemo(() => {
     if (!dateRange.start) return 'Anytime';
-    const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     if (!dateRange.end) return fmt(dateRange.start);
     return `${fmt(dateRange.start)} – ${fmt(dateRange.end)}`;
   }, [dateRange]);

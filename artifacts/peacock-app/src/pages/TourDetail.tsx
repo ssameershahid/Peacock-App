@@ -254,6 +254,7 @@ export default function TourDetail() {
                 <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
                 <input
                   type="date"
+                  lang="en-GB"
                   min={minDateStr}
                   value={startDate}
                   onChange={e => setStartDate(e.target.value)}

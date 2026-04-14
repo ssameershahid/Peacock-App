@@ -549,7 +549,7 @@ function RescheduleModal({ onClose }: { onClose: () => void }) {
         </div>
         <div className="mb-4">
           <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">Preferred new date</label>
-          <input type="date" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
+          <input type="date" lang="en-GB" className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300" />
         </div>
         <div className="flex gap-3">
           <Button className="rounded-pill flex-1" onClick={onClose}>Submit Request</Button>

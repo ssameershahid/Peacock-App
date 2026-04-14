@@ -244,6 +244,7 @@ export default function AdminBookings() {
           <div className="flex items-center gap-2">
             <input
               type="date"
+              lang="en-GB"
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
               className="px-3 py-2 bg-warm-50 border border-warm-200 rounded-lg font-body text-xs focus:ring-2 focus:ring-forest-500 outline-none"
@@ -252,6 +253,7 @@ export default function AdminBookings() {
             <span className="font-body text-xs text-warm-400">to</span>
             <input
               type="date"
+              lang="en-GB"
               value={dateTo}
               onChange={e => setDateTo(e.target.value)}
               className="px-3 py-2 bg-warm-50 border border-warm-200 rounded-lg font-body text-xs focus:ring-2 focus:ring-forest-500 outline-none"

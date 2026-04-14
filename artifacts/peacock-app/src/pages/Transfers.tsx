@@ -559,6 +559,7 @@ export default function Transfers() {
                     <input
                       ref={dateRef}
                       type="date"
+                      lang="en-GB"
                       min={todayStr}
                       value={customDate}
                       onChange={e => setCustomDate(e.target.value)}

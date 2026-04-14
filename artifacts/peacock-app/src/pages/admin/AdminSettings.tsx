@@ -318,6 +318,7 @@ function PricingTab() {
                   <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">From</label>
                   <input
                     type="date"
+                    lang="en-GB"
                     value={season.startDate}
                     onChange={e => updateField(idx, 'startDate', e.target.value)}
                     className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300"
@@ -328,6 +329,7 @@ function PricingTab() {
                   <label className="text-[13px] font-medium text-warm-600 mb-1.5 block">To</label>
                   <input
                     type="date"
+                    lang="en-GB"
                     value={season.endDate}
                     onChange={e => updateField(idx, 'endDate', e.target.value)}
                     className="w-full border border-warm-200 rounded-xl px-4 py-2.5 font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300"

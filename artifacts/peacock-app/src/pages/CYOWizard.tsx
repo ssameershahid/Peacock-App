@@ -1397,6 +1397,7 @@ export default function CYOWizard() {
                     <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date</label>
                     <input
                       type="date"
+                      lang="en-GB"
                       value={selections.startDate}
                       min={new Date().toISOString().split('T')[0]}
                       onChange={e => setSelections(s => ({ ...s, startDate: e.target.value }))}

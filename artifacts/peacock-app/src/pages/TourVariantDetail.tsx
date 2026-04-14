@@ -785,6 +785,7 @@ export default function TourVariantDetail() {
                   <input
                     ref={startDateRef}
                     type="date"
+                    lang="en-GB"
                     min={minDateStr}
                     value={startDate}
                     onChange={e => setStartDate(e.target.value)}
@@ -800,6 +801,7 @@ export default function TourVariantDetail() {
                   <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
                   <input
                     type="date"
+                    lang="en-GB"
                     readOnly
                     value={(() => {
                       if (!startDate) return '';
