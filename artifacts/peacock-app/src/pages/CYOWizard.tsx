@@ -375,8 +375,14 @@ export default function CYOWizard() {
   // ── Template + traveller helpers ────────────────────────────────────────
 
   const selectTemplate = (slug: string) => {
-    const dur = templateDurations[slug] ?? 7;
+    // Auto-pick the first available variant duration so the API call matches an actual variant.
+    // Falling back to 7 caused 404s for tours whose shortest variant isn't 7 days.
+    const group = (tourGroups ?? []).find((g: any) => g.groupSlug === slug);
+    const firstDur = group?.variants?.[0]?.durationDays;
+    const dur = templateDurations[slug] ?? firstDur ?? 7;
     itineraryInitialized.current = ''; // force re-fetch for new template
+    // Persist the auto-selected duration so the picker reflects it and the useEffect reads it
+    setTemplateDurations(prev => prev[slug] !== undefined ? prev : { ...prev, [slug]: dur });
     setSelections(s => ({ ...s, tripType: slug, days: dur, itinerary: [], startFrom: '', startFromId: '' }));
   };
 
@@ -967,7 +973,7 @@ export default function CYOWizard() {
               {/* ── Duration picker — shown when a template is selected ── */}
               {selections.tripType && selections.tripType !== 'scratch' && (() => {
                 const selectedGroup = (tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType);
-                const activeDur = templateDurations[selections.tripType] ?? 7;
+                const activeDur = templateDurations[selections.tripType] ?? selectedGroup?.variants?.[0]?.durationDays ?? 7;
                 return (
                   <div className="my-5 p-5 bg-sage rounded-2xl border border-forest-100 animate-in fade-in slide-in-from-top-2 duration-200">
                     <p className="font-body text-sm font-medium text-forest-600 mb-3">

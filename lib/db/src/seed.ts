@@ -440,9 +440,9 @@ async function seed() {
       name: "South Coast & Beaches",
       tagline: "Sun, surf and colonial charm.",
       description:
-        "Explore Sri Lanka's stunning southern coastline over 6 days. From the historic Dutch fort of Galle to the surf beaches of Arugam Bay, discover golden sands, colourful coral reefs, and some of the best seafood on the island.",
-      durationDays: 6,
-      durationNights: 5,
+        "Explore Sri Lanka's stunning southern coastline over 5 days. From the historic Dutch fort of Galle to the surf beaches of Arugam Bay, discover golden sands, colourful coral reefs, and some of the best seafood on the island.",
+      durationDays: 5,
+      durationNights: 4,
       highlights: [
         "Galle Fort (UNESCO)",
         "Mirissa whale watching",
@@ -457,7 +457,7 @@ async function seed() {
       ],
       bestMonths: [11, 12, 1, 2, 3, 4],
       whatsIncluded: [
-        "Private vehicle & driver for 6 days",
+        "Private vehicle & driver for 5 days",
         "All fuel & tolls",
         "Driver accommodation & meals",
       ],
@@ -591,7 +591,7 @@ async function seed() {
       ])
       .onConflictDoNothing();
 
-    // Basic itinerary for Classic Sri Lanka
+    // Pre-fed itinerary days for each seeded tour
     if (tour.slug === "classic-sri-lanka") {
       await db
         .insert(itineraryDaysTable)
@@ -716,6 +716,45 @@ async function seed() {
             drivingTime: "2 hours",
             keyStops: ["Colombo City", "Bandaranaike Airport"],
           },
+        ])
+        .onConflictDoNothing();
+    }
+
+    if (tour.slug === "hill-country-escape") {
+      await db
+        .insert(itineraryDaysTable)
+        .values([
+          { tourId: tour.id, dayNumber: 1, title: "Airport to Kandy", location: "Kandy", lat: 7.2906, lng: 80.6350, description: "Your driver collects you from Bandaranaike Airport and winds up into the hills to Kandy, Sri Lanka's cultural capital.", drivingTime: "3.5 hours", keyStops: ["Pinnawala Elephant Orphanage", "Temple of the Tooth"] },
+          { tourId: tour.id, dayNumber: 2, title: "Kandy", location: "Kandy", lat: 7.2906, lng: 80.6350, description: "Explore Kandy at leisure — visit the Royal Botanical Gardens at Peradeniya and stroll Kandy Lake at sunset.", drivingTime: "Local drives", keyStops: ["Royal Botanical Gardens", "Kandy Lake", "Cultural Show"] },
+          { tourId: tour.id, dayNumber: 3, title: "Kandy to Nuwara Eliya", location: "Nuwara Eliya", lat: 6.9497, lng: 80.7718, description: "Wind through emerald tea estates to Little England. Visit a working tea factory and taste freshly rolled Ceylon tea.", drivingTime: "2.5 hours", keyStops: ["Pedro Tea Estate", "Gregory Lake", "Nuwara Eliya Post Office"] },
+          { tourId: tour.id, dayNumber: 4, title: "Nuwara Eliya to Ella", location: "Ella", lat: 6.8667, lng: 81.0470, description: "One of the most scenic mountain drives on the island. Stop at Ravana Falls and the iconic Nine Arches Bridge.", drivingTime: "2 hours", keyStops: ["Nine Arches Bridge", "Ravana Falls", "Little Adam's Peak"] },
+          { tourId: tour.id, dayNumber: 5, title: "Ella to Haputale to Airport", location: "Colombo", lat: 6.9271, lng: 79.8612, description: "Morning at leisure in Ella, then your driver takes you back down to Colombo for your departure.", drivingTime: "4.5 hours", keyStops: ["Lipton's Seat (Haputale)", "Bandaranaike Airport"] },
+        ])
+        .onConflictDoNothing();
+    }
+
+    if (tour.slug === "south-coast-beach") {
+      await db
+        .insert(itineraryDaysTable)
+        .values([
+          { tourId: tour.id, dayNumber: 1, title: "Airport to Galle", location: "Galle", lat: 6.0535, lng: 80.2170, description: "Head south from the airport along the coast road to Galle, stopping at a turtle hatchery along the way.", drivingTime: "2 hours", keyStops: ["Kosgoda Turtle Hatchery", "Galle Fort"] },
+          { tourId: tour.id, dayNumber: 2, title: "Galle", location: "Galle", lat: 6.0535, lng: 80.2170, description: "Full day exploring Galle Fort — a UNESCO World Heritage Site packed with Dutch colonial architecture, cafés, and boutiques.", drivingTime: "Local walks", keyStops: ["Galle Fort Ramparts", "Dutch Reformed Church", "Lighthouse"] },
+          { tourId: tour.id, dayNumber: 3, title: "Galle to Mirissa", location: "Mirissa", lat: 5.9474, lng: 80.4590, description: "Short drive east to Mirissa. Afternoon on the beach, evening at the beachfront restaurants.", drivingTime: "45 minutes", keyStops: ["Mirissa Beach", "Parrot Rock"] },
+          { tourId: tour.id, dayNumber: 4, title: "Mirissa — Whale Watching", location: "Mirissa", lat: 5.9474, lng: 80.4590, description: "Morning whale-watching boat trip (blue whales and sperm whales are common Dec–Apr), afternoon at leisure.", drivingTime: "Boat trip", keyStops: ["Whale Watching Boat", "Stilt Fishermen at Weligama"] },
+          { tourId: tour.id, dayNumber: 5, title: "Mirissa to Tangalle to Airport", location: "Colombo", lat: 6.9271, lng: 79.8612, description: "Drive east along the coast through Tangalle before heading back to Colombo for your departure.", drivingTime: "3.5 hours", keyStops: ["Tangalle Beach", "Hummanaya Blowhole", "Bandaranaike Airport"] },
+        ])
+        .onConflictDoNothing();
+    }
+
+    if (tour.slug === "wildlife-safari") {
+      await db
+        .insert(itineraryDaysTable)
+        .values([
+          { tourId: tour.id, dayNumber: 1, title: "Airport to Minneriya", location: "Sigiriya", lat: 7.9572, lng: 80.7597, description: "Drive north from the airport to the Cultural Triangle. Afternoon game drive at Minneriya to see the famous elephant gathering.", drivingTime: "3.5 hours", keyStops: ["Minneriya National Park", "Elephant Gathering"] },
+          { tourId: tour.id, dayNumber: 2, title: "Sigiriya & Dambulla", location: "Sigiriya", lat: 7.9572, lng: 80.7597, description: "Morning climb of Sigiriya Rock Fortress, then visit the Dambulla Cave Temple complex.", drivingTime: "Local drives", keyStops: ["Sigiriya Rock Fortress", "Dambulla Cave Temple"] },
+          { tourId: tour.id, dayNumber: 3, title: "Sigiriya to Yala", location: "Yala", lat: 6.3718, lng: 81.5256, description: "Long drive south to Yala, the world's best place to spot leopards. Evening game drive at dusk.", drivingTime: "5 hours", keyStops: ["Yala National Park Evening Safari"] },
+          { tourId: tour.id, dayNumber: 4, title: "Yala Full Day Safari", location: "Yala", lat: 6.3718, lng: 81.5256, description: "Full day on safari in Yala — leopards, elephants, crocodiles, and hundreds of bird species.", drivingTime: "Safari jeep all day", keyStops: ["Yala Block 1", "Leopard spotting", "Elephants at the water hole"] },
+          { tourId: tour.id, dayNumber: 5, title: "Yala to Airport", location: "Colombo", lat: 6.9271, lng: 79.8612, description: "Early morning final game drive, then transfer back to Colombo for your departure flight.", drivingTime: "4 hours", keyStops: ["Morning Safari", "Bandaranaike Airport"] },
         ])
         .onConflictDoNothing();
     }
