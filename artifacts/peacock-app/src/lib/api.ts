@@ -1,4 +1,7 @@
-const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000') + '/api';
+// On Vercel (and any non-localhost host) the frontend and API share the same origin,
+// so use a relative path. Only use an absolute URL in local development.
+const _isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+const API_BASE = (_isLocalhost ? (import.meta.env.VITE_API_URL ?? 'http://localhost:4000') : '') + '/api';
 
 const TOKEN_KEY = 'peacock_token';
 
