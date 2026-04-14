@@ -41,13 +41,17 @@ router.get("/groups", async (_req, res) => {
       .where(and(eq(toursTable.isActive, true)))
       .orderBy(asc(toursTable.sortOrder));
 
-    // Group by groupId
+    // Group by groupSlug (more reliable than groupId — old DB rows may have
+    // stale/different groupIds for the same slug if seed ran under older schemas).
+    // Also deduplicate variants by durationDays so duplicate DB rows don't
+    // produce multiple cards for the same duration.
+    const VALID_DURATION_SET = new Set(VALID_DURATIONS);
     const groupMap = new Map<string, any>();
     for (const t of tours) {
-      if (!t.groupId || !t.groupSlug) continue;
-      if (!groupMap.has(t.groupId)) {
-        groupMap.set(t.groupId, {
-          groupId: t.groupId,
+      if (!t.groupSlug) continue;
+      if (!groupMap.has(t.groupSlug)) {
+        groupMap.set(t.groupSlug, {
+          groupId: t.groupSlug,
           groupSlug: t.groupSlug,
           name: t.name,
           tagline: t.tagline,
@@ -58,9 +62,15 @@ router.get("/groups", async (_req, res) => {
           highlights: t.highlights,
           sortOrder: t.sortOrder,
           variants: [],
+          _seenDurations: new Set<number>(),
         });
       }
-      groupMap.get(t.groupId).variants.push({
+      const group = groupMap.get(t.groupSlug);
+      // Skip non-standard durations and duplicate duration rows
+      if (!VALID_DURATION_SET.has(t.durationDays)) continue;
+      if (group._seenDurations.has(t.durationDays)) continue;
+      group._seenDurations.add(t.durationDays);
+      group.variants.push({
         id: t.id,
         slug: t.slug,
         durationDays: t.durationDays,
@@ -79,8 +89,8 @@ router.get("/groups", async (_req, res) => {
       return acc;
     }, {});
 
-    // Add vehicle rates to each variant
-    const groups = Array.from(groupMap.values()).map((g) => ({
+    // Add vehicle rates to each variant; strip internal dedup helper
+    const groups = Array.from(groupMap.values()).map(({ _seenDurations: _, ...g }) => ({
       ...g,
       variants: g.variants
         .map((v: any) => ({ ...v, vehicleRates: ratesByTour[v.id] || [] }))

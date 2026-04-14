@@ -165,12 +165,11 @@ function TravellersSelector({
 
 // ── Tour group card ───────────────────────────────────────────────────────────
 
-function TourGroupCard({ group, travellers, activeDuration }: { group: any; travellers: TravellerState; activeDuration: number | null }) {
+function TourGroupCard({ group, travellers, activeDuration }: { group: any; travellers: TravellerState; activeDuration: number }) {
   const [, navigate] = useLocation();
   const { format } = useCurrency();
 
-  // Use the page-level duration filter if set, otherwise default to first variant
-  const selectedDuration = activeDuration ?? group.variants[0]?.durationDays ?? 5;
+  const selectedDuration = activeDuration;
 
   const selectedVariant = group.variants.find((v: any) => v.durationDays === selectedDuration) ?? group.variants[0];
   const perDay = selectedVariant?.vehicleRates?.find((r: any) => r.vehicleType === 'car')?.pricePerDay
@@ -239,7 +238,7 @@ function TourGroupCard({ group, travellers, activeDuration }: { group: any; trav
 
 export default function Tours() {
   const { data: groups, isLoading } = useTourGroups();
-  const [duration, setDuration] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number>(7);
   const [region, setRegion] = useState('All');
   const [travellers, setTravellers] = useState<TravellerState>({ adults: 2, children: 0, childAges: [] });
 
@@ -253,7 +252,7 @@ export default function Tours() {
   const filtered = useMemo(() => {
     if (!groups) return [];
     return groups.filter((g: any) => {
-      if (duration && !g.variants.some((v: any) => v.durationDays === duration)) return false;
+      if (!g.variants.some((v: any) => v.durationDays === duration)) return false;
       if (region !== 'All' && !g.regions?.some((r: string) => r.toLowerCase().includes(region.toLowerCase()))) return false;
       return true;
     });
@@ -297,20 +296,12 @@ export default function Tours() {
           {/* Travellers selector */}
           <TravellersSelector value={travellers} onChange={setTravellers} />
 
-          {/* Duration — fixed 4 options */}
+          {/* Duration — fixed 4 options, default 7 days */}
           <div className="flex items-center gap-1 bg-white border border-warm-200 rounded-pill px-1 py-1 shadow-sm">
-            <button
-              onClick={() => setDuration(null)}
-              className={`px-4 py-1.5 rounded-full font-body text-sm transition-colors ${
-                duration === null ? 'bg-forest-500 text-white' : 'text-warm-500 hover:text-forest-600'
-              }`}
-            >
-              Any
-            </button>
             {DURATIONS.map(d => (
               <button
                 key={d}
-                onClick={() => setDuration(duration === d ? null : d)}
+                onClick={() => setDuration(d)}
                 className={`px-4 py-1.5 rounded-full font-body text-sm transition-colors whitespace-nowrap ${
                   duration === d ? 'bg-forest-500 text-white' : 'text-warm-500 hover:text-forest-600'
                 }`}
@@ -342,7 +333,7 @@ export default function Tours() {
           ) : filtered.length === 0 ? (
             <div className="col-span-2 text-center py-20">
               <p className="font-body text-warm-400 text-lg">No tours match your filters.</p>
-              <Button variant="ghost" onClick={() => { setDuration(null); setRegion('All'); }} className="mt-4">
+              <Button variant="ghost" onClick={() => { setDuration(7); setRegion('All'); }} className="mt-4">
                 Clear filters
               </Button>
             </div>
