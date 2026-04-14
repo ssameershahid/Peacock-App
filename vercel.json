@@ -1,6 +1,7 @@
 {
   "version": 2,
   "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "node build-vercel.mjs",
   "routes": [
     {
       "src": "/(.*)",
