@@ -1,5 +1,5 @@
 {
-  "installCommand": "cp package.deploy.json package.json",
+  "installCommand": "cp package.deploy.json package.json && npm install",
   "buildCommand": "echo 'pre-built'",
   "outputDirectory": ".",
   "routes": [
