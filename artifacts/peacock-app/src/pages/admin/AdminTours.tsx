@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
-import { useTourGroups } from '@/hooks/use-app-data';
+import { useAdminTourGroups, useToggleTourGroup } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import AdminLayout from './AdminLayout';
 
 const DURATIONS = [5, 7, 10, 14];
 
 export default function AdminTours() {
-  const { data: groups, isLoading } = useTourGroups();
+  const { data: groups, isLoading } = useAdminTourGroups();
   const { format } = useCurrency();
   const [search, setSearch] = useState('');
 
@@ -62,6 +62,10 @@ export default function AdminTours() {
 
 function TourGroupRow({ group, format }: { group: any; format: (n: number) => string }) {
   const [expanded, setExpanded] = useState(false);
+  const toggleGroup = useToggleTourGroup();
+
+  // Group is active only if every variant is active
+  const isActive = group.variants.every((v: any) => v.isActive !== false);
 
   // Min price across all variants (car rate)
   const minPrice = Math.min(
@@ -72,60 +76,76 @@ function TourGroupRow({ group, format }: { group: any; format: (n: number) => st
     ).filter((p: number) => p > 0)
   );
 
+  function handleToggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (toggleGroup.isPending) return;
+    toggleGroup.mutate({ groupSlug: group.groupSlug, isActive: !isActive });
+  }
+
   return (
-    <div className="bg-white rounded-2xl border border-warm-100 shadow-sm overflow-hidden">
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-opacity ${isActive ? 'border-warm-100' : 'border-warm-200 opacity-60'}`}>
       {/* Header row */}
-      <button
-        onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-warm-50 transition-colors"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            {expanded ? <ChevronDown className="w-4 h-4 text-warm-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-warm-400 shrink-0" />}
-            <span className="font-display text-lg text-forest-600">{group.name}</span>
-            <span className="bg-forest-50 text-forest-600 font-body text-[10px] font-medium px-2 py-0.5 rounded-pill">Ready-made</span>
+      <div className="flex items-center gap-4 px-6 py-4">
+        <button
+          onClick={() => setExpanded(e => !e)}
+          className="flex-1 min-w-0 flex items-center gap-4 text-left hover:bg-warm-50 -mx-2 px-2 py-1 rounded-xl transition-colors"
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3">
+              {expanded ? <ChevronDown className="w-4 h-4 text-warm-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-warm-400 shrink-0" />}
+              <span className="font-display text-lg text-forest-600">{group.name}</span>
+              <span className="bg-forest-50 text-forest-600 font-body text-[10px] font-medium px-2 py-0.5 rounded-pill">Ready-made</span>
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1 ml-7">
+              {group.regions?.map((r: string) => (
+                <span key={r} className="bg-warm-50 text-warm-500 font-body text-[10px] px-2 py-0.5 rounded-pill">{r}</span>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1 mt-1 ml-7">
-            {group.regions?.map((r: string) => (
-              <span key={r} className="bg-warm-50 text-warm-500 font-body text-[10px] px-2 py-0.5 rounded-pill">{r}</span>
-            ))}
+
+          {/* Duration pills */}
+          <div className="flex gap-1.5 shrink-0">
+            {DURATIONS.map(d => {
+              const variant = group.variants.find((v: any) => v.durationDays === d);
+              return (
+                <Link
+                  key={d}
+                  href={variant ? `/admin/tours/${variant.id}/edit` : '#'}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full font-body text-xs font-medium border transition-all ${
+                    variant
+                      ? 'bg-white border-forest-300 text-forest-600 hover:bg-forest-50 hover:border-forest-500 cursor-pointer'
+                      : 'bg-warm-50 border-warm-200 text-warm-300 cursor-not-allowed'
+                  }`}>
+                    {d}d
+                  </span>
+                </Link>
+              );
+            })}
           </div>
-        </div>
 
-        {/* Duration pills */}
-        <div className="flex gap-1.5 shrink-0">
-          {DURATIONS.map(d => {
-            const variant = group.variants.find((v: any) => v.durationDays === d);
-            return (
-              <Link
-                key={d}
-                href={variant ? `/admin/tours/${variant.id}/edit` : '#'}
-                onClick={e => e.stopPropagation()}
-              >
-                <span className={`inline-flex items-center px-3 py-1 rounded-full font-body text-xs font-medium border transition-all ${
-                  variant
-                    ? 'bg-white border-forest-300 text-forest-600 hover:bg-forest-50 hover:border-forest-500 cursor-pointer'
-                    : 'bg-warm-50 border-warm-200 text-warm-300 cursor-not-allowed'
-                }`}>
-                  {d}d
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="text-right shrink-0 ml-4">
-          <p className="font-body text-xs text-warm-400">From</p>
-          <p className="font-body text-sm font-semibold text-forest-600">{isFinite(minPrice) ? `${format(minPrice)}/day` : '—'}</p>
-        </div>
-
-        <div className="flex items-center gap-2 ml-4 shrink-0">
-          <div className="w-8 h-5 bg-emerald-500 rounded-full relative">
-            <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm" />
+          <div className="text-right shrink-0 ml-4">
+            <p className="font-body text-xs text-warm-400">From</p>
+            <p className="font-body text-sm font-semibold text-forest-600">{isFinite(minPrice) ? `${format(minPrice)}/day` : '—'}</p>
           </div>
-          <span className="font-body text-xs text-emerald-600">Active</span>
+        </button>
+
+        {/* Toggle — outside the expand button so clicks don't open the dropdown */}
+        <div
+          role="button"
+          aria-label={isActive ? 'Deactivate tour' : 'Activate tour'}
+          onClick={handleToggle}
+          className={`flex items-center gap-2 ml-4 shrink-0 cursor-pointer select-none transition-opacity ${toggleGroup.isPending ? 'opacity-50 pointer-events-none' : ''}`}
+        >
+          <div className={`w-8 h-5 rounded-full relative transition-colors duration-200 ${isActive ? 'bg-emerald-500' : 'bg-warm-300'}`}>
+            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200 ${isActive ? 'right-0.5' : 'left-0.5'}`} />
+          </div>
+          <span className={`font-body text-xs font-medium w-12 ${isActive ? 'text-emerald-600' : 'text-warm-400'}`}>
+            {toggleGroup.isPending ? '...' : isActive ? 'Active' : 'Inactive'}
+          </span>
         </div>
-      </button>
+      </div>
 
       {/* Expanded variant rows */}
       {expanded && (

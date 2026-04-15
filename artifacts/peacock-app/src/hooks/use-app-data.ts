@@ -178,6 +178,33 @@ export function useTourGroups() {
   });
 }
 
+// Admin version — includes inactive groups so they can be re-activated
+export function useAdminTourGroups() {
+  return useQuery({
+    queryKey: ["tour-groups", "admin"],
+    queryFn: async () => {
+      try {
+        const groups = await api.get<any[]>("/tours/groups?includeInactive=true");
+        return groups?.length > 0 ? groups : MOCK_TOUR_GROUPS;
+      } catch {
+        return MOCK_TOUR_GROUPS;
+      }
+    },
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useToggleTourGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ groupSlug, isActive }: { groupSlug: string; isActive: boolean }) =>
+      api.patch<any>(`/tours/groups/${groupSlug}`, { isActive }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tour-groups"] });
+    },
+  });
+}
+
 // Fetches a specific variant by groupSlug + duration days
 export function useTourVariant(groupSlug: string, duration: number) {
   return useQuery({

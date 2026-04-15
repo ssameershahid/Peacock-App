@@ -33,12 +33,14 @@ async function getTourWithRelations(tourId: string) {
 }
 
 // GET /api/tours/groups — return 6 parent groups each with their 4 variants
-router.get("/groups", async (_req, res) => {
+router.get("/groups", async (req, res) => {
   try {
+    const includeInactive = req.query.includeInactive === "true";
+
     const tours = await db
       .select()
       .from(toursTable)
-      .where(and(eq(toursTable.isActive, true)))
+      .where(includeInactive ? undefined : and(eq(toursTable.isActive, true)))
       .orderBy(asc(toursTable.sortOrder));
 
     // Group by groupSlug (more reliable than groupId — old DB rows may have
@@ -75,6 +77,7 @@ router.get("/groups", async (_req, res) => {
         slug: t.slug,
         durationDays: t.durationDays,
         durationNights: t.durationNights,
+        isActive: t.isActive,
       });
     }
 
@@ -101,6 +104,29 @@ router.get("/groups", async (_req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch tour groups" });
+  }
+});
+
+// PATCH /api/tours/groups/:groupSlug (admin) — toggle isActive for all variants in a group
+router.patch("/groups/:groupSlug", authenticate, requireAdmin, async (req, res) => {
+  try {
+    const groupSlug = req.params.groupSlug as string;
+    const { isActive } = req.body as { isActive: boolean };
+
+    if (typeof isActive !== "boolean") {
+      res.status(400).json({ error: "isActive must be a boolean" });
+      return;
+    }
+
+    await db
+      .update(toursTable)
+      .set({ isActive, updatedAt: new Date() })
+      .where(eq(toursTable.groupSlug, groupSlug));
+
+    res.json({ groupSlug, isActive });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update tour group" });
   }
 });
 

@@ -206,10 +206,10 @@ const VR = (car: number, minivan: number, largeVan: number, smallBus: number, me
 
 function variants(slug: string, rates: any[]) {
   return [
-    { id: `${slug}-5d`, slug: `${slug}-5d`, durationDays: 5, durationNights: 4, vehicleRates: rates },
-    { id: `${slug}-7d`, slug: `${slug}-7d`, durationDays: 7, durationNights: 6, vehicleRates: rates },
-    { id: `${slug}-10d`, slug: `${slug}-10d`, durationDays: 10, durationNights: 9, vehicleRates: rates },
-    { id: `${slug}-14d`, slug: `${slug}-14d`, durationDays: 14, durationNights: 13, vehicleRates: rates },
+    { id: `${slug}-5d`, slug: `${slug}-5d`, durationDays: 5, durationNights: 4, vehicleRates: rates, isActive: true },
+    { id: `${slug}-7d`, slug: `${slug}-7d`, durationDays: 7, durationNights: 6, vehicleRates: rates, isActive: true },
+    { id: `${slug}-10d`, slug: `${slug}-10d`, durationDays: 10, durationNights: 9, vehicleRates: rates, isActive: true },
+    { id: `${slug}-14d`, slug: `${slug}-14d`, durationDays: 14, durationNights: 13, vehicleRates: rates, isActive: true },
   ];
 }
 
