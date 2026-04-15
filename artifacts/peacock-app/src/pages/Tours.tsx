@@ -259,16 +259,22 @@ export default function Tours() {
   }, [groups, duration, region]);
 
   return (
-    <div className="pt-24 pb-32 bg-cream min-h-screen">
-      <div className="max-w-[1200px] mx-auto px-6">
-        <SectionHeading
-          overline="EXPLORE SRI LANKA"
-          title="Ready-to-go *tours*"
-          subtitle="From the ancient cities of the cultural triangle to the leopard-spotted plains of Yala, find your perfect Sri Lankan adventure."
-          align="center"
-          className="mb-8"
-        />
+    <div className="pt-24 pb-32 min-h-screen">
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <div className="bg-forest-600 py-16 -mt-24 pt-36 mb-16">
+        <div className="max-w-[1200px] mx-auto px-6 text-center">
+          <p className="font-body text-xs uppercase tracking-[0.2em] text-amber-200 mb-3">EXPLORE SRI LANKA</p>
+          <h1 className="font-display text-5xl md:text-6xl text-white mb-4">
+            Ready-to-go <em className="italic text-amber-200">tours</em>
+          </h1>
+          <p className="font-body text-lg text-white/80 max-w-2xl mx-auto">
+            Curated private itineraries across Sri Lanka's finest regions. Every route is flexible,
+            fully guided, and driven by an expert local driver.
+          </p>
+        </div>
+      </div>
 
+      <div className="max-w-[1200px] mx-auto px-6">
         {/* Custom tour banner */}
         <Link href="/tours/custom" className="block mb-12">
           <div className="bg-sage rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 border border-forest-100 hover:shadow-card-hover transition-shadow cursor-pointer group">

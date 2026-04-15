@@ -3,6 +3,7 @@ import { Link, useRoute } from 'wouter';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Clock, MapPin, Calendar, Sun, Compass, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Kicker } from '@/components/peacock/Type';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Highlight {
@@ -403,12 +404,10 @@ export default function DestinationDetail() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FAF8F3' }}>
         <div className="text-center px-6">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: '#C4873A' }}>
-            Not Found
-          </p>
+          <Kicker className="mb-4">Not Found</Kicker>
           <h1
-            className="font-bold mb-6"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: '3rem', color: '#0C2421' }}
+            className="font-display font-normal mb-6"
+            style={{ fontSize: '3rem', color: '#0C2421' }}
           >
             We don't have a guide for this destination yet.
           </h1>
@@ -459,19 +458,12 @@ export default function DestinationDetail() {
                 <ArrowLeft className="h-3.5 w-3.5" /> Sri Lanka Guide
               </Link>
 
-              <p
-                className="text-xs font-bold uppercase tracking-[0.25em] mb-4"
-                style={{ color: '#C4873A' }}
-              >
-                {dest.region}
-              </p>
+              <Kicker className="mb-4">{dest.region}</Kicker>
 
               <h1
-                className="text-white leading-[0.95] mb-4"
+                className="font-display font-normal text-white leading-[0.95] mb-4"
                 style={{
-                  fontFamily: "'Instrument Serif', serif",
                   fontSize: 'clamp(3.5rem, 10vw, 8rem)',
-                  fontWeight: 600,
                 }}
               >
                 {dest.name}
@@ -552,12 +544,7 @@ export default function DestinationDetail() {
             <div className="grid lg:grid-cols-[1fr_360px] gap-16 lg:gap-24">
               {/* Main text */}
               <div>
-                <p
-                  className="text-xs font-bold uppercase tracking-[0.25em] mb-8"
-                  style={{ color: '#C4873A' }}
-                >
-                  Overview
-                </p>
+                <Kicker className="mb-8">Overview</Kicker>
                 {dest.overview.map((para, i) => (
                   <motion.p
                     key={i}
@@ -582,9 +569,8 @@ export default function DestinationDetail() {
                   style={{ borderColor: '#C4873A' }}
                 >
                   <p
-                    className="font-bold italic leading-snug"
+                    className="font-display font-normal italic leading-snug"
                     style={{
-                      fontFamily: "'Instrument Serif', serif",
                       fontSize: '1.5rem',
                       color: '#0C2421',
                     }}
@@ -601,7 +587,7 @@ export default function DestinationDetail() {
                   style={{ backgroundColor: '#F0EDE7', border: '1px solid rgba(12,36,33,0.08)' }}
                 >
                   <p
-                    className="text-[11px] font-bold uppercase tracking-[0.2em] mb-6"
+                    className="text-[11px] font-medium uppercase tracking-[0.08em] mb-6"
                     style={{ color: '#C4873A' }}
                   >
                     Quick Facts
@@ -616,7 +602,7 @@ export default function DestinationDetail() {
                       <div key={label}>
                         <div className="flex items-center gap-2 mb-1">
                           <Icon className="h-3.5 w-3.5" style={{ color: '#C4873A' }} />
-                          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#8A7E74' }}>
+                          <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: '#8A7E74' }}>
                             {label}
                           </span>
                         </div>
@@ -649,19 +635,12 @@ export default function DestinationDetail() {
       <div ref={tabRefs['Highlights']} className="scroll-mt-32">
         <section className="py-20 lg:py-24" style={{ backgroundColor: '#111C1A' }}>
           <div className="max-w-[1200px] mx-auto px-6">
-            <p
-              className="text-xs font-bold uppercase tracking-[0.25em] mb-4"
-              style={{ color: '#C4873A' }}
-            >
-              Top Experiences
-            </p>
+            <Kicker className="mb-4">Top Experiences</Kicker>
             <h2
-              className="font-bold mb-14 leading-[1.05]"
+              className="font-display font-normal mb-14 leading-[1.05]"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.25rem, 4vw, 3.5rem)',
                 color: '#FAF8F3',
-                fontWeight: 600,
               }}
             >
               What not to miss in{' '}
@@ -684,14 +663,14 @@ export default function DestinationDetail() {
                   <span className="text-3xl block mb-4">{h.icon}</span>
                   <div className="flex items-start gap-3 mb-3">
                     <span
-                      className="font-bold shrink-0 text-sm"
-                      style={{ color: 'rgba(196,135,58,0.4)', fontFamily: "'Instrument Serif', serif", fontSize: '1.1rem' }}
+                      className="font-display font-normal shrink-0 text-sm"
+                      style={{ color: 'rgba(196,135,58,0.4)', fontSize: '1.1rem' }}
                     >
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <h4
-                      className="font-bold text-white leading-snug"
-                      style={{ fontFamily: "'Instrument Serif', serif", fontSize: '1.2rem' }}
+                      className="font-display font-normal text-white leading-snug"
+                      style={{ fontSize: '1.2rem' }}
                     >
                       {h.name}
                     </h4>
@@ -710,19 +689,12 @@ export default function DestinationDetail() {
       <div ref={tabRefs['When to Go']} className="scroll-mt-32">
         <section className="py-20 lg:py-24">
           <div className="max-w-[1200px] mx-auto px-6">
-            <p
-              className="text-xs font-bold uppercase tracking-[0.25em] mb-4"
-              style={{ color: '#C4873A' }}
-            >
-              Seasonality
-            </p>
+            <Kicker className="mb-4">Seasonality</Kicker>
             <h2
-              className="font-bold mb-12 leading-[1.05]"
+              className="font-display font-normal mb-12 leading-[1.05]"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.25rem, 4vw, 3.5rem)',
                 color: '#0C2421',
-                fontWeight: 600,
               }}
             >
               The best time to visit{' '}
@@ -801,19 +773,12 @@ export default function DestinationDetail() {
       <div ref={tabRefs['Practical Info']} className="scroll-mt-32">
         <section className="py-20 lg:py-24" style={{ backgroundColor: '#0C2421' }}>
           <div className="max-w-[1200px] mx-auto px-6">
-            <p
-              className="text-xs font-bold uppercase tracking-[0.25em] mb-4"
-              style={{ color: '#C4873A' }}
-            >
-              Before You Go
-            </p>
+            <Kicker className="mb-4">Before You Go</Kicker>
             <h2
-              className="font-bold mb-14 leading-[1.05]"
+              className="font-display font-normal mb-14 leading-[1.05]"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.25rem, 4vw, 3.5rem)',
                 color: '#FAF8F3',
-                fontWeight: 600,
               }}
             >
               Practical information.
@@ -834,7 +799,7 @@ export default function DestinationDetail() {
                   }}
                 >
                   <span className="text-2xl block mb-3">{icon}</span>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#C4873A' }}>
+                  <p className="text-xs font-medium uppercase tracking-[0.08em] mb-3" style={{ color: '#C4873A' }}>
                     {label}
                   </p>
                   <p className="text-sm leading-relaxed" style={{ color: 'rgba(250,248,243,0.6)' }}>
@@ -846,7 +811,7 @@ export default function DestinationDetail() {
 
             {/* Tips */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] mb-6" style={{ color: 'rgba(250,248,243,0.4)' }}>
+              <p className="text-xs font-medium uppercase tracking-[0.08em] mb-6" style={{ color: 'rgba(250,248,243,0.4)' }}>
                 Local tips from our drivers
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -861,8 +826,8 @@ export default function DestinationDetail() {
                     style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
                   >
                     <span
-                      className="text-sm font-bold shrink-0 mt-0.5"
-                      style={{ fontFamily: "'Instrument Serif', serif", color: 'rgba(196,135,58,0.5)', fontSize: '1.25rem' }}
+                      className="font-display font-normal text-sm shrink-0 mt-0.5"
+                      style={{ color: 'rgba(196,135,58,0.5)', fontSize: '1.25rem' }}
                     >
                       {String(i + 1).padStart(2, '0')}
                     </span>
@@ -887,12 +852,10 @@ export default function DestinationDetail() {
               style={{ backgroundColor: '#0C2421', minHeight: '280px' }}
             >
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: '#C4873A' }}>
-                  Ready to visit?
-                </p>
+                <Kicker className="mb-4">Ready to visit?</Kicker>
                 <h3
-                  className="font-bold text-white mb-4 leading-snug"
-                  style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2rem' }}
+                  className="font-display font-normal text-white mb-4 leading-snug"
+                  style={{ fontSize: '2rem' }}
                 >
                   Browse tours that include {dest.name.split(' ')[0]}.
                 </h3>
@@ -921,12 +884,12 @@ export default function DestinationDetail() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                   <div className="relative">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] mb-2" style={{ color: '#C4873A' }}>
+                    <p className="text-xs font-medium uppercase tracking-[0.08em] mb-2" style={{ color: '#C4873A' }}>
                       Next destination
                     </p>
                     <h3
-                      className="font-bold text-white mb-4 leading-snug group-hover:underline"
-                      style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2rem' }}
+                      className="font-display font-normal text-white mb-4 leading-snug group-hover:underline"
+                      style={{ fontSize: '2rem' }}
                     >
                       {dest.nearbyName}
                     </h3>

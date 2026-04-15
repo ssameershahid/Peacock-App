@@ -3,11 +3,12 @@ import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Clock, MapPin, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Kicker } from '@/components/peacock/Type';
+import ClimateGuideSection from '@/components/home/ClimateGuideSection';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type FilterCategory = 'All' | 'Regions' | 'Culture & Tips' | 'Wildlife' | 'Seasonal';
 type ArticleCategory = 'Culture & Tips' | 'Wildlife' | 'Seasonal';
-type SeasonQuality = 'best' | 'good' | 'mixed' | 'wet';
 
 interface Destination {
   slug: string;
@@ -180,33 +181,6 @@ const ARTICLES: Article[] = [
   },
 ];
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-const SEASONAL_DATA: { region: string; months: SeasonQuality[] }[] = [
-  {
-    region: 'West & South Coast',
-    months: ['best', 'best', 'best', 'good', 'wet', 'wet', 'wet', 'wet', 'wet', 'mixed', 'mixed', 'best'],
-  },
-  {
-    region: 'Hill Country',
-    months: ['best', 'best', 'good', 'mixed', 'wet', 'wet', 'wet', 'wet', 'good', 'mixed', 'good', 'best'],
-  },
-  {
-    region: 'Cultural Triangle',
-    months: ['best', 'best', 'best', 'good', 'good', 'good', 'good', 'good', 'good', 'mixed', 'mixed', 'best'],
-  },
-  {
-    region: 'East Coast',
-    months: ['mixed', 'mixed', 'mixed', 'good', 'best', 'best', 'best', 'best', 'best', 'mixed', 'wet', 'wet'],
-  },
-];
-
-const QUALITY_COLORS: Record<SeasonQuality, string> = {
-  best: '#1B5E4A',
-  good: '#6FA394',
-  mixed: '#C4873A',
-  wet: '#C5BFBA',
-};
 
 const CATEGORY_COLORS: Record<ArticleCategory, { bg: string; text: string }> = {
   'Culture & Tips': { bg: '#7BA99A', text: '#fff' },
@@ -294,9 +268,8 @@ const DestinationCard: React.FC<{
           {/* Bottom content */}
           <div>
             <h3
-              className="font-bold text-white leading-tight mb-1"
+              className="font-display font-normal text-white leading-tight mb-1"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: large ? '2.75rem' : '1.75rem',
                 lineHeight: 1.05,
               }}
@@ -363,8 +336,8 @@ const ArticleCard: React.FC<{ article: Article; featured?: boolean; number?: num
             </span>
             {number !== undefined && (
               <span
-                className="font-bold text-white/20"
-                style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2rem' }}
+                className="font-display font-normal text-white/20"
+                style={{ fontSize: '2rem' }}
               >
                 {String(number).padStart(2, '0')}
               </span>
@@ -373,9 +346,8 @@ const ArticleCard: React.FC<{ article: Article; featured?: boolean; number?: num
 
           <div>
             <h3
-              className="font-bold text-white leading-snug mb-2"
+              className="font-display font-normal text-white leading-snug mb-2"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: featured ? '1.65rem' : '1.2rem',
                 lineHeight: 1.2,
               }}
@@ -400,124 +372,7 @@ const ArticleCard: React.FC<{ article: Article; featured?: boolean; number?: num
   </motion.div>
 );
 
-const SeasonalGuide: React.FC<{ currentMonth: number }> = ({ currentMonth }) => (
-  <section className="py-20 lg:py-28" style={{ backgroundColor: '#111C1A' }}>
-    <div className="max-w-[1200px] mx-auto px-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div>
-          <p
-            className="text-xs font-bold uppercase tracking-[0.25em] mb-4"
-            style={{ color: '#C4873A' }}
-          >
-            Planning Your Visit
-          </p>
-          <h2
-            className="font-bold leading-[1.05]"
-            style={{
-              fontFamily: "'Instrument Serif', serif",
-              fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
-              color: '#FAF8F3',
-              fontWeight: 600,
-            }}
-          >
-            When to visit,{' '}
-            <em className="italic" style={{ color: '#6FA394' }}>
-              where to go.
-            </em>
-          </h2>
-        </div>
-        <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'rgba(250,248,243,0.45)' }}>
-          Sri Lanka has two monsoon seasons. There's always a sunny corner of the island — here's how to find it.
-        </p>
-      </div>
-
-      {/* Seasonal grid */}
-      <div
-        className="overflow-x-auto rounded-2xl"
-        style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        <div className="min-w-[700px] p-6 lg:p-8">
-          {/* Month header row */}
-          <div className="grid gap-1.5 mb-4" style={{ gridTemplateColumns: '160px repeat(12, 1fr)' }}>
-            <div />
-            {MONTHS.map((m, i) => (
-              <div
-                key={m}
-                className="text-center text-[11px] font-bold uppercase pb-2"
-                style={{
-                  color: i === currentMonth ? '#C4873A' : 'rgba(250,248,243,0.3)',
-                  borderBottom: i === currentMonth ? '2px solid #C4873A' : '2px solid transparent',
-                }}
-              >
-                {m}
-              </div>
-            ))}
-          </div>
-
-          {/* Data rows */}
-          {SEASONAL_DATA.map((row, ri) => (
-            <motion.div
-              key={row.region}
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: ri * 0.08 }}
-              className="grid gap-1.5 mb-2.5"
-              style={{ gridTemplateColumns: '160px repeat(12, 1fr)' }}
-            >
-              <div
-                className="flex items-center text-[12px] font-medium pr-4"
-                style={{ color: 'rgba(250,248,243,0.65)' }}
-              >
-                {row.region}
-              </div>
-              {row.months.map((quality, i) => (
-                <div
-                  key={i}
-                  className="h-9 rounded-md transition-all duration-200 hover:brightness-110"
-                  style={{
-                    backgroundColor: QUALITY_COLORS[quality],
-                    outline: i === currentMonth ? '2px solid #C4873A' : 'none',
-                    outlineOffset: '2px',
-                  }}
-                  title={`${MONTHS[i]}: ${quality}`}
-                />
-              ))}
-            </motion.div>
-          ))}
-
-          {/* Legend */}
-          <div
-            className="flex flex-wrap gap-5 mt-6 pt-6"
-            style={{ borderTop: '1px solid rgba(250,248,243,0.08)' }}
-          >
-            {(
-              [
-                { quality: 'best' as SeasonQuality, label: 'Best time to visit' },
-                { quality: 'good' as SeasonQuality, label: 'Good conditions' },
-                { quality: 'mixed' as SeasonQuality, label: 'Shoulder season' },
-                { quality: 'wet' as SeasonQuality, label: 'Rainy season' },
-              ] as const
-            ).map(({ quality, label }) => (
-              <div key={quality} className="flex items-center gap-2">
-                <div className="h-3 w-5 rounded" style={{ backgroundColor: QUALITY_COLORS[quality] }} />
-                <span className="text-xs" style={{ color: 'rgba(250,248,243,0.45)' }}>
-                  {label}
-                </span>
-              </div>
-            ))}
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-5 rounded border-2" style={{ borderColor: '#C4873A', backgroundColor: 'transparent' }} />
-              <span className="text-xs" style={{ color: 'rgba(250,248,243,0.45)' }}>
-                Current month
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-);
+// SeasonalGuide replaced by ClimateGuideSection from homepage
 
 const ArticlesGrid: React.FC<{ articles: Article[]; showAll: boolean }> = ({ articles, showAll }) => {
   const featured = showAll ? articles.find((a) => a.featured) : undefined;
@@ -529,16 +384,12 @@ const ArticlesGrid: React.FC<{ articles: Article[]; showAll: boolean }> = ({ art
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="flex items-end justify-between mb-12 gap-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.25em] mb-4" style={{ color: '#C4873A' }}>
-              Field Notes
-            </p>
+            <Kicker>Field Notes</Kicker>
             <h2
-              className="font-bold leading-[1.05]"
+              className="font-display font-normal leading-[1.05]"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
                 color: '#0C2421',
-                fontWeight: 600,
               }}
             >
               Travel dispatches.
@@ -576,16 +427,12 @@ const QuickTips: React.FC = () => (
   <section className="py-20 lg:py-24" style={{ backgroundColor: '#0C2421' }}>
     <div className="max-w-[1200px] mx-auto px-6">
       <div className="mb-12">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] mb-4" style={{ color: '#C4873A' }}>
-          Traveller's Notebook
-        </p>
+        <Kicker>Traveller's Notebook</Kicker>
         <h2
-          className="font-bold"
+          className="font-display font-normal"
           style={{
-            fontFamily: "'Instrument Serif', serif",
             fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
             color: '#FAF8F3',
-            fontWeight: 600,
             lineHeight: 1.05,
           }}
         >
@@ -609,9 +456,8 @@ const QuickTips: React.FC = () => (
             }}
           >
             <span
-              className="block font-bold mb-4"
+              className="font-display font-normal block mb-4"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: '3.5rem',
                 color: 'rgba(196,135,58,0.25)',
                 lineHeight: 1,
@@ -619,7 +465,7 @@ const QuickTips: React.FC = () => (
             >
               {tip.num}
             </span>
-            <h4 className="font-semibold text-sm mb-3 leading-snug" style={{ color: '#FAF8F3' }}>
+            <h4 className="font-display font-normal text-xl mb-3 leading-snug" style={{ color: '#FAF8F3' }}>
               {tip.title}
             </h4>
             <p className="text-sm leading-relaxed" style={{ color: 'rgba(250,248,243,0.45)' }}>
@@ -637,8 +483,6 @@ const FILTER_CATEGORIES: FilterCategory[] = ['All', 'Regions', 'Culture & Tips',
 
 export default function DestinationsGuide() {
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('All');
-  const currentMonth = new Date().getMonth();
-
   const showRegions = activeFilter === 'All' || activeFilter === 'Regions' || activeFilter === 'Wildlife';
   const showSeasonal = activeFilter === 'All' || activeFilter === 'Seasonal';
   const showArticles =
@@ -680,23 +524,13 @@ export default function DestinationsGuide() {
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
                 {/* Masthead label */}
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="h-px w-8" style={{ backgroundColor: '#C4873A' }} />
-                  <span
-                    className="text-xs font-bold uppercase tracking-[0.25em]"
-                    style={{ color: '#C4873A' }}
-                  >
-                    Sri Lanka Travel Guide · Vol. I · 2026
-                  </span>
-                </div>
+                <Kicker className="mb-8">Sri Lanka Travel Guide · Vol. I · 2026</Kicker>
 
                 <h1
-                  className="leading-[0.95] mb-7"
+                  className="font-display font-normal leading-[0.95] mb-7"
                   style={{
-                    fontFamily: "'Instrument Serif', serif",
                     fontSize: 'clamp(3rem, 7vw, 6rem)',
                     color: '#FAF8F3',
-                    fontWeight: 600,
                   }}
                 >
                   Discover the island,{' '}
@@ -760,14 +594,14 @@ export default function DestinationsGuide() {
 
                   <div className="absolute bottom-0 left-0 p-6 w-full">
                     <p
-                      className="text-[11px] font-bold uppercase tracking-[0.2em] mb-2"
+                      className="text-[11px] font-medium uppercase tracking-[0.08em] mb-2"
                       style={{ color: '#C4873A' }}
                     >
                       Hill Country
                     </p>
                     <h3
-                      className="font-bold text-white mb-1"
-                      style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2.25rem', lineHeight: 1.05 }}
+                      className="font-display font-normal text-white mb-1"
+                      style={{ fontSize: '2.25rem', lineHeight: 1.05 }}
                     >
                       Ella
                     </h3>
@@ -797,16 +631,12 @@ export default function DestinationsGuide() {
           >
             <div className="max-w-[1200px] mx-auto px-6">
               <div className="mb-12">
-                <p className="text-xs font-bold uppercase tracking-[0.25em] mb-4" style={{ color: '#C4873A' }}>
-                  Browse by Region
-                </p>
+                <Kicker>Browse by Region</Kicker>
                 <h2
-                  className="font-bold leading-[1.05]"
+                  className="font-display font-normal leading-[1.05]"
                   style={{
-                    fontFamily: "'Instrument Serif', serif",
                     fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
                     color: '#0C2421',
-                    fontWeight: 600,
                   }}
                 >
                   Eight worlds,{' '}
@@ -864,7 +694,7 @@ export default function DestinationsGuide() {
       </AnimatePresence>
 
       {/* ── Seasonal Guide ── */}
-      {showSeasonal && <SeasonalGuide currentMonth={currentMonth} />}
+      {showSeasonal && <ClimateGuideSection />}
 
       {/* ── Articles ── */}
       {showArticles && filteredArticles.length > 0 && (
@@ -876,7 +706,7 @@ export default function DestinationsGuide() {
 
       {/* ── CTA ── */}
       <section
-        className="min-h-[90vh] flex items-center justify-center relative overflow-hidden bg-cover bg-center bg-fixed"
+        className="py-[140px] flex items-center justify-center relative overflow-hidden bg-cover bg-center bg-fixed"
         style={{ backgroundImage: `url('https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69838bc1712205ff655de71c_5052216621-ezgif.com-webp-to-jpg-converter.jpg')` }}
       >
         <div className="absolute inset-0 bg-black/40" />

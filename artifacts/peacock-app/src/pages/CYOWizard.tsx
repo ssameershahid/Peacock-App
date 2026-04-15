@@ -875,12 +875,22 @@ export default function CYOWizard() {
   const showDownloadAction = step === 5;
 
   return (
-    <div className="min-h-screen bg-cream pt-24 pb-32">
-      <div className="max-w-[1000px] mx-auto px-6">
-        <div className="text-center mb-10">
-          <h1 className="font-display text-4xl text-forest-600 mb-2">Create Your <em className="italic text-amber-200">Own</em></h1>
-          <p className="font-body text-warm-500">Design your perfect Sri Lankan journey in 5 simple steps.</p>
+    <div className="min-h-screen pt-24 pb-32">
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <div className="bg-forest-600 py-16 -mt-24 pt-36 mb-16">
+        <div className="max-w-[1200px] mx-auto px-6 text-center">
+          <p className="font-body text-xs uppercase tracking-[0.2em] text-amber-200 mb-3">BESPOKE TRAVEL</p>
+          <h1 className="font-display text-5xl md:text-6xl text-white mb-4">
+            Create your <em className="italic text-amber-200">own journey</em>
+          </h1>
+          <p className="font-body text-lg text-white/80 max-w-2xl mx-auto">
+            Design your perfect Sri Lankan itinerary in minutes. Choose your destinations,
+            set your pace, and we'll build the trip around you.
+          </p>
         </div>
+      </div>
+
+      <div className="max-w-[1000px] mx-auto px-6">
 
         {/* Recovery banner */}
         {showRecovery && (
