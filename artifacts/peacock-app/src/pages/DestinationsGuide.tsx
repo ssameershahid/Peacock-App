@@ -875,52 +875,24 @@ export default function DestinationsGuide() {
       {showTips && <QuickTips />}
 
       {/* ── CTA ── */}
-      <section className="py-24 lg:py-32" style={{ backgroundColor: '#FAF8F3' }}>
-        <div className="max-w-[1200px] mx-auto px-6">
-          <div className="max-w-3xl mx-auto text-center">
-            <p
-              className="text-xs font-bold uppercase tracking-[0.25em] mb-5"
-              style={{ color: '#C4873A' }}
-            >
-              Ready to Explore?
-            </p>
-            <h2
-              className="font-bold leading-[1.05] mb-6"
-              style={{
-                fontFamily: "'LLIvory', serif",
-                fontSize: 'clamp(3rem, 6vw, 5rem)',
-                color: '#0C2421',
-                fontWeight: 600,
-              }}
-            >
-              Your journey starts{' '}
-              <em className="italic" style={{ color: '#6FA394' }}>
-                here.
-              </em>
+      <section
+        className="min-h-[90vh] flex items-center justify-center relative overflow-hidden bg-cover bg-center bg-fixed"
+        style={{ backgroundImage: `url('https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69838bc1712205ff655de71c_5052216621-ezgif.com-webp-to-jpg-converter.jpg')` }}
+      >
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 text-center px-4">
+          <div className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/20">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-normal text-white mb-6">
+              Still not sure where to <em className="italic">go?</em>
             </h2>
-            <p className="text-lg leading-relaxed mb-10 max-w-xl mx-auto" style={{ color: '#8A7E74' }}>
-              Browse our curated tours, design your own itinerary, or get in touch with our team of
-              Sri Lanka travel experts.
+            <p className="text-xl text-white/90 mb-10 font-light">
+              Try our trip wizard to find your dream trip. We'll ask a few simple questions and build a route just for you.
             </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/tours">
-                <Button
-                  className="h-13 px-8 rounded-full font-medium text-base"
-                  style={{ backgroundColor: '#0C2421', color: '#FAF8F3' }}
-                >
-                  Browse Tours <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/tours/custom">
-                <Button
-                  variant="outline"
-                  className="h-13 px-8 rounded-full font-medium text-base border-2"
-                  style={{ borderColor: '#0C2421', color: '#0C2421' }}
-                >
-                  Design Your Own
-                </Button>
-              </Link>
-            </div>
+            <Link href="/tours/custom">
+              <Button size="lg" className="bg-white text-foreground hover:bg-white/90 h-14 px-8 rounded-full text-lg font-medium">
+                Start Trip Wizard
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

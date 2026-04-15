@@ -220,29 +220,6 @@ export default function Home() {
         </Container>
       </Section>
 
-      {/* Parallax Wizard CTA */}
-      <Section
-        className="min-h-[90vh] flex items-center justify-center relative overflow-hidden bg-cover bg-center bg-fixed"
-        style={{ backgroundImage: `url('https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69838bc1712205ff655de71c_5052216621-ezgif.com-webp-to-jpg-converter.jpg')` }}
-      >
-        <div className="absolute inset-0 bg-black/40" />
-        <Container className="relative z-10 text-center">
-          <div className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/20">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-normal text-white mb-6">
-              Still not sure where to <em className="italic">go?</em>
-            </h2>
-            <p className="text-xl text-white/90 mb-10 font-light">
-              Try our trip wizard to find your dream trip. We'll ask a few simple questions and build a route just for you.
-            </p>
-            <Link href="/tours/custom">
-              <Button size="lg" className="bg-white text-foreground hover:bg-white/90 h-14 px-8 rounded-full text-lg font-medium">
-                Start Trip Wizard
-              </Button>
-            </Link>
-          </div>
-        </Container>
-      </Section>
-
       {/* Trust + FAQ + Reviews */}
       <section
         className="relative overflow-hidden"
