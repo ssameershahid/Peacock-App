@@ -6,6 +6,7 @@ import { CurrencySelector } from '@/components/shared/CurrencySelector';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import Footer from '@/components/peacock/Footer';
+import { WhatsAppWidget } from '@/components/shared/WhatsAppWidget';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SERVICE_LINKS = [
@@ -396,6 +397,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 page-enter">{children}</main>
 
       <Footer />
+      <WhatsAppWidget />
     </div>
   );
 }
