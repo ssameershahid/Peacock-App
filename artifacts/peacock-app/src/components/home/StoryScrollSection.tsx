@@ -253,12 +253,14 @@ export const StoryBlocksSection: React.FC = () => {
     <section className="bg-background">
       <div className="relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-[44%_56%] gap-8 lg:gap-20 lg:items-start">
-            <div className="hidden lg:block lg:sticky lg:top-[12vh]">
-              <StickyImageFrame
-                blocks={STORY_BLOCKS}
-                activeIdx={activeIdx}
-              />
+          <div className="grid lg:grid-cols-[44%_56%] gap-8 lg:gap-20">
+            <div className="hidden lg:block">
+              <div className="sticky top-[12vh] pb-32">
+                <StickyImageFrame
+                  blocks={STORY_BLOCKS}
+                  activeIdx={activeIdx}
+                />
+              </div>
             </div>
 
             <div>
