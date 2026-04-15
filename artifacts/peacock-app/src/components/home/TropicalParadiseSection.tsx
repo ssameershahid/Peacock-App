@@ -95,7 +95,7 @@ const TropicalParadiseSection: React.FC = () => {
         src="https://images.unsplash.com/photo-1518882460017-3e14aeba68d1?q=80&w=600&auto=format&fit=crop"
         alt=""
         style={{ y: leafY }}
-        className="absolute -top-12 -right-8 w-[280px] sm:w-[340px] lg:w-[420px] h-auto opacity-90 pointer-events-none select-none"
+        className="absolute -top-12 right-0 w-[240px] sm:w-[300px] lg:w-[420px] h-auto opacity-90 pointer-events-none select-none"
         loading="lazy"
         draggable={false}
       />

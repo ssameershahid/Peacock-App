@@ -20,7 +20,7 @@ import { SectionHeading } from '@/components/shared/SectionHeading';
 export default function Home() {
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
       {/* 1. Cinematic Hero Section */}
       <div className="relative h-screen w-full flex items-center justify-center">

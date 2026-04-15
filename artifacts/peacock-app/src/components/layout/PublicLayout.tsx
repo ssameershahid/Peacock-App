@@ -44,7 +44,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
       <header
         className={cn(
           'fixed top-0 w-full z-50 transition-all duration-300',

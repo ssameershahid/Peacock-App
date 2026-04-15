@@ -21,25 +21,28 @@ const StatsMarqueeBanner: React.FC<StatsMarqueeBannerProps> = ({ className }) =>
         className
       )}
     >
-      <div className="flex gap-8 mb-0 pt-[10px] pb-[10px]">
+      {/* Single animated strip containing two identical copies for seamless loop */}
+      <div
+        className="flex items-center gap-10 animate-marquee"
+        style={{ animationDuration: "25s", width: "max-content" }}
+      >
         {[0, 1].map((copy) => (
           <div
             key={copy}
-            className="flex shrink-0 items-center justify-center gap-10 animate-marquee"
-            style={{ animationDuration: "25s" }}
+            className="flex shrink-0 items-center gap-10"
             aria-hidden={copy === 1 ? true : undefined}
           >
             {STATS.map((stat, i) => (
-              <div
-                key={i}
-                className="flex items-baseline gap-2.5 shrink-0"
-              >
+              <div key={i} className="flex items-baseline gap-2.5 shrink-0">
                 <span className="text-2xl sm:text-3xl font-display font-normal text-accent leading-none">
                   {stat.number}
                 </span>
                 <span className="text-[14px] text-muted-foreground whitespace-nowrap">
                   {stat.label}
                 </span>
+                {i < STATS.length - 1 && (
+                  <span className="text-warm-200 text-lg mx-2 shrink-0">·</span>
+                )}
               </div>
             ))}
           </div>
