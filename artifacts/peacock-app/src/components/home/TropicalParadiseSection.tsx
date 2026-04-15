@@ -80,7 +80,7 @@ const TropicalParadiseSection: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden py-[120px] bg-[#FBFAF9]"
+      className="relative overflow-hidden py-24 lg:py-36 bg-[#FBFAF9]"
     >
       {/* Lottie falling leaves */}
       <motion.div
