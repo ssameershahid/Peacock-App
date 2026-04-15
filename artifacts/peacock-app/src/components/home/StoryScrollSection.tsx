@@ -250,7 +250,7 @@ export const StoryBlocksSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="bg-background pt-24 lg:pt-32">
+    <section className="bg-background">
       <div className="relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-[44%_56%] gap-8 lg:gap-20">

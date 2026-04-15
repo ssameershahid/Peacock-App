@@ -123,6 +123,7 @@ export default function Home() {
       <CuratedJourneysSection />
 
       {/* About Peacock — Story Blocks (sticky image + text) */}
+      <div className="h-24 lg:h-32 bg-background" />
       <StoryBlocksSection />
 
       {/* Explore Destinations + Design your own adventure */}
