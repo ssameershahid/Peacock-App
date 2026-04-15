@@ -158,7 +158,7 @@ const FAQItem: React.FC<{
             fontWeight: 500,
           }}
         >
-          <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center justify-between gap-3 sm:gap-6">
             <span
               className="text-[0.9375rem] md:text-[1.15rem] font-medium leading-snug"
               style={{ fontFamily: "'Inter', sans-serif", color: "rgba(0, 0, 0, 1)" }}
@@ -257,7 +257,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({ embedded = false }) => {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden"
+      className="relative overflow-clip"
       style={{
         backgroundColor: embedded ? "transparent" : C.bg,
         color: "#000000",
@@ -284,8 +284,8 @@ const FAQSection: React.FC<FAQSectionProps> = ({ embedded = false }) => {
 
               <div className="mt-6 lg:mt-0 lg:mt-auto">
                 {/* Mobile: horizontally scrollable pill strip */}
-                <div className="-mx-4 px-4 overflow-x-auto lg:overflow-visible lg:mx-0 lg:px-0 pb-1 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="flex flex-row lg:flex-col gap-2 lg:gap-3 w-max lg:w-[250px]">
+                <div className="-mx-4 px-4 overflow-x-auto lg:overflow-visible lg:mx-0 lg:px-0 pb-2 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex flex-row lg:flex-col gap-2 lg:gap-3 w-max lg:w-[250px] pr-4 lg:pr-0">
                     {CATEGORIES.map((cat) => (
                       <CategoryPill
                         key={cat}
