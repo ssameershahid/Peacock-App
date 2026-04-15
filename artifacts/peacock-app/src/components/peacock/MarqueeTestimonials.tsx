@@ -8,6 +8,7 @@ interface MarqueeTestimonialsProps {
   reviews: Review[];
 }
 
+// Desktop card — unchanged
 const EditorialReviewCard: React.FC<{ review: Review }> = ({ review }) => {
   return (
     <div className="w-[350px] md:w-[500px] h-[300px] shrink-0 bg-[rgba(232,230,227,1)] rounded-2xl border border-border/60 p-5 shadow-soft hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col md:flex-row gap-5 group">
@@ -62,18 +63,89 @@ const EditorialReviewCard: React.FC<{ review: Review }> = ({ review }) => {
   );
 };
 
-const MarqueeTestimonials: React.FC<MarqueeTestimonialsProps> = ({ reviews }) => {
-  const marqueeReviews = [...reviews, ...reviews, ...reviews];
+// Mobile card — compact, narrow, circular avatar, more text
+const MobileReviewCard: React.FC<{ review: Review }> = ({ review }) => {
   return (
-    <div className="relative w-full overflow-hidden bg-transparent py-10 group">
-      <div className="absolute left-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-      <div className="flex gap-8 animate-marquee group-hover:[animation-play-state:paused] w-max px-8">
-        {marqueeReviews.map((review, index) => (
-          <EditorialReviewCard key={`${review.id}-${index}`} review={review} />
-        ))}
+    <div className="w-[195px] h-[230px] shrink-0 bg-[rgba(232,230,227,1)] rounded-2xl border border-border/60 p-4 shadow-soft flex flex-col gap-2.5">
+      {/* Avatar + name row */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-secondary ring-2 ring-white/70">
+          <img src={review.avatar} alt={review.author} className="w-full h-full object-cover" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-xs text-foreground truncate leading-tight" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            {review.author}
+          </div>
+          <div className="text-[10px] text-muted-foreground flex items-center gap-0.5 mt-0.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <MapPin className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate">{review.origin}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Stars */}
+      <div className="flex text-amber-200 gap-0.5">
+        {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
+      </div>
+
+      {/* Quote text — more lines */}
+      <p className="font-body text-[13px] leading-relaxed text-foreground line-clamp-5 flex-1">
+        "{review.text}"
+      </p>
+
+      {/* Badges */}
+      <div className="flex gap-1 flex-wrap mt-auto">
+        {review.tripLength && (
+          <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 rounded-full text-[9px] font-medium uppercase tracking-wider px-2 py-0 h-5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            {review.tripLength}
+          </Badge>
+        )}
+        {review.travelerType && (
+          <Badge variant="outline" className="text-muted-foreground border-border rounded-full text-[9px] font-medium uppercase tracking-wider px-2 py-0 h-5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            {review.travelerType}
+          </Badge>
+        )}
       </div>
     </div>
+  );
+};
+
+const MarqueeTestimonials: React.FC<MarqueeTestimonialsProps> = ({ reviews }) => {
+  const marqueeReviews = [...reviews, ...reviews, ...reviews];
+
+  return (
+    <>
+      {/* ── Mobile: two rows, opposite directions ── */}
+      <div className="md:hidden relative w-full overflow-hidden bg-transparent py-6 group">
+        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+        <div className="flex flex-col gap-4">
+          {/* Row 1 — scrolls left */}
+          <div className="flex gap-3 animate-marquee group-hover:[animation-play-state:paused] w-max px-3">
+            {marqueeReviews.map((review, index) => (
+              <MobileReviewCard key={`mob-r1-${review.id}-${index}`} review={review} />
+            ))}
+          </div>
+          {/* Row 2 — scrolls right */}
+          <div className="flex gap-3 animate-marquee-reverse group-hover:[animation-play-state:paused] w-max px-3">
+            {marqueeReviews.map((review, index) => (
+              <MobileReviewCard key={`mob-r2-${review.id}-${index}`} review={review} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop: single row marquee — unchanged ── */}
+      <div className="hidden md:block relative w-full overflow-hidden bg-transparent py-10 group">
+        <div className="absolute left-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+        <div className="flex gap-8 animate-marquee group-hover:[animation-play-state:paused] w-max px-8">
+          {marqueeReviews.map((review, index) => (
+            <EditorialReviewCard key={`${review.id}-${index}`} review={review} />
+          ))}
+        </div>
+      </div>
+    </>
   );
 };
 
