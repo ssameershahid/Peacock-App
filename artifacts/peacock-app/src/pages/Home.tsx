@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Star, ArrowRight, CheckCircle2, ShieldCheck, Map, Plane, Users } from 'lucide-react';
+import { Star, ArrowRight, CheckCircle2, ShieldCheck, Map, Plane } from 'lucide-react';
 import { Container, Section } from '@/components/peacock/Container';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +17,7 @@ import ClimateGuideSection from '@/components/home/ClimateGuideSection';
 import { H2, P, Kicker } from '@/components/peacock/Type';
 import { reviews } from '@/content/reviews';
 import { SectionHeading } from '@/components/shared/SectionHeading';
-import { useVehicles } from '@/hooks/use-app-data';
-import { useCurrency } from '@/contexts/CurrencyContext';
-
 export default function Home() {
-  const { data: vehicles } = useVehicles();
-  const { format } = useCurrency();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -50,9 +45,9 @@ export default function Home() {
         </div>
 
         <Container className="relative z-10 w-full pt-20 flex flex-col items-center">
-          <div className="text-center max-w-4xl mx-auto mb-12 animate-in slide-in-from-bottom-8 fade-in duration-1000">
-            <h1 className="text-5xl md:text-7xl lg:text-[72px] font-display font-normal text-white mb-6 tracking-tight leading-[1.1] drop-shadow-sm">
-              Experience Sri Lanka's <br /> beauty like a <em className="italic">true native</em>
+          <div className="text-center max-w-4xl mx-auto mb-6 md:mb-12 animate-in slide-in-from-bottom-8 fade-in duration-1000">
+            <h1 className="text-[2.4rem] sm:text-5xl md:text-7xl lg:text-[72px] font-display font-normal text-white mb-4 md:mb-6 tracking-tight leading-[1.1] drop-shadow-sm">
+              Experience Sri Lanka's <br className="hidden sm:block" /> beauty like a <em className="italic">true native</em>
             </h1>
             <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
               Plan a Sri Lanka trip with local experts. Custom itineraries, concierge drivers, transparent pricing.
@@ -64,18 +59,18 @@ export default function Home() {
               <TripSearchHero />
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 animate-in slide-in-from-bottom-4 fade-in duration-1000 delay-300">
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span className="text-sm font-medium text-white">Free Cancellation</span>
+            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-6 animate-in slide-in-from-bottom-4 fade-in duration-1000 delay-300">
+              <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
+                <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 text-emerald-400 shrink-0" />
+                <span className="text-xs md:text-sm font-medium text-white">Free Cancellation</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                <span className="text-sm font-medium text-white">24/7 Support</span>
+              <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
+                <ShieldCheck className="h-3 w-3 md:h-4 md:w-4 text-emerald-400 shrink-0" />
+                <span className="text-xs md:text-sm font-medium text-white">24/7 Support</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
-                <Star className="h-4 w-4 text-amber-200 fill-amber-200" />
-                <span className="text-sm font-medium text-white">4.9/5 Guest Rating</span>
+              <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
+                <Star className="h-3 w-3 md:h-4 md:w-4 text-amber-200 fill-amber-200 shrink-0" />
+                <span className="text-xs md:text-sm font-medium text-white">4.9/5 Guest Rating</span>
               </div>
             </div>
           </div>
@@ -140,28 +135,6 @@ export default function Home() {
       <section className="bg-background">
         <ParallaxDestinationsSection />
         <DesignAdventureCTA />
-      </section>
-
-      {/* Vehicle Fleet */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-[1200px] mx-auto">
-          <SectionHeading overline="OUR FLEET" title="Travel in *comfort*" align="center" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12">
-            {vehicles?.map(v => (
-              <div key={v.id} className="bg-warm-50 rounded-2xl p-6 flex flex-col items-center text-center border border-warm-100 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
-                <img src={v.image} alt={v.name} className="w-full h-28 object-contain mb-4" />
-                <h4 className="font-display text-xl text-forest-600 mb-1">{v.name}</h4>
-                <p className="font-body text-xs text-warm-400 mb-1">{v.model}</p>
-                <p className="font-body text-sm text-warm-500 flex items-center gap-1 mb-3">
-                  <Users className="w-3.5 h-3.5" /> {v.capacity} passengers
-                </p>
-                <span className="font-body text-sm font-semibold text-forest-500">
-                  From {format(v.pricePerDay)}<span className="text-xs font-normal text-warm-400">/day</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Climate Guide ("When to go") */}

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
-import { Calendar, MapPin, Users, ChevronLeft, ChevronRight, Check, Car, X } from 'lucide-react';
+import { Calendar, MapPin, Users, ChevronLeft, ChevronRight, Check, Car, X, Search } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -522,6 +522,220 @@ const MobileBottomSheet: React.FC<{
   );
 };
 
+/* ─── Mobile search modal (accordion sections) ───────────────────────────── */
+
+interface SectionRowProps {
+  id: DropdownId;
+  activeSection: DropdownId;
+  onToggle: (id: DropdownId) => void;
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  children: React.ReactNode;
+}
+
+const SectionRow: React.FC<SectionRowProps> = ({ id, activeSection, onToggle, icon, label, value, children }) => (
+  <div className="border-b border-gray-100">
+    <button
+      onClick={() => onToggle(id)}
+      className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-gray-50 transition-colors"
+    >
+      <div className={cn(
+        'w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors',
+        activeSection === id ? 'bg-[#14524C]' : 'bg-gray-100',
+      )}>
+        <div className={activeSection === id ? 'text-white' : 'text-gray-500'}>
+          {icon}
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{label}</div>
+        <div className="text-[15px] font-medium text-gray-800 truncate">{value}</div>
+      </div>
+      <ChevronRight className={cn(
+        'h-4 w-4 text-gray-400 transition-transform duration-200',
+        activeSection === id && 'rotate-90',
+      )} />
+    </button>
+    <AnimatePresence>
+      {activeSection === id && (
+        <motion.div
+          key={id}
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          style={{ overflow: 'hidden' }}
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+);
+
+const MobileSearchModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  selectedDestinations: string[];
+  onDestinationToggle: (id: string) => void;
+  onDestinationClear: () => void;
+  dateRange: DateRange;
+  onDateChange: (range: DateRange) => void;
+  travelerOption: TravelerOption;
+  onTravelerSelect: (opt: TravelerOption) => void;
+  vehicleOption: VehicleOption;
+  onVehicleSelect: (opt: VehicleOption) => void;
+  whereText: string;
+  whenText: string;
+  onSearch: () => void;
+}> = ({
+  isOpen, onClose,
+  selectedDestinations, onDestinationToggle, onDestinationClear,
+  dateRange, onDateChange,
+  travelerOption, onTravelerSelect,
+  vehicleOption, onVehicleSelect,
+  whereText, whenText, onSearch,
+}) => {
+  const [activeSection, setActiveSection] = useState<DropdownId>('where');
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveSection('where');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  const toggleSection = (id: DropdownId) => {
+    setActiveSection(prev => (prev === id ? null : id));
+  };
+
+  return ReactDOM.createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.55)', zIndex: 99998 }}
+            onClick={onClose}
+          />
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+            style={{
+              position: 'fixed',
+              bottom: 0, left: 0, right: 0,
+              top: '6%',
+              backgroundColor: 'white',
+              borderTopLeftRadius: '24px',
+              borderTopRightRadius: '24px',
+              zIndex: 99999,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-9 h-1 rounded-full bg-gray-200" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
+              <button
+                onClick={onClose}
+                className="h-9 w-9 rounded-full flex items-center justify-center bg-gray-100 active:bg-gray-200 transition-colors"
+              >
+                <X className="h-4 w-4 text-gray-600" />
+              </button>
+              <span className="text-[15px] font-semibold text-gray-900">Plan your trip</span>
+              <div className="w-9" />
+            </div>
+
+            {/* Scrollable sections */}
+            <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <SectionRow
+                id="where"
+                activeSection={activeSection}
+                onToggle={toggleSection}
+                icon={<MapPin className="h-4 w-4" />}
+                label="Where"
+                value={whereText}
+              >
+                <WhereContent
+                  selected={selectedDestinations}
+                  onToggle={onDestinationToggle}
+                  onClear={onDestinationClear}
+                />
+              </SectionRow>
+
+              <SectionRow
+                id="when"
+                activeSection={activeSection}
+                onToggle={toggleSection}
+                icon={<Calendar className="h-4 w-4" />}
+                label="When"
+                value={whenText}
+              >
+                <WhenContent dateRange={dateRange} onDateChange={onDateChange} />
+              </SectionRow>
+
+              <SectionRow
+                id="who"
+                activeSection={activeSection}
+                onToggle={toggleSection}
+                icon={<Users className="h-4 w-4" />}
+                label="Who"
+                value={travelerOption.label}
+              >
+                <WhoContent
+                  selected={travelerOption}
+                  onSelect={(opt) => { onTravelerSelect(opt); setTimeout(() => setActiveSection(null), 150); }}
+                />
+              </SectionRow>
+
+              <SectionRow
+                id="vehicle"
+                activeSection={activeSection}
+                onToggle={toggleSection}
+                icon={<Car className="h-4 w-4" />}
+                label="Vehicle"
+                value={vehicleOption.id === 'any' ? 'Any type' : vehicleOption.label}
+              >
+                <VehicleContent
+                  selected={vehicleOption}
+                  onSelect={(opt) => { onVehicleSelect(opt); setTimeout(() => setActiveSection(null), 150); }}
+                />
+              </SectionRow>
+            </div>
+
+            {/* CTA */}
+            <div className="shrink-0 px-5 py-4 pb-8 border-t border-gray-100 bg-white">
+              <Button
+                size="lg"
+                className="w-full rounded-2xl h-14 text-lg font-bold shadow-lg bg-accent hover:bg-accent/90 text-[#1A1917] transition-all duration-200"
+                onClick={() => { onClose(); onSearch(); }}
+              >
+                Start Planning
+              </Button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>,
+    document.body,
+  );
+};
+
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
 const TripSearchHero: React.FC = () => {
@@ -530,6 +744,7 @@ const TripSearchHero: React.FC = () => {
   const isMobile = useIsMobile();
 
   const [openDropdown, setOpenDropdown] = useState<DropdownId>(null);
+  const [mobileModalOpen, setMobileModalOpen] = useState(false);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
   const [travelerOption, setTravelerOption] = useState<TravelerOption>(TRAVELER_OPTIONS[1]);
@@ -563,9 +778,9 @@ const TripSearchHero: React.FC = () => {
     return () => document.removeEventListener('keydown', handleEsc);
   }, []);
 
-  const whereText = useMemo(() => {
+  const whereText = useMemo((): string => {
     if (selectedDestinations.length === 0) return 'Sri Lanka';
-    const first = HERO_DESTINATIONS.find(d => d.id === selectedDestinations[0])?.label;
+    const first = HERO_DESTINATIONS.find(d => d.id === selectedDestinations[0])?.label ?? 'Sri Lanka';
     if (selectedDestinations.length === 1) return first;
     return `${first} +${selectedDestinations.length - 1}`;
   }, [selectedDestinations]);
@@ -689,80 +904,34 @@ const TripSearchHero: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Mobile search card ───────────────────────────────────────────── */}
-      <div className="md:hidden animate-in slide-in-from-bottom-8 duration-700 delay-300">
-        <div className="bg-white/12 backdrop-blur-xl rounded-3xl border border-white/25 shadow-2xl overflow-hidden">
-
-          <button
-            onClick={() => toggle('where')}
-            className="w-full flex items-center gap-4 px-5 py-4 border-b border-white/12 active:bg-white/10 transition-colors text-left"
-          >
-            <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
-              <MapPin className="h-3.5 w-3.5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/45 mb-0.5">Where</div>
-              <div className="text-[15px] font-medium text-white truncate">{whereText}</div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/35 shrink-0" />
-          </button>
-
-          <button
-            onClick={() => toggle('when')}
-            className="w-full flex items-center gap-4 px-5 py-4 border-b border-white/12 active:bg-white/10 transition-colors text-left"
-          >
-            <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
-              <Calendar className="h-3.5 w-3.5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/45 mb-0.5">When</div>
-              <div className="text-[15px] font-medium text-white truncate">{whenText}</div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/35 shrink-0" />
-          </button>
-
-          <button
-            onClick={() => toggle('who')}
-            className="w-full flex items-center gap-4 px-5 py-4 border-b border-white/12 active:bg-white/10 transition-colors text-left"
-          >
-            <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
-              <Users className="h-3.5 w-3.5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/45 mb-0.5">Who</div>
-              <div className="text-[15px] font-medium text-white truncate">{travelerOption.label}</div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/35 shrink-0" />
-          </button>
-
-          <button
-            onClick={() => toggle('vehicle')}
-            className="w-full flex items-center gap-4 px-5 py-4 active:bg-white/10 transition-colors text-left"
-          >
-            <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
-              {vehicleOption.image ? (
-                <img src={vehicleOption.image} alt="" className="h-5 w-5 object-contain" />
-              ) : (
-                <Car className="h-3.5 w-3.5 text-white" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/45 mb-0.5">Vehicle</div>
-              <div className="text-[15px] font-medium text-white truncate">
-                {vehicleOption.id === 'any' ? 'Any type' : vehicleOption.label}
-              </div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-white/35 shrink-0" />
-          </button>
-        </div>
-
-        <Button
-          size="lg"
-          className="w-full mt-3 rounded-2xl h-14 text-lg font-bold shadow-lg bg-accent hover:bg-accent/90 text-[#1A1917] transition-all duration-200"
-          onClick={handleStartPlanning}
+      {/* ── Mobile: liquid-glass search pill ───────────────────────────── */}
+      <div className="md:hidden animate-in slide-in-from-bottom-8 duration-700 delay-300 w-full">
+        <button
+          onClick={() => setMobileModalOpen(true)}
+          className="w-full flex items-center gap-3 bg-white/12 backdrop-blur-xl rounded-full border border-white/25 shadow-2xl px-4 py-3.5 text-left active:scale-[0.98] transition-transform"
         >
-          Start Planning
-        </Button>
+          {/* Icon */}
+          <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+            <Search className="h-3.5 w-3.5 text-white" />
+          </div>
+
+          {/* Label */}
+          <span className="text-[15px] font-semibold text-white shrink-0 drop-shadow-sm">
+            Start your search
+          </span>
+
+          {/* Vertical divider */}
+          <div className="w-px self-stretch bg-white/20 shrink-0 my-0.5" />
+
+          {/* Detail chips */}
+          <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+            <span className="text-[12px] font-medium text-white/70 truncate">{whereText}</span>
+            <span className="text-white/30 text-[10px] shrink-0">●</span>
+            <span className="text-[12px] font-medium text-white/70 shrink-0">{whenText}</span>
+            <span className="text-white/30 text-[10px] shrink-0">●</span>
+            <span className="text-[12px] font-medium text-white/70 shrink-0">{travelerOption.label}</span>
+          </div>
+        </button>
       </div>
 
       {/* ── Desktop portal dropdowns (escape stacking context via portal) ── */}
@@ -796,61 +965,24 @@ const TripSearchHero: React.FC = () => {
         </>
       )}
 
-      {/* ── Mobile bottom sheets ─────────────────────────────────────────── */}
+      {/* ── Mobile search modal ──────────────────────────────────────────── */}
       {isMobile && (
-        <>
-          <MobileBottomSheet
-            isOpen={openDropdown === 'where'}
-            onClose={() => setOpenDropdown(null)}
-            title="Choose destinations"
-          >
-            <WhereContent
-              selected={selectedDestinations}
-              onToggle={handleDestinationToggle}
-              onClear={() => setSelectedDestinations([])}
-            />
-            <div className="px-5 pb-8 pt-2">
-              <Button className="w-full rounded-2xl h-12 font-semibold" onClick={() => setOpenDropdown(null)}>
-                Done
-              </Button>
-            </div>
-          </MobileBottomSheet>
-
-          <MobileBottomSheet
-            isOpen={openDropdown === 'when'}
-            onClose={() => setOpenDropdown(null)}
-            title="Select travel dates"
-          >
-            <WhenContent dateRange={dateRange} onDateChange={setDateRange} />
-            <div className="px-5 pb-8 pt-2">
-              <Button className="w-full rounded-2xl h-12 font-semibold" onClick={() => setOpenDropdown(null)}>
-                Done
-              </Button>
-            </div>
-          </MobileBottomSheet>
-
-          <MobileBottomSheet
-            isOpen={openDropdown === 'who'}
-            onClose={() => setOpenDropdown(null)}
-            title="How many travelers?"
-          >
-            <WhoContent
-              selected={travelerOption}
-              onSelect={opt => { setTravelerOption(opt); setOpenDropdown(null); }}
-            />
-          </MobileBottomSheet>
-
-          <MobileBottomSheet
-            isOpen={openDropdown === 'vehicle'}
-            onClose={() => setOpenDropdown(null)}
-            title="Choose your vehicle"
-          >
-            <VehicleContent
-              selected={vehicleOption}
-              onSelect={opt => { setVehicleOption(opt); setOpenDropdown(null); }}
-            />
-          </MobileBottomSheet>
-        </>
+        <MobileSearchModal
+          isOpen={mobileModalOpen}
+          onClose={() => setMobileModalOpen(false)}
+          selectedDestinations={selectedDestinations}
+          onDestinationToggle={handleDestinationToggle}
+          onDestinationClear={() => setSelectedDestinations([])}
+          dateRange={dateRange}
+          onDateChange={setDateRange}
+          travelerOption={travelerOption}
+          onTravelerSelect={setTravelerOption}
+          vehicleOption={vehicleOption}
+          onVehicleSelect={setVehicleOption}
+          whereText={whereText}
+          whenText={whenText}
+          onSearch={handleStartPlanning}
+        />
       )}
     </div>
   );
