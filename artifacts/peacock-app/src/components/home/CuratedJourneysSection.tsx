@@ -112,14 +112,14 @@ export default function CuratedJourneysSection() {
 
         {/* Bento Grid */}
         <div
-          className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-[1200px] md:h-[600px]"
+          className="grid grid-cols-2 md:grid-cols-4 grid-rows-[380px_280px_200px] md:grid-rows-[300px_300px] gap-4"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           {/* ── Large Feature Card (col-span-2, row-span-2) ── */}
           <Link
             href="/tours"
-            className="md:col-span-2 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5"
+            className="col-span-2 md:col-span-2 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5"
           >
             {/* Crossfading image stack */}
             {trips.map((trip, i) => (
@@ -213,7 +213,7 @@ export default function CuratedJourneysSection() {
           {/* ── Tall Portrait Card (col-span-1, row-span-2) ── */}
           <Link
             href="/tours"
-            className="md:col-span-1 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5"
+            className="col-span-2 md:col-span-1 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5"
           >
             {trips.map((trip, i) => (
               <div
@@ -288,7 +288,7 @@ export default function CuratedJourneysSection() {
               </div>
             ))}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-            <div className="absolute bottom-0 left-0 p-6">
+            <div className="absolute bottom-0 left-0 p-4 md:p-6">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`small1-${activeIndex}`}
@@ -306,7 +306,7 @@ export default function CuratedJourneysSection() {
                       {card2.kicker}
                     </div>
                   )}
-                  <h3 className="font-display text-3xl font-normal text-white leading-tight">
+                  <h3 className="font-display text-xl md:text-3xl font-normal text-white leading-tight">
                     {card2.title}
                   </h3>
                 </motion.div>
@@ -334,7 +334,7 @@ export default function CuratedJourneysSection() {
               </div>
             ))}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-            <div className="absolute bottom-0 left-0 p-6">
+            <div className="absolute bottom-0 left-0 p-4 md:p-6">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`small2-${activeIndex}`}
@@ -352,7 +352,7 @@ export default function CuratedJourneysSection() {
                       {card3.kicker}
                     </div>
                   )}
-                  <h3 className="font-display text-3xl font-normal text-white leading-tight">
+                  <h3 className="font-display text-xl md:text-3xl font-normal text-white leading-tight">
                     {card3.title}
                   </h3>
                 </motion.div>
