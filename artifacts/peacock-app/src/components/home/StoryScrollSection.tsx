@@ -255,7 +255,7 @@ export const StoryBlocksSection: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-[44%_56%] gap-8 lg:gap-20">
             <div className="hidden lg:block">
-              <div className="sticky top-[12vh] pb-32">
+              <div className="sticky top-[20vh] pb-32">
                 <StickyImageFrame
                   blocks={STORY_BLOCKS}
                   activeIdx={activeIdx}
@@ -272,7 +272,7 @@ export const StoryBlocksSection: React.FC = () => {
                   }}
                   className={cn(
                     "flex items-center",
-                    i === 0 ? "min-h-[75vh]" : "min-h-[90vh]",
+                    "min-h-[100vh]",
                     i === STORY_BLOCKS.length - 1 && "pb-24 lg:pb-32"
                   )}
                 >
