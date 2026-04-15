@@ -16,14 +16,18 @@ import {
 interface RouteOptions {
   vehicleId: string;
   time: string;
-  passengers: number;
+  adults: number;
+  children: number;
+  childAges: string[];
   luggage: number;
 }
 
 const DEFAULT_ROUTE_OPTIONS: RouteOptions = {
   vehicleId: 'car',
   time: '08:00',
-  passengers: 2,
+  adults: 2,
+  children: 0,
+  childAges: [],
   luggage: 2,
 };
 
@@ -102,7 +106,7 @@ function BookingPanel({
         </p>
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
           {vehicles.map((v: any) => {
-            const tooSmall = v.maxPassengers < options.passengers || v.maxLuggage < options.luggage;
+            const tooSmall = v.maxPassengers < (options.adults + options.children) || v.maxLuggage < options.luggage;
             return (
               <button
                 key={v.id}
@@ -135,7 +139,7 @@ function BookingPanel({
         )}
       </div>
 
-      {/* Time · Passengers · Luggage — single inline row */}
+      {/* Time · Luggage row */}
       <div className="flex flex-wrap items-end gap-5">
         <div className="flex flex-col gap-1.5">
           <span className="font-body text-xs text-warm-400 flex items-center gap-1">
@@ -149,27 +153,107 @@ function BookingPanel({
             {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
-
-        <Stepper
-          label="Passengers"
-          value={options.passengers}
-          onChange={v => {
-            const vehicleId = autoUpgrade(v, options.luggage);
-            onPatch({ passengers: v, vehicleId });
-          }}
-          min={1} max={35}
-          icon={Users}
-        />
         <Stepper
           label="Luggage bags"
           value={options.luggage}
           onChange={v => {
-            const vehicleId = autoUpgrade(options.passengers, v);
+            const vehicleId = autoUpgrade(options.adults + options.children, v);
             onPatch({ luggage: v, vehicleId });
           }}
           min={0} max={20}
           icon={Luggage}
         />
+      </div>
+
+      {/* Passengers — adults / children / child ages */}
+      <div className="space-y-1">
+        <p className="font-body text-xs text-warm-400 flex items-center gap-1 mb-2">
+          <Users className="w-3 h-3" /> Passengers
+        </p>
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <p className="font-body text-sm font-medium text-forest-600">Adults</p>
+            <p className="font-body text-xs text-warm-400">Age 18+</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button type="button"
+              onClick={() => {
+                const a = Math.max(1, options.adults - 1);
+                onPatch({ adults: a, vehicleId: autoUpgrade(a + options.children, options.luggage) });
+              }}
+              className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{options.adults}</span>
+            <button type="button"
+              onClick={() => {
+                const a = Math.min(35, options.adults + 1);
+                onPatch({ adults: a, vehicleId: autoUpgrade(a + options.children, options.luggage) });
+              }}
+              className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        <div className="border-t border-warm-100" />
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <p className="font-body text-sm font-medium text-forest-600">Children</p>
+            <p className="font-body text-xs text-warm-400">Age 0–17</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button type="button"
+              onClick={() => {
+                const c = Math.max(0, options.children - 1);
+                onPatch({ children: c, childAges: options.childAges.slice(0, c), vehicleId: autoUpgrade(options.adults + c, options.luggage) });
+              }}
+              className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{options.children}</span>
+            <button type="button"
+              onClick={() => {
+                const c = Math.min(12, options.children + 1);
+                const ages = c > options.childAges.length
+                  ? [...options.childAges, ...Array(c - options.childAges.length).fill('')]
+                  : options.childAges;
+                onPatch({ children: c, childAges: ages, vehicleId: autoUpgrade(options.adults + c, options.luggage) });
+              }}
+              className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        {options.children > 0 && (
+          <div className="pt-3 border-t border-warm-100 space-y-3">
+            <p className="font-body text-xs text-warm-500 font-medium">Age of each child at time of travel</p>
+            {Array.from({ length: options.children }, (_, i) => (
+              <div key={i} className="flex items-center justify-between gap-3">
+                <label className="font-body text-sm text-warm-600 shrink-0">Child {i + 1}</label>
+                <select
+                  value={options.childAges[i] ?? ''}
+                  onChange={e => {
+                    const ages = options.childAges.map((a, idx) => idx === i ? e.target.value : a);
+                    onPatch({ childAges: ages });
+                  }}
+                  className={`flex-1 max-w-[180px] px-3 py-2 border rounded-xl font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 appearance-none cursor-pointer ${
+                    !options.childAges[i] ? 'border-amber-300 bg-amber-50 text-warm-500' : 'border-warm-200 text-forest-600'
+                  }`}
+                >
+                  <option value="">Select age</option>
+                  <option value="0">Under 1 (Infant)</option>
+                  <option value="1">1 year old</option>
+                  {Array.from({ length: 16 }, (_, j) => j + 2).map(age => (
+                    <option key={age} value={String(age)}>{age} years old</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+            {!options.childAges.slice(0, options.children).every(a => a !== '') && (
+              <p className="font-body text-[11px] text-amber-600">Please select an age for each child</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* CTA */}
@@ -208,7 +292,9 @@ export default function Transfers() {
   const [dropoffCoords, setDropoffCoords] = useState<[number, number] | null>(null);
   const [customDate, setCustomDate] = useState('');
   const [customTime, setCustomTime] = useState('08:00');
-  const [customPassengers, setCustomPassengers] = useState(2);
+  const [customAdults, setCustomAdults] = useState(2);
+  const [customChildren, setCustomChildren] = useState(0);
+  const [customChildAges, setCustomChildAges] = useState<string[]>([]);
   const [customLuggage, setCustomLuggage] = useState(2);
 
   const dateRef = useRef<HTMLInputElement>(null);
@@ -249,6 +335,9 @@ export default function Transfers() {
     startDate?: string;
     pickupTime?: string;
     passengers?: number;
+    adults?: number;
+    children?: number;
+    childAges?: string[];
     luggage?: number;
     routeId?: string;
   }) => {
@@ -262,6 +351,9 @@ export default function Transfers() {
       pickupTime: opts.pickupTime || '',
       numDays: 1,
       passengers: opts.passengers ?? 2,
+      adults: opts.adults ?? opts.passengers ?? 2,
+      children: opts.children ?? 0,
+      childAges: opts.childAges ?? [],
       luggage: opts.luggage ?? 2,
       vehicleRate: opts.price,
       vehicleTotal: opts.price,
@@ -354,7 +446,10 @@ export default function Transfers() {
                           vehicleName: v?.name ?? 'Private Transfer',
                           price: route.prices?.[opts.vehicleId] ?? route.price ?? 0,
                           pickupTime: opts.time,
-                          passengers: opts.passengers,
+                          passengers: opts.adults + opts.children,
+                          adults: opts.adults,
+                          children: opts.children,
+                          childAges: opts.childAges,
                           luggage: opts.luggage,
                         });
                       }}
@@ -441,7 +536,10 @@ export default function Transfers() {
                           vehicleName: v?.name ?? 'Private Transfer',
                           price: route.prices?.[opts.vehicleId] ?? route.priceFrom ?? route.price ?? 0,
                           pickupTime: opts.time,
-                          passengers: opts.passengers,
+                          passengers: opts.adults + opts.children,
+                          adults: opts.adults,
+                          children: opts.children,
+                          childAges: opts.childAges,
                           luggage: opts.luggage,
                         });
                       }}
@@ -520,7 +618,7 @@ export default function Transfers() {
                 </label>
                 <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
                   {vehicles?.map((v: any) => {
-                    const tooSmall = v.maxPassengers < customPassengers || v.maxLuggage < customLuggage;
+                    const tooSmall = v.maxPassengers < (customAdults + customChildren) || v.maxLuggage < customLuggage;
                     return (
                       <div
                         key={v.id}
@@ -547,8 +645,8 @@ export default function Transfers() {
                 )}
               </div>
 
-              {/* Date · Pickup time · Passengers · Luggage */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Date · Pickup time · Luggage */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Date</label>
                   <div
@@ -580,34 +678,6 @@ export default function Transfers() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Passengers</label>
-                  <div className="flex items-center gap-2 h-[46px]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = Math.max(1, customPassengers - 1);
-                        setCustomPassengers(next);
-                        setCustomVehicle(autoSelectVehicle(next, customLuggage, customVehicle));
-                      }}
-                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="font-body text-sm font-semibold text-forest-600 w-6 text-center">{customPassengers}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = Math.min(35, customPassengers + 1);
-                        setCustomPassengers(next);
-                        setCustomVehicle(autoSelectVehicle(next, customLuggage, customVehicle));
-                      }}
-                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Luggage bags</label>
                   <div className="flex items-center gap-2 h-[46px]">
                     <button
@@ -615,7 +685,7 @@ export default function Transfers() {
                       onClick={() => {
                         const next = Math.max(0, customLuggage - 1);
                         setCustomLuggage(next);
-                        setCustomVehicle(autoSelectVehicle(customPassengers, next, customVehicle));
+                        setCustomVehicle(autoSelectVehicle(customAdults + customChildren, next, customVehicle));
                       }}
                       className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
                     >
@@ -627,7 +697,7 @@ export default function Transfers() {
                       onClick={() => {
                         const next = Math.min(20, customLuggage + 1);
                         setCustomLuggage(next);
-                        setCustomVehicle(autoSelectVehicle(customPassengers, next, customVehicle));
+                        setCustomVehicle(autoSelectVehicle(customAdults + customChildren, next, customVehicle));
                       }}
                       className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-400 hover:border-forest-400 hover:text-forest-600 transition-colors"
                     >
@@ -635,6 +705,101 @@ export default function Transfers() {
                     </button>
                   </div>
                 </div>
+              </div>
+
+              {/* Passengers — adults / children / child ages */}
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Passengers</label>
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="font-body text-sm font-medium text-forest-600">Adults</p>
+                    <p className="font-body text-xs text-warm-400">Age 18+</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button type="button"
+                      onClick={() => {
+                        const a = Math.max(1, customAdults - 1);
+                        setCustomAdults(a);
+                        setCustomVehicle(autoSelectVehicle(a + customChildren, customLuggage, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{customAdults}</span>
+                    <button type="button"
+                      onClick={() => {
+                        const a = Math.min(35, customAdults + 1);
+                        setCustomAdults(a);
+                        setCustomVehicle(autoSelectVehicle(a + customChildren, customLuggage, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="border-t border-warm-100" />
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="font-body text-sm font-medium text-forest-600">Children</p>
+                    <p className="font-body text-xs text-warm-400">Age 0–17</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button type="button"
+                      onClick={() => {
+                        const c = Math.max(0, customChildren - 1);
+                        setCustomChildren(c);
+                        setCustomChildAges(customChildAges.slice(0, c));
+                        setCustomVehicle(autoSelectVehicle(customAdults + c, customLuggage, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-5 text-center font-body text-sm font-semibold text-forest-600 tabular-nums">{customChildren}</span>
+                    <button type="button"
+                      onClick={() => {
+                        const c = Math.min(12, customChildren + 1);
+                        const ages = c > customChildAges.length
+                          ? [...customChildAges, ...Array(c - customChildAges.length).fill('')]
+                          : customChildAges;
+                        setCustomChildren(c);
+                        setCustomChildAges(ages);
+                        setCustomVehicle(autoSelectVehicle(customAdults + c, customLuggage, customVehicle));
+                      }}
+                      className="w-8 h-8 rounded-full border border-warm-200 flex items-center justify-center text-warm-600 hover:border-forest-400 hover:text-forest-600 transition-all">
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+                {customChildren > 0 && (
+                  <div className="pt-3 border-t border-warm-100 space-y-3">
+                    <p className="font-body text-xs text-warm-500 font-medium">Age of each child at time of travel</p>
+                    {Array.from({ length: customChildren }, (_, i) => (
+                      <div key={i} className="flex items-center justify-between gap-3">
+                        <label className="font-body text-sm text-warm-600 shrink-0">Child {i + 1}</label>
+                        <select
+                          value={customChildAges[i] ?? ''}
+                          onChange={e => {
+                            const ages = customChildAges.map((a, idx) => idx === i ? e.target.value : a);
+                            setCustomChildAges(ages);
+                          }}
+                          className={`flex-1 max-w-[180px] px-3 py-2 border rounded-xl font-body text-sm focus:outline-none focus:ring-2 focus:ring-forest-300 appearance-none cursor-pointer ${
+                            !customChildAges[i] ? 'border-amber-300 bg-amber-50 text-warm-500' : 'border-warm-200 text-forest-600'
+                          }`}
+                        >
+                          <option value="">Select age</option>
+                          <option value="0">Under 1 (Infant)</option>
+                          <option value="1">1 year old</option>
+                          {Array.from({ length: 16 }, (_, j) => j + 2).map(age => (
+                            <option key={age} value={String(age)}>{age} years old</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                    {!customChildAges.slice(0, customChildren).every(a => a !== '') && (
+                      <p className="font-body text-[11px] text-amber-600">Please select an age for each child</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Price estimate + book CTA */}
@@ -653,7 +818,10 @@ export default function Transfers() {
                       price: estimatedPrice,
                       startDate: customDate,
                       pickupTime: customTime,
-                      passengers: customPassengers,
+                      passengers: customAdults + customChildren,
+                      adults: customAdults,
+                      children: customChildren,
+                      childAges: customChildAges,
                       luggage: customLuggage,
                     })}
                     className="mt-4 h-12 px-8 text-base bg-amber-200 text-forest-600 hover:bg-amber-300 font-body"
