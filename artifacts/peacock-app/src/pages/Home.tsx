@@ -13,6 +13,7 @@ import ParallaxDestinationsSection from '@/components/home/ParallaxDestinationsS
 import OrbitShowcaseSection from '@/components/home/OrbitShowcaseSection';
 import TropicalParadiseSection from '@/components/home/TropicalParadiseSection';
 import ClimateGuideSection from '@/components/home/ClimateGuideSection';
+import CuratedJourneysSection from '@/components/home/CuratedJourneysSection';
 import { H2, P, Kicker } from '@/components/peacock/Type';
 import { reviews } from '@/content/reviews';
 import { SectionHeading } from '@/components/shared/SectionHeading';
@@ -118,10 +119,11 @@ export default function Home() {
       {/* Our Philosophy (Tropical Paradise + Philosophy content) */}
       <TropicalParadiseSection />
 
-      {/* Orbit Showcase — Experience categories */}
-      <OrbitShowcaseSection />
+      {/* Get Inspired — curated journeys (auto-rotating bento grid) */}
+      <CuratedJourneysSection />
 
       {/* About Peacock — Story Blocks (sticky image + text) */}
+      <div className="h-24 lg:h-32 bg-background" />
       <StoryBlocksSection />
 
       {/* Explore Destinations + Design your own adventure */}
@@ -132,93 +134,6 @@ export default function Home() {
 
       {/* Climate Guide ("When to go") */}
       <ClimateGuideSection />
-
-      {/* Get Inspired — curated journeys grid */}
-      <Section className="bg-background py-24 md:py-32 overflow-hidden border-t border-gray-100">
-        <Container>
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-            <div className="max-w-2xl">
-              <Kicker>Curated Journeys</Kicker>
-              <H2 className="mb-6 text-warm-900">Get <em className="italic">Inspired.</em></H2>
-              <P className="text-xl max-w-lg leading-relaxed">
-                Hand-picked itineraries that define luxury travel in Sri Lanka.
-                Customize any route to your pace.
-              </P>
-            </div>
-            <Link href="/tours">
-              <Button className="rounded-full px-8 h-12">
-                View All Collections
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-[1200px] md:h-[600px]">
-            {/* Large Feature Card */}
-            <Link href="/tours" className="md:col-span-2 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
-              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6984886cfce4578d36659ddd_What-are-the-top-attractions-in-Nuwara-Eliya_20241113112510.jpg" alt="Wildlife" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-              <div className="absolute top-6 left-6 flex flex-wrap gap-2">
-                <Badge className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">10 Days</Badge>
-                <Badge className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">Wildlife</Badge>
-              </div>
-              <div className="absolute bottom-0 left-0 p-8 md:p-10 w-full transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
-                <span className="text-amber-200 text-xs font-bold uppercase tracking-[0.2em] mb-3 block opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-700 delay-100">Signature Series</span>
-                <h3 className="font-display text-5xl md:text-6xl font-normal text-white mb-4 leading-[0.9]">Wild Sri Lanka</h3>
-                <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
-                  <div className="overflow-hidden">
-                    <p className="text-white/80 pb-6 leading-relaxed max-w-md text-lg font-light">
-                      An immersive journey through the island's most pristine national parks. Leopards, elephants, and luxury camping under the stars.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between border-t border-white/20 pt-6 mt-2">
-                  <span className="text-white font-medium uppercase tracking-widest text-xs">Explore Trip</span>
-                  <div className="h-10 w-10 rounded-full bg-white text-black flex items-center justify-center -rotate-45 group-hover:rotate-0 transition-transform duration-500 shadow-lg">
-                    <ArrowRight className="h-5 w-5" />
-                  </div>
-                </div>
-              </div>
-            </Link>
-
-            {/* Tall Portrait Card */}
-            <Link href="/tours" className="md:col-span-1 md:row-span-2 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
-              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/698487a2a035dec2b9a0c107_Fishermen.jpeg" alt="Cultural Triangle" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-              <div className="absolute top-6 left-6">
-                <Badge className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">7 Days</Badge>
-              </div>
-              <div className="absolute bottom-0 left-0 p-8 w-full">
-                <h3 className="font-display text-3xl font-normal text-white mb-2 leading-tight">Cultural Triangle Odyssey</h3>
-                <p className="text-white/70 text-sm mb-4 line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Ancient cities and rock fortresses.</p>
-                <div className="h-8 w-8 rounded-full border border-white/30 text-white flex items-center justify-center -rotate-45 group-hover:rotate-0 transition-transform duration-500 group-hover:bg-white group-hover:text-black">
-                  <ArrowRight className="h-4 w-4" />
-                </div>
-              </div>
-            </Link>
-
-            {/* Small Card - Southern Coast */}
-            <Link href="/tours" className="md:col-span-1 md:row-span-1 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
-              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6984898716687fc4ba9b5441_Sri-Lanka-5.jpg" alt="Southern Coast" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-              <div className="absolute bottom-0 left-0 p-6">
-                <div className="text-amber-200 text-[10px] font-bold uppercase tracking-widest mb-1">Beach & Chill</div>
-                <h3 className="font-display text-xl font-normal text-white leading-tight">Southern Coast</h3>
-              </div>
-            </Link>
-
-            {/* Small Card - Hill Country */}
-            <Link href="/tours" className="md:col-span-1 md:row-span-1 group relative h-full rounded-[2rem] overflow-hidden cursor-pointer isolate ring-1 ring-black/5">
-              <img src="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6984898b6458e65dd0444751_Must-Visit-Caves-in-Sri-Lanka%20(1).jpg" alt="Hill Country" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-              <div className="absolute bottom-0 left-0 p-6">
-                <div className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-1">Tea & Mountains</div>
-                <h3 className="font-display text-xl font-normal text-white leading-tight">Hill Country</h3>
-              </div>
-            </Link>
-          </div>
-        </Container>
-      </Section>
 
       {/* Trust + FAQ + Reviews */}
       <section
