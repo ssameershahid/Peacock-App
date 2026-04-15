@@ -9,7 +9,7 @@ const Footer = () => {
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-60">
-          <source src="https://s3.amazonaws.com/webflow-prod-assets/68fe492bc39e0e661cce824d/698486d5ca7f2ab85413fba8_Screen%20Recording%202026-02-05%20at%204.57.42%E2%80%AFPM.mp4" type="video/mp4" />
+          <source src="/videos/footer.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />

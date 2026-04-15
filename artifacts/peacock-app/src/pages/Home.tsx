@@ -36,9 +36,9 @@ export default function Home() {
             muted
             playsInline
             poster="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69838bc1712205ff655de71c_5052216621-ezgif.com-webp-to-jpg-converter.jpg"
-            className="absolute inset-0 h-full w-full object-cover animate-in fade-in duration-[2000ms]"
+            className="absolute inset-0 h-full w-full object-cover"
           >
-            <source src="https://s3.amazonaws.com/webflow-prod-assets/68fe492bc39e0e661cce824d/6983912e334f06ffc3475dd8_Screen%20Recording%202026-02-04%20at%2011.30.50%E2%80%AFPM.mp4" type="video/mp4" />
+            <source src="/videos/hero.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-black/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />

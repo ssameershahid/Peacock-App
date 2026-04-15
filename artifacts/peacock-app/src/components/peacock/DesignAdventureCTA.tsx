@@ -12,7 +12,7 @@ const DesignAdventureCTA = ({ className = 'bg-background' }: { className?: strin
           {/* Background Video */}
           <div className="absolute inset-0 z-0">
             <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-              <source src="https://s3.amazonaws.com/webflow-prod-assets/68fe492bc39e0e661cce824d/698395f1ee00ef17241321e4_Screen%20Recording%202026-02-04%20at%2011.51.42%E2%80%AFPM.mp4" type="video/mp4" />
+              <source src="/videos/cta.mp4" type="video/mp4" />
             </video>
             <div className="absolute inset-0 bg-black/50" />
           </div>
