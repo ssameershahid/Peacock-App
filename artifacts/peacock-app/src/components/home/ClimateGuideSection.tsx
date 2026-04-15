@@ -399,7 +399,7 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
 
 const ClimateGuideSection: React.FC = () => {
   const currentMonth = new Date().getMonth();
-  const [viewMode, setViewMode] = useState<"month" | "activity">("month");
+  const [viewMode, setViewMode] = useState<"month" | "activity">("activity");
   const [unit, setUnit] = useState<"C" | "F">("C");
   const [activeMonth, setActiveMonth] = useState(currentMonth);
   const [liveWeather, setLiveWeather] = useState<LiveCity[] | null>(null);
