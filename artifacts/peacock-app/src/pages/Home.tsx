@@ -8,8 +8,7 @@ import TripSearchHero from '@/components/peacock/TripSearchHero';
 import MarqueeTestimonials from '@/components/peacock/MarqueeTestimonials';
 import DesignAdventureCTA from '@/components/peacock/DesignAdventureCTA';
 import FAQSection from '@/components/home/FAQSection';
-import { StoryIntroSection, StoryBlocksSection } from '@/components/home/StoryScrollSection';
-import SpreadCardsSection from '@/components/home/SpreadCardsSection';
+import { StoryBlocksSection } from '@/components/home/StoryScrollSection';
 import ParallaxDestinationsSection from '@/components/home/ParallaxDestinationsSection';
 import OrbitShowcaseSection from '@/components/home/OrbitShowcaseSection';
 import TropicalParadiseSection from '@/components/home/TropicalParadiseSection';
@@ -115,12 +114,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* About Peacock — Intro (word-by-word reveal) */}
-      <StoryIntroSection />
-
-      {/* Spread Cards Gallery (3 images) */}
-      <SpreadCardsSection />
 
       {/* Our Philosophy (Tropical Paradise + Philosophy content) */}
       <TropicalParadiseSection />

@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Link } from 'wouter';
+import { StoryIntroSection } from '@/components/home/StoryScrollSection';
+import SpreadCardsSection from '@/components/home/SpreadCardsSection';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowRight, MapPin, Mail, Phone, MessageCircle,
@@ -335,6 +337,12 @@ export default function About() {
           </motion.div>
         </motion.div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          ABOUT INTRO — word-by-word reveal + spread cards
+      ══════════════════════════════════════════════════════════ */}
+      <StoryIntroSection />
+      <SpreadCardsSection />
 
       {/* ══════════════════════════════════════════════════════════
           CHAPTER 01 — The Origin
