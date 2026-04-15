@@ -157,7 +157,7 @@ const ParallaxDestinationsSection: React.FC = () => {
           {DESTINATIONS.map((dest, i) => (
             <div
               key={i}
-              className="h-[240px] sm:h-[320px] lg:h-[450px] lg:flex-1 lg:min-w-0"
+              className="h-[42vh] sm:h-[320px] lg:h-[450px] lg:flex-1 lg:min-w-0"
             >
               <ParallaxCard dest={dest} progress={smooth} />
             </div>

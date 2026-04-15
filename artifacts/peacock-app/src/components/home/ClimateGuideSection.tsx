@@ -173,20 +173,348 @@ function getActivityRuns(months: Record<number, "peak" | "good">): Run[] {
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
-const StarIcon = () => (
-  <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-    <path d="M5 0.5L6.1 3.7L9.5 4L6.9 6.2L7.6 9.5L5 7.8L2.4 9.5L3.1 6.2L0.5 4L3.9 3.7L5 0.5Z" />
-  </svg>
-);
+// ─── Month calendar (same Gantt structure as ActivityCalendar) ─────────────────
 
-const WaveCheck = ({ count }: { count: number }) => (
-  <div className="flex items-center gap-[2px] justify-center mt-1">
-    {Array.from({ length: count }).map((_, i) => <StarIcon key={i} />)}
-  </div>
-);
+const MONTH_QUAL_COLOR: Record<"best" | "good" | "possible", string> = {
+  best: "#1B5E4A",
+  good: "#6FA394",
+  possible: "#B8AFA6",
+};
 
-const getWaveCount = (rec: "best" | "good" | "possible") =>
-  rec === "best" ? 3 : rec === "good" ? 2 : 1;
+const MonthCalendar: React.FC<{
+  currentMonth: number;
+  activeMonth: number;
+  setActiveMonth: (i: number) => void;
+  display: (c: number) => number;
+  unitLabel: string;
+  unit: "C" | "F";
+  setUnit: (u: "C" | "F") => void;
+}> = ({ currentMonth, activeMonth, setActiveMonth, display, unitLabel, unit, setUnit }) => {
+  const month = MONTHS[activeMonth];
+
+  // Contiguous recommendation runs → pill bars
+  const recRuns: Array<{ start: number; end: number; quality: "best" | "good" | "possible" }> = [];
+  (() => {
+    let i = 0;
+    while (i < 12) {
+      const q = MONTHS[i].recommendation;
+      let j = i + 1;
+      while (j < 12 && MONTHS[j].recommendation === q) j++;
+      recRuns.push({ start: i, end: j - 1, quality: q });
+      i = j;
+    }
+  })();
+
+  const colHighlight = (i: number) => (
+    <>
+      {i === currentMonth && (
+        <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(196,135,58,0.06)", pointerEvents: "none" }} />
+      )}
+      {i === activeMonth && (
+        <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(12,36,33,0.06)", pointerEvents: "none" }} />
+      )}
+    </>
+  );
+
+  const rowLabel = (icon: string, name: string, sub: string) => (
+    <div style={{ width: 236, flexShrink: 0, padding: "12px 20px", display: "flex", flexDirection: "column", gap: 3 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+        <span style={{ fontSize: 20, lineHeight: 1 }}>{icon}</span>
+        <span style={{ fontSize: 18, fontWeight: 600, color: "#0C2421", lineHeight: 1.25, fontFamily: '"Instrument Serif", serif' }}>
+          {name}
+        </span>
+      </div>
+      <span style={{ fontSize: 12, color: "#8A7E74", paddingLeft: 29, fontFamily: '"DM Sans", sans-serif', lineHeight: 1.3 }}>
+        {sub}
+      </span>
+    </div>
+  );
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#F5F5F0", border: "1px solid rgba(12,36,33,0.07)" }}>
+      <div className="overflow-x-auto scrollbar-none">
+        <div style={{ minWidth: "720px" }}>
+
+          {/* ── Month header row ── */}
+          <div className="flex items-stretch" style={{ borderBottom: "1px solid rgba(12,36,33,0.07)" }}>
+            <div style={{ width: 236, flexShrink: 0, padding: "14px 20px", display: "flex", alignItems: "flex-end" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>
+                Month
+              </span>
+            </div>
+            <div className="flex-1" style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)" }}>
+              {MONTH_ABBR.map((m, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveMonth(i)}
+                  style={{ textAlign: "center", padding: "14px 4px", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: i === currentMonth ? "#C4873A" : i === activeMonth ? "#0C2421" : "#A09890", fontFamily: '"DM Sans", sans-serif', cursor: "pointer", border: "none", backgroundColor: "transparent", position: "relative" }}
+                >
+                  {i === activeMonth && (
+                    <motion.div
+                      layoutId="month-col-highlight"
+                      className="absolute inset-0"
+                      style={{ backgroundColor: i === currentMonth ? "rgba(196,135,58,0.09)" : "rgba(12,36,33,0.08)" }}
+                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                    />
+                  )}
+                  {i !== activeMonth && i === currentMonth && (
+                    <div className="absolute inset-0" style={{ backgroundColor: "rgba(196,135,58,0.09)" }} />
+                  )}
+                  <span className="relative" style={{ zIndex: 1 }}>{m}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Row 1: Travel quality (pill bars) ── */}
+          <motion.div
+            className="flex items-center"
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35, delay: 0 }}
+            style={{ borderBottom: "1px solid rgba(12,36,33,0.05)" }}
+          >
+            {rowLabel("✈️", "Travel quality", "Island-wide")}
+            <div className="flex-1 relative" style={{ height: 66 }}>
+              <div style={{ position: "absolute", inset: 0, left: `${(currentMonth / 12) * 100}%`, width: `${(1 / 12) * 100}%`, backgroundColor: "rgba(196,135,58,0.06)", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", inset: 0, left: `${(activeMonth / 12) * 100}%`, width: `${(1 / 12) * 100}%`, backgroundColor: "rgba(12,36,33,0.06)", pointerEvents: "none" }} />
+              {recRuns.map((run, ri) => {
+                const leftPct = (run.start / 12) * 100;
+                const widthPct = ((run.end - run.start + 1) / 12) * 100;
+                const runLength = run.end - run.start + 1;
+                const label = run.quality === "best" ? "Best time" : run.quality === "good" ? "Good" : "Possible";
+                return (
+                  <motion.div
+                    key={ri}
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    whileInView={{ scaleX: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.45, delay: ri * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ position: "absolute", left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)`, top: "50%", transform: "translateY(-50%)", height: 32, backgroundColor: MONTH_QUAL_COLOR[run.quality], borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", padding: "0 10px", transformOrigin: "left center" }}
+                  >
+                    {runLength >= 2 && (
+                      <span style={{ color: "rgba(255,255,255,0.88)", fontSize: 10.9, fontWeight: 600, letterSpacing: "0.03em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: '"DM Sans", sans-serif' }}>
+                        {label}
+                      </span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* ── Row 2: Crowd level ── */}
+          <motion.div
+            className="flex items-center"
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35, delay: 0.06 }}
+            style={{ borderBottom: "1px solid rgba(12,36,33,0.05)" }}
+          >
+            {rowLabel("👥", "Crowd level", "All regions")}
+            <div className="flex-1" style={{ height: 66, display: "grid", gridTemplateColumns: "repeat(12, 1fr)", position: "relative" }}>
+              {MONTHS.map((m, i) => {
+                const cfg = CROWD_CONFIG[m.crowd];
+                return (
+                  <div
+                    key={i}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, position: "relative", cursor: "pointer" }}
+                    onClick={() => setActiveMonth(i)}
+                  >
+                    {colHighlight(i)}
+                    <div style={{ display: "flex", gap: 2, position: "relative", zIndex: 1 }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <div key={n} style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: n <= m.crowd ? cfg.color : "#D5D0CA" }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: cfg.color, fontFamily: '"DM Sans", sans-serif', letterSpacing: "0.04em", position: "relative", zIndex: 1 }}>
+                      {cfg.label.toUpperCase()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* ── Row 3: Festivals ── */}
+          <motion.div
+            className="flex items-center"
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35, delay: 0.12 }}
+            style={{ borderBottom: "1px solid rgba(12,36,33,0.05)" }}
+          >
+            {rowLabel("🎉", "Festivals", "Sri Lanka")}
+            <div className="flex-1" style={{ height: 66, display: "grid", gridTemplateColumns: "repeat(12, 1fr)", position: "relative" }}>
+              {MONTHS.map((m, i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, position: "relative", cursor: "pointer" }}
+                  onClick={() => setActiveMonth(i)}
+                >
+                  {colHighlight(i)}
+                  {m.festivals.length > 0 ? (
+                    <>
+                      <span style={{ fontSize: 18, position: "relative", zIndex: 1 }}>{m.festivals[0].emoji}</span>
+                      {m.festivals.length > 1 && (
+                        <span style={{ fontSize: 8, fontWeight: 700, color: "#C4873A", fontFamily: '"DM Sans", sans-serif', position: "relative", zIndex: 1 }}>
+                          +{m.festivals.length - 1}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 12, color: "#D5D0CA", position: "relative", zIndex: 1 }}>—</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── Legend ── */}
+          <div
+            className="flex items-center gap-5 flex-wrap"
+            style={{ padding: "14px 20px", borderTop: "1px solid rgba(12,36,33,0.06)", backgroundColor: "rgba(12,36,33,0.02)" }}
+          >
+            {[
+              { color: "#1B5E4A", label: "Best time" },
+              { color: "#6FA394", label: "Good / shoulder" },
+              { color: "#B8AFA6", label: "Possible" },
+            ].map(({ color, label }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ height: 10, width: 28, borderRadius: 999, backgroundColor: color }} />
+                <span style={{ fontSize: 11, color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>{label}</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ height: 10, width: 28, borderRadius: 999, border: "1.5px solid #C4873A", backgroundColor: "transparent" }} />
+              <span style={{ fontSize: 11, color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>Current month</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── Selected month detail panel — outside the scrollable area so it's full-width on mobile ── */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeMonth + "-detail"}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 6 }}
+          transition={{ duration: 0.22 }}
+          style={{ padding: "22px 20px", backgroundColor: "rgba(255,255,255,0.55)", borderTop: "1px solid rgba(12,36,33,0.06)" }}
+        >
+          {/* Headline + summary */}
+          <p style={{ fontSize: 22, fontWeight: 600, color: "#0C2421", fontFamily: '"Instrument Serif", serif', marginBottom: 6 }}>
+            {MONTH_ABBR[activeMonth]} — {month.message}
+          </p>
+          <p style={{ fontSize: 14, color: "#5A5046", fontFamily: '"DM Sans", sans-serif', lineHeight: 1.65, maxWidth: 580, marginBottom: 14 }}>
+            {month.summary}
+          </p>
+
+          {/* Pills row */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: month.festivals.length > 0 ? 10 : 18 }}>
+            {/* Crowd pill */}
+            {(() => {
+              const cfg = CROWD_CONFIG[month.crowd];
+              return (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, backgroundColor: cfg.bg, border: `1px solid ${cfg.color}33` }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>Crowds</span>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <div key={n} style={{ width: n <= month.crowd ? 7 : 5, height: n <= month.crowd ? 7 : 5, borderRadius: "50%", backgroundColor: n <= month.crowd ? cfg.color : "#D5D0CA" }} />
+                    ))}
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, fontFamily: '"DM Sans", sans-serif' }}>{cfg.label}</span>
+                </div>
+              );
+            })()}
+            {/* Trip length pill */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, backgroundColor: "rgba(12,36,33,0.05)", border: "1px solid rgba(12,36,33,0.10)" }}>
+              <span style={{ fontSize: 13 }}>🗓️</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#0C2421", fontFamily: '"DM Sans", sans-serif' }}>{month.tripLength.duration}</span>
+              <span style={{ width: 1, height: 11, backgroundColor: "rgba(12,36,33,0.15)", display: "inline-block" }} />
+              <span style={{ fontSize: 10, color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>{month.tripLength.note}</span>
+            </div>
+          </div>
+
+          {/* Festivals strip */}
+          {month.festivals.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 18, padding: "10px 14px", borderRadius: 12, backgroundColor: "rgba(196,135,58,0.07)", border: "1px solid rgba(196,135,58,0.18)" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C4873A", fontFamily: '"DM Sans", sans-serif', marginRight: 4 }}>What's on</span>
+              {month.festivals.map((f, fi) => (
+                <React.Fragment key={fi}>
+                  {fi > 0 && <span style={{ color: "#D5D0CA", fontSize: 12 }}>·</span>}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 999, backgroundColor: "rgba(196,135,58,0.10)", fontSize: 12, color: "#5A4020", fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}>
+                    <span>{f.emoji}</span>
+                    <span>{f.name}</span>
+                  </span>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+
+          {/* Weather by region header */}
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>
+              Weather by region
+            </p>
+          </div>
+
+          {/* City rows — stacked, clean on all screen sizes */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {CITIES.map((city, ci) => {
+              const data = month.cities[ci];
+              const tempPct = (data.temp / MAX_TEMP) * 100;
+              const rainPct = (data.rain / MAX_RAIN) * 100;
+              return (
+                <div key={city}>
+                  {/* City name + values on one line */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0C2421", fontFamily: '"DM Sans", sans-serif' }}>
+                      {city}
+                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#E67E22", fontFamily: '"DM Sans", sans-serif' }}>
+                        {display(data.temp)}{unitLabel}
+                      </span>
+                      <span style={{ color: "#D5D0CA", fontSize: 11 }}>·</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#5B8C8D", fontFamily: '"DM Sans", sans-serif' }}>
+                        {data.rain}mm
+                      </span>
+                    </div>
+                  </div>
+                  {/* Two thin bars: temp left, rain right */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    <div style={{ position: "relative", height: 4, borderRadius: 999, backgroundColor: "#D5D8DC" }}>
+                      <motion.div
+                        style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "linear-gradient(90deg, #E67E22, #F39C12)", borderRadius: 999 }}
+                        initial={false}
+                        animate={{ width: `${tempPct}%` }}
+                        transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                      />
+                    </div>
+                    <div style={{ position: "relative", height: 4, borderRadius: 999, backgroundColor: "#D5D8DC" }}>
+                      <motion.div
+                        style={{ position: "absolute", left: 0, top: 0, height: "100%", background: "linear-gradient(90deg, #5B8C8D, #6FA8A9)", borderRadius: 999 }}
+                        initial={false}
+                        animate={{ width: `${rainPct}%` }}
+                        transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
 
 // Activity calendar (Gantt chart view)
 const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) => (
@@ -404,7 +732,6 @@ const ClimateGuideSection: React.FC = () => {
   const [activeMonth, setActiveMonth] = useState(currentMonth);
   const [liveWeather, setLiveWeather] = useState<LiveCity[] | null>(null);
 
-  const month = MONTHS[activeMonth];
   const display = (c: number) => unit === "C" ? c : toF(c);
   const unitLabel = unit === "C" ? "°C" : "°F";
 
@@ -431,70 +758,44 @@ const ClimateGuideSection: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Header row ──────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <h2
-            className="font-display text-5xl sm:text-6xl text-[#0C2421] font-normal"
+            className="font-display text-3xl sm:text-5xl text-[#0C2421] font-normal"
             style={{ fontFamily: "'Instrument Serif', serif", color: "rgba(12,36,33,1)" }}
           >
             When to go
           </h2>
 
-          <div className="flex flex-col items-end gap-2.5 pt-1 sm:pt-2">
-            {/* View mode toggle */}
-            <div
-              className="flex items-center p-1 rounded-full"
-              style={{ backgroundColor: "#EDEAE4" }}
-            >
-              {(["activity", "month"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  className="relative px-4 py-1.5 rounded-full transition-colors duration-200 cursor-pointer"
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: viewMode === mode ? "#FBFAF9" : "#8A7E74",
-                    fontFamily: '"DM Sans", sans-serif',
-                  }}
-                >
-                  {viewMode === mode && (
-                    <motion.div
-                      layoutId="view-bg"
-                      className="absolute inset-0 rounded-full"
-                      style={{ backgroundColor: "#0C2421" }}
-                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                    />
-                  )}
-                  <span className="relative z-10">
-                    {mode === "month" ? "By Month" : "By Activity"}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* °C / °F toggle */}
-            <div
-              className="flex items-center rounded-full overflow-hidden"
-              style={{ border: "1.5px solid #D5D0CA" }}
-            >
-              {(["C", "F"] as const).map((u) => (
-                <button
-                  key={u}
-                  onClick={() => setUnit(u)}
-                  className="cursor-pointer transition-colors duration-150"
-                  style={{
-                    padding: "5px 14px",
-                    fontSize: 11,
-                    fontWeight: unit === u ? 700 : 500,
-                    fontFamily: '"DM Sans", sans-serif',
-                    backgroundColor: unit === u ? "#0C2421" : "transparent",
-                    color: unit === u ? "#FBFAF9" : "#8A7E74",
-                  }}
-                >
-                  °{u}
-                </button>
-              ))}
-            </div>
+          {/* View mode toggle */}
+          <div
+            className="flex items-center p-1 rounded-full shrink-0"
+            style={{ backgroundColor: "#EDEAE4" }}
+          >
+            {(["activity", "month"] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className="relative px-3 py-1.5 sm:px-4 rounded-full transition-colors duration-200 cursor-pointer"
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: viewMode === mode ? "#FBFAF9" : "#8A7E74",
+                  fontFamily: '"DM Sans", sans-serif',
+                }}
+              >
+                {viewMode === mode && (
+                  <motion.div
+                    layoutId="view-bg"
+                    className="absolute inset-0 rounded-full"
+                    style={{ backgroundColor: "#0C2421" }}
+                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">
+                  {mode === "month" ? "By Month" : "By Activity"}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -509,7 +810,7 @@ const ClimateGuideSection: React.FC = () => {
               className="mb-6"
             >
               <div
-                className="flex items-center gap-3 sm:gap-5 px-5 py-3 rounded-xl flex-wrap"
+                className="flex items-center gap-3 sm:gap-5 px-5 py-3 rounded-xl"
                 style={{
                   backgroundColor: "#F0EDE7",
                   border: "1px solid rgba(196,135,58,0.22)",
@@ -544,36 +845,55 @@ const ClimateGuideSection: React.FC = () => {
                   style={{ width: 1, height: 14, backgroundColor: "#D5D0CA", flexShrink: 0 }}
                 />
 
-                {liveWeather.map((city, i) => (
-                  <React.Fragment key={city.name}>
-                    {i > 0 && (
-                      <span style={{ color: "#D5D0CA", fontSize: 12, fontWeight: 300 }}>·</span>
-                    )}
-                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 500,
-                          color: "#5A5046",
-                          fontFamily: '"DM Sans", sans-serif',
-                        }}
-                      >
-                        {city.name}
-                      </span>
-                      <span style={{ fontSize: 14 }}>{weatherEmoji(city.code)}</span>
-                      <span
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: "#0C2421",
-                          fontFamily: '"DM Sans", sans-serif',
-                        }}
-                      >
-                        {display(city.temp)}{unitLabel}
-                      </span>
-                    </div>
-                  </React.Fragment>
-                ))}
+                {/* City temps — horizontally scrollable on mobile */}
+                <div className="flex items-center gap-3 sm:gap-5 overflow-x-auto flex-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {liveWeather.map((city, i) => (
+                    <React.Fragment key={city.name}>
+                      {i > 0 && (
+                        <span style={{ color: "#D5D0CA", fontSize: 12, fontWeight: 300, flexShrink: 0 }}>·</span>
+                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 500,
+                            color: "#5A5046",
+                            fontFamily: '"DM Sans", sans-serif',
+                          }}
+                        >
+                          {city.name}
+                        </span>
+                        <span style={{ fontSize: 14 }}>{weatherEmoji(city.code)}</span>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: "#0C2421",
+                            fontFamily: '"DM Sans", sans-serif',
+                          }}
+                        >
+                          {display(city.temp)}{unitLabel}
+                        </span>
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                {/* °C / °F toggle — pinned to the right */}
+                <div
+                  style={{ width: 1, height: 14, backgroundColor: "#D5D0CA", flexShrink: 0 }}
+                />
+                <div style={{ display: "flex", alignItems: "center", borderRadius: 999, overflow: "hidden", border: "1.5px solid #D5D0CA", flexShrink: 0 }}>
+                  {(["C", "F"] as const).map((u) => (
+                    <button
+                      key={u}
+                      onClick={() => setUnit(u)}
+                      style={{ padding: "4px 10px", fontSize: 11, fontWeight: unit === u ? 700 : 500, fontFamily: '"DM Sans", sans-serif', backgroundColor: unit === u ? "#0C2421" : "transparent", color: unit === u ? "#FBFAF9" : "#8A7E74", border: "none", cursor: "pointer", transition: "all 0.15s ease" }}
+                    >
+                      °{u}
+                    </button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
@@ -589,260 +909,15 @@ const ClimateGuideSection: React.FC = () => {
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.28 }}
             >
-              {/* Month Tabs */}
-              <div className="flex justify-between items-start mb-0 border-b border-[#D5D5D0]">
-                {MONTHS.map((m, i) => {
-                  const isActive = i === activeMonth;
-                  const isCurrent = i === currentMonth;
-                  return (
-                    <button
-                      key={m.label}
-                      onClick={() => setActiveMonth(i)}
-                      className={`
-                        relative flex flex-col items-center pb-3 pt-2 px-1 sm:px-3 text-xs sm:text-sm font-medium
-                        tracking-wide transition-colors duration-200 cursor-pointer
-                        ${isActive ? "text-[#2C3E50] font-bold" : "text-[#8E9EAB] hover:text-[#5A6B7A]"}
-                      `}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId="month-indicator"
-                          className="absolute inset-0 border-2 border-[#2C3E50] rounded-sm"
-                          transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                        />
-                      )}
-                      {/* Small amber dot on current (non-active) month */}
-                      {isCurrent && !isActive && (
-                        <span
-                          className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: "#C4873A" }}
-                        />
-                      )}
-                      <span className="relative z-10">{m.label}</span>
-                      <span
-                        className={`relative z-10 ${isActive ? "text-[#5A8F7B]" : "text-[#B0BEC5]"}`}
-                      >
-                        <WaveCheck count={getWaveCount(m.recommendation)} />
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Data Panel */}
-              <div className="bg-[#F5F5F0] rounded-b-2xl p-6 sm:p-8">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeMonth + "-msg"}
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    transition={{ duration: 0.25 }}
-                    className="mb-[36px] text-left pt-[30px]"
-                  >
-                    {/* Headline */}
-                    <p
-                      className="text-[24px] text-black font-extrabold flex flex-wrap"
-                      style={{ fontFamily: "'Instrument Serif', serif" }}
-                    >
-                      {month.message}
-                    </p>
-                    <motion.svg
-                      width="200" height="12" viewBox="0 0 200 12"
-                      fill="none" className="mt-2"
-                    >
-                      <motion.path
-                        d="M2 6C10 2 18 10 26 6C34 2 42 10 50 6C58 2 66 10 74 6C82 2 90 10 98 6C106 2 114 10 122 6C130 2 138 10 146 6C154 2 162 10 170 6C178 2 186 10 194 6"
-                        stroke="#5A8F7B" strokeWidth="2" strokeLinecap="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
-                      />
-                    </motion.svg>
-
-                    {/* Plain-language summary */}
-                    <p
-                      className="mt-4 text-[15px] leading-relaxed"
-                      style={{
-                        color: "#5A5046",
-                        fontFamily: '"DM Sans", sans-serif',
-                        maxWidth: 560,
-                      }}
-                    >
-                      {month.summary}
-                    </p>
-
-                    {/* Bottom info row: crowd + festivals + trip length */}
-                    <div className="flex flex-wrap gap-3 mt-5">
-
-                      {/* Crowd indicator */}
-                      {(() => {
-                        const cfg = CROWD_CONFIG[month.crowd];
-                        return (
-                          <div
-                            className="inline-flex items-center gap-3 px-4 py-2 rounded-full"
-                            style={{ backgroundColor: cfg.bg, border: `1px solid ${cfg.color}33` }}
-                          >
-                            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>
-                              Crowds
-                            </span>
-                            <div className="flex items-center gap-[5px]">
-                              {[1, 2, 3, 4, 5].map((n) => (
-                                <div key={n} style={{ width: n <= month.crowd ? 8 : 6, height: n <= month.crowd ? 8 : 6, borderRadius: "50%", backgroundColor: n <= month.crowd ? cfg.color : "#D5D0CA", transition: "all 0.2s ease" }} />
-                              ))}
-                            </div>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: cfg.color, fontFamily: '"DM Sans", sans-serif' }}>
-                              {cfg.label}
-                            </span>
-                          </div>
-                        );
-                      })()}
-
-                      {/* Trip length */}
-                      <div
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
-                        style={{ backgroundColor: "rgba(12,36,33,0.05)", border: "1px solid rgba(12,36,33,0.10)" }}
-                      >
-                        <span style={{ fontSize: 14 }}>🗓️</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: "#0C2421", fontFamily: '"DM Sans", sans-serif' }}>
-                          {month.tripLength.duration}
-                        </span>
-                        <span style={{ width: 1, height: 12, backgroundColor: "rgba(12,36,33,0.15)", display: "inline-block" }} />
-                        <span style={{ fontSize: 11, color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>
-                          {month.tripLength.note}
-                        </span>
-                      </div>
-
-                    </div>
-
-                    {/* Festivals */}
-                    {month.festivals.length > 0 && (
-                      <div
-                        className="flex flex-wrap items-center gap-2 mt-3 px-4 py-3 rounded-xl"
-                        style={{ backgroundColor: "rgba(196,135,58,0.07)", border: "1px solid rgba(196,135,58,0.18)" }}
-                      >
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C4873A", fontFamily: '"DM Sans", sans-serif', marginRight: 4 }}>
-                          What's on
-                        </span>
-                        {month.festivals.map((f, fi) => (
-                          <React.Fragment key={fi}>
-                            {fi > 0 && <span style={{ color: "#D5D0CA", fontSize: 12 }}>·</span>}
-                            <span
-                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
-                              style={{ backgroundColor: "rgba(196,135,58,0.10)", fontSize: 12, color: "#5A4020", fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}
-                            >
-                              <span>{f.emoji}</span>
-                              <span>{f.name}</span>
-                            </span>
-                          </React.Fragment>
-                        ))}
-                      </div>
-                    )}
-
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Column Headers */}
-                <div className="grid grid-cols-[minmax(100px,160px)_1fr_1fr] gap-x-4 sm:gap-x-8 mb-4">
-                  <span
-                    className="text-[18px] font-semibold text-[#0C2421]"
-                    style={{ fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif' }}
-                  >
-                    Place
-                  </span>
-                  <span
-                    className="text-[18px] font-semibold text-[#0C2421]"
-                    style={{ fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif' }}
-                  >
-                    Daily max temperature ({unitLabel})
-                  </span>
-                  <span
-                    className="text-[18px] font-semibold text-[#0C2421]"
-                    style={{ fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif' }}
-                  >
-                    Monthly rainfall (mm)
-                  </span>
-                </div>
-
-                {/* City Rows */}
-                <div className="space-y-2">
-                  {CITIES.map((city, i) => {
-                    const data = month.cities[i];
-                    const tempPercent = (data.temp / MAX_TEMP) * 100;
-                    const rainPercent = (data.rain / MAX_RAIN) * 100;
-                    const displayTemp = display(data.temp);
-
-                    return (
-                      <div
-                        key={city}
-                        className="grid grid-cols-[minmax(100px,160px)_1fr_1fr] gap-x-4 sm:gap-x-8 items-center py-2"
-                      >
-                        <span
-                          className="text-[18px] font-normal text-[#0C2421]"
-                          style={{
-                            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-                            fontWeight: 400,
-                          }}
-                        >
-                          {city}
-                        </span>
-
-                        {/* Temperature bar */}
-                        <div className="relative h-8 flex items-center">
-                          <div className="absolute inset-y-0 left-0 right-0 flex items-center">
-                            <div className="w-full h-[6px] bg-[#D5D8DC] rounded-full" />
-                          </div>
-                          <motion.div
-                            className="absolute left-0 top-1/2 -translate-y-1/2 h-[6px] rounded-full"
-                            style={{ background: "linear-gradient(90deg, #E67E22, #F39C12)" }}
-                            initial={false}
-                            animate={{ width: `${tempPercent}%` }}
-                            transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                          />
-                          <motion.div
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
-                            initial={false}
-                            animate={{ left: `${tempPercent}%` }}
-                            transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                          >
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E67E22] flex items-center justify-center shadow-md">
-                              <span className="text-[10px] sm:text-xs font-bold text-white">
-                                {displayTemp}
-                              </span>
-                            </div>
-                          </motion.div>
-                        </div>
-
-                        {/* Rainfall bar */}
-                        <div className="relative h-8 flex items-center">
-                          <div className="absolute inset-y-0 left-0 right-0 flex items-center">
-                            <div className="w-full h-[6px] bg-[#D5D8DC] rounded-full" />
-                          </div>
-                          <motion.div
-                            className="absolute left-0 top-1/2 -translate-y-1/2 h-[6px] rounded-full"
-                            style={{ background: "linear-gradient(90deg, #5B8C8D, #6FA8A9)" }}
-                            initial={false}
-                            animate={{ width: `${rainPercent}%` }}
-                            transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                          />
-                          <motion.div
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
-                            initial={false}
-                            animate={{ left: `${rainPercent}%` }}
-                            transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                          >
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#5B8C8D] flex items-center justify-center shadow-md">
-                              <span className="text-[10px] sm:text-xs font-bold text-white">
-                                {data.rain}
-                              </span>
-                            </div>
-                          </motion.div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <MonthCalendar
+                currentMonth={currentMonth}
+                activeMonth={activeMonth}
+                setActiveMonth={setActiveMonth}
+                display={display}
+                unitLabel={unitLabel}
+                unit={unit}
+                setUnit={setUnit}
+              />
             </motion.div>
           ) : (
             <motion.div

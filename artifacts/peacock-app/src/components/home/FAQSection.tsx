@@ -151,7 +151,7 @@ const FAQItem: React.FC<{
         aria-expanded={isOpen}
       >
         <div
-          className="rounded-2xl px-7 py-6 transition-colors duration-300"
+          className="rounded-2xl px-4 py-4 sm:px-7 sm:py-6 transition-colors duration-300"
           style={{
             backgroundColor: "rgba(232, 230, 227, 1)",
             color: "rgba(0, 0, 0, 1)",
@@ -160,7 +160,7 @@ const FAQItem: React.FC<{
         >
           <div className="flex items-center justify-between gap-6">
             <span
-              className="text-[1.05rem] md:text-[1.15rem] font-medium leading-snug"
+              className="text-[0.9375rem] md:text-[1.15rem] font-medium leading-snug"
               style={{ fontFamily: "'Inter', sans-serif", color: "rgba(0, 0, 0, 1)" }}
             >
               {faq.question}
@@ -212,7 +212,7 @@ const CategoryPill: React.FC<{
 }> = ({ label, active, onClick }) => (
   <button
     onClick={onClick}
-    className="w-full px-5 py-2.5 rounded-full text-base font-medium tracking-wide transition-all duration-300 border cursor-pointer whitespace-nowrap"
+    className="shrink-0 lg:w-full px-5 py-2 lg:py-2.5 rounded-full text-sm lg:text-base font-medium tracking-wide transition-all duration-300 border cursor-pointer whitespace-nowrap"
     style={{
       fontFamily: "'Inter', sans-serif",
       backgroundColor: active ? C.pillActiveBg : "rgba(232, 230, 227, 1)",
@@ -263,19 +263,18 @@ const FAQSection: React.FC<FAQSectionProps> = ({ embedded = false }) => {
         color: "#000000",
       }}
     >
-      <Container className="py-24 md:py-32 lg:py-40">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24">
+      <Container className="py-12 md:py-24 lg:py-32 xl:py-40">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 xl:gap-24">
           <motion.div
             className="lg:col-span-5 flex flex-col"
             style={{ y: leftY }}
           >
             <div className="lg:sticky lg:top-32 flex flex-col min-h-full">
               <h2
-                className="text-4xl md:text-5xl lg:text-[3.4rem] font-normal leading-[1.1] mb-10 lg:mb-14"
+                className="text-[2rem] md:text-5xl lg:text-[3.4rem] font-normal leading-[1.15] mb-8 lg:mb-14"
                 style={{
                   fontFamily: "'Instrument Serif', serif",
                   color: C.text,
-                  fontSize: "60px",
                 }}
               >
                 Find answers to all your burning questions, here.
@@ -283,16 +282,19 @@ const FAQSection: React.FC<FAQSectionProps> = ({ embedded = false }) => {
 
               <div className="flex-1 hidden lg:block" />
 
-              <div className="mt-12 lg:mt-0 lg:mt-auto">
-                <div className="flex flex-row lg:flex-col gap-3 w-full lg:w-[250px]">
-                  {CATEGORIES.map((cat) => (
-                    <CategoryPill
-                      key={cat}
-                      label={cat}
-                      active={activeCategory === cat}
-                      onClick={() => handleCategoryChange(cat)}
-                    />
-                  ))}
+              <div className="mt-6 lg:mt-0 lg:mt-auto">
+                {/* Mobile: horizontally scrollable pill strip */}
+                <div className="-mx-4 px-4 overflow-x-auto lg:overflow-visible lg:mx-0 lg:px-0 pb-1 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex flex-row lg:flex-col gap-2 lg:gap-3 w-max lg:w-[250px]">
+                    {CATEGORIES.map((cat) => (
+                      <CategoryPill
+                        key={cat}
+                        label={cat}
+                        active={activeCategory === cat}
+                        onClick={() => handleCategoryChange(cat)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
