@@ -19,20 +19,21 @@ const Footer = () => {
       <Container className="relative z-10 pt-32 pb-12">
 
         {/* ── CTA: heading + subheader + button ── */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 lg:mb-[84px] gap-0 lg:gap-12 pt-[60px]">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 lg:mb-[84px] gap-0 lg:gap-12 border-t border-white/0 pt-[60px]">
 
-          {/* Left: heading + subheader (+ mobile button) */}
+          {/* Left: heading + subheader (+ mobile-only button) */}
           <div className="max-w-[800px] overflow-visible">
-            <h2 className="font-display text-5xl md:text-[64px] lg:text-[96px] leading-[0.85] font-normal text-white mb-3 lg:mb-8 tracking-tighter overflow-visible">
+            {/* Desktop: fixed height to prevent gradient text clipping. Mobile: natural height. */}
+            <h2 className="font-display text-5xl md:text-[64px] lg:text-[96px] leading-[0.85] font-normal text-white mb-3 lg:mb-8 tracking-tighter overflow-visible lg:h-[180px]">
               Witness Sri Lanka's <br />
               art of{" "}
-              <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#E8A825] via-[#E6B772] to-[#E8A825] pr-2 inline-block">hospitality</span>
+              <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#E8A825] via-[#E6B772] to-[#E8A825] pr-2 inline-block lg:h-[100px]">hospitality</span>
             </h2>
             <p className="text-lg md:text-xl lg:text-2xl text-white/70 font-light max-w-lg leading-relaxed font-sans border-l-2 border-[#E8A825]/30 pl-6">
               Curating exceptional journeys through the heart of Sri Lanka.
               Where luxury meets the untamed wilderness.
             </p>
-            {/* Mobile button — left-aligned, tight gap below subheader */}
+            {/* Mobile-only button — left-aligned, tight below subheader */}
             <Link href="/tours/custom" className="block lg:hidden mt-5">
               <button className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full border border-white/20 hover:border-[#E8A825]/60 transition-all duration-500">
                 <div className="absolute inset-0 w-full h-full bg-white/5 group-hover:bg-[#E8A825]/10 transition-colors duration-500" />
@@ -43,8 +44,8 @@ const Footer = () => {
             </Link>
           </div>
 
-          {/* Desktop button — right side */}
-          <div className="hidden lg:flex shrink-0">
+          {/* Desktop-only button — right side */}
+          <div className="hidden lg:flex flex-col gap-6 shrink-0">
             <Link href="/tours/custom">
               <button className="group relative px-10 py-5 bg-transparent overflow-hidden rounded-full border border-white/20 hover:border-[#E8A825]/60 transition-all duration-500">
                 <div className="absolute inset-0 w-full h-full bg-white/5 group-hover:bg-[#E8A825]/10 transition-colors duration-500" />
@@ -56,16 +57,17 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* ── Link grid: Discover | Company | Connect ──
-            Mobile: 2-col (Discover+Company), Connect spans full row below
-            Desktop: 3-col equal columns
+        {/* ── Link grid ──
+            Desktop: 4 cols — Discover | Company | Legal | Connect (unchanged)
+            Mobile:  2 cols — Discover | Company, then Connect full-row, Legal hidden (moved to bottom bar)
         */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10 border-t border-b border-white/10 py-10 mb-12 relative bg-black/20 backdrop-blur-sm px-6 rounded-2xl border-x border-white/5">
-          <div className="hidden lg:block absolute top-8 bottom-8 left-1/3 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-          <div className="hidden lg:block absolute top-8 bottom-8 left-2/3 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 border-t border-b border-white/10 py-[30px] mb-12 relative bg-black/20 backdrop-blur-sm px-6 rounded-2xl border-x border-white/5">
+          <div className="hidden md:block absolute top-8 bottom-8 left-1/4 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+          <div className="hidden md:block absolute top-8 bottom-8 left-2/4 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+          <div className="hidden md:block absolute top-8 bottom-8 left-3/4 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
 
           {/* Discover */}
-          <div className="space-y-6 flex flex-col items-start text-left">
+          <div className="space-y-8 flex flex-col items-start text-left">
             <h4 className="text-xs font-medium uppercase tracking-[0.25em] text-[#E8A825]">Discover</h4>
             <ul className="space-y-4">
               <li><Link href="/tours" className="text-sm font-light text-white/70 hover:text-white transition-all hover:tracking-wide duration-300 block">Ready-to-Go Tours</Link></li>
@@ -76,7 +78,7 @@ const Footer = () => {
           </div>
 
           {/* Company */}
-          <div className="space-y-6 flex flex-col items-start text-left">
+          <div className="space-y-8 flex flex-col items-start text-left">
             <h4 className="text-xs font-medium uppercase tracking-[0.25em] text-[#E8A825]">Company</h4>
             <ul className="space-y-4">
               <li><Link href="/about" className="text-sm font-light text-white/70 hover:text-white transition-all hover:tracking-wide duration-300 block">Our Story</Link></li>
@@ -86,64 +88,84 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Connect — full row on mobile, single column on desktop */}
-          <div className="col-span-2 lg:col-span-1 space-y-6 flex flex-col items-start text-left border-t border-white/10 pt-8 lg:border-t-0 lg:pt-0">
+          {/* Legal — desktop only (hidden on mobile, shown inline in bottom bar instead) */}
+          <div className="hidden md:flex space-y-8 flex-col items-start text-left">
+            <h4 className="text-xs font-medium uppercase tracking-[0.25em] text-[#E8A825]">Legal</h4>
+            <ul className="space-y-4">
+              <li><Link href="/privacy" className="text-sm font-light text-white/70 hover:text-white transition-all hover:tracking-wide duration-300 block">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-sm font-light text-white/70 hover:text-white transition-all hover:tracking-wide duration-300 block">Terms of Service</Link></li>
+              <li><Link href="/cancellation-policy" className="text-sm font-light text-white/70 hover:text-white transition-all hover:tracking-wide duration-300 block">Cancellation Policy</Link></li>
+            </ul>
+          </div>
+
+          {/* Connect — full-row on mobile (col-span-2), single col on desktop */}
+          <div className="col-span-2 md:col-span-1 space-y-8 flex flex-col items-start text-left border-t border-white/10 pt-8 md:border-t-0 md:pt-0">
             <h4 className="text-xs font-medium uppercase tracking-[0.25em] text-[#E8A825]">Connect</h4>
-            <div className="flex flex-wrap gap-x-8 gap-y-3 lg:flex-col lg:gap-y-0 lg:space-y-4 text-sm font-light text-white/70">
-              <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap gap-x-8 gap-y-4 md:flex-col md:gap-y-0 md:space-y-4 text-sm font-light text-white/70">
+              <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-[#E8A825] shrink-0" />
                 <span>Colombo, Sri Lanka</span>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-[#E8A825] shrink-0" />
                 <span>+94 77 123 4567</span>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-[#E8A825] shrink-0" />
                 <span>hello@peacock.lk</span>
               </div>
+            </div>
+            {/* Social icons — desktop only (moved to bottom bar on mobile) */}
+            <div className="hidden md:flex gap-4 pt-2">
+              <a href="#" aria-label="Instagram" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
+                <Instagram className="h-4 w-4" />
+              </a>
+              <a href="#" aria-label="Twitter" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
+                <Twitter className="h-4 w-4" />
+              </a>
+              <a href="#" aria-label="LinkedIn" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
+                <Linkedin className="h-4 w-4" />
+              </a>
             </div>
           </div>
         </div>
 
         {/* ── Bottom bar ── */}
-        <div className="space-y-5">
 
-          {/* Social icons + Legal links (inline small print) */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex gap-3">
-              <a href="#" aria-label="Instagram" className="h-9 w-9 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
-                <Instagram className="h-3.5 w-3.5" />
-              </a>
-              <a href="#" aria-label="Twitter" className="h-9 w-9 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
-                <Twitter className="h-3.5 w-3.5" />
-              </a>
-              <a href="#" aria-label="LinkedIn" className="h-9 w-9 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
-                <Linkedin className="h-3.5 w-3.5" />
-              </a>
-            </div>
-            <div className="flex items-center gap-2.5 text-[10px] text-white/25 uppercase tracking-[0.12em] font-medium font-sans">
-              <Link href="/privacy" className="hover:text-white/50 transition-colors">Privacy</Link>
-              <span className="text-white/15">·</span>
-              <Link href="/terms" className="hover:text-white/50 transition-colors">Terms</Link>
-              <span className="text-white/15">·</span>
-              <Link href="/cancellation-policy" className="hover:text-white/50 transition-colors">Cancellation</Link>
-            </div>
+        {/* Mobile-only row: social icons + inline legal links */}
+        <div className="flex md:hidden justify-between items-center mb-5">
+          <div className="flex gap-3">
+            <a href="#" aria-label="Instagram" className="h-9 w-9 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
+              <Instagram className="h-3.5 w-3.5" />
+            </a>
+            <a href="#" aria-label="Twitter" className="h-9 w-9 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
+              <Twitter className="h-3.5 w-3.5" />
+            </a>
+            <a href="#" aria-label="LinkedIn" className="h-9 w-9 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-[#E8A825] hover:border-[#E8A825] hover:bg-[#E8A825]/10 transition-all duration-300">
+              <Linkedin className="h-3.5 w-3.5" />
+            </a>
           </div>
-
-          {/* Copyright */}
-          <div className="border-t border-white/10 pt-5 text-[10px] text-white/30 uppercase tracking-[0.15em] font-medium font-sans">
-            © {new Date().getFullYear()} Peacock Drivers. All rights reserved.
+          <div className="flex items-center gap-2 text-[9px] text-white/25 uppercase tracking-[0.12em] font-medium font-sans">
+            <Link href="/privacy" className="hover:text-white/50 transition-colors">Privacy</Link>
+            <span>·</span>
+            <Link href="/terms" className="hover:text-white/50 transition-colors">Terms</Link>
+            <span>·</span>
+            <Link href="/cancellation-policy" className="hover:text-white/50 transition-colors">Cancellation</Link>
           </div>
+        </div>
 
-          {/* Design credits — one per line */}
-          <div className="text-[10px] text-white/20 uppercase tracking-[0.15em] font-medium font-sans space-y-1">
-            <div>Designed for Sri Lanka</div>
-            <div>
-              <a href="https://www.artyreal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors">
-                Designed by Artyreal
-              </a>
-            </div>
+        {/* Copyright + design credits — desktop: original side-by-side. Mobile: stacked. */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 text-[10px] text-white/30 uppercase tracking-[0.15em] font-medium font-sans">
+          <div>© {new Date().getFullYear()} Peacock Drivers. All rights reserved.</div>
+          {/* Desktop: one line with bullet. Mobile: two separate lines. */}
+          <div className="hidden md:flex items-center gap-4">
+            <span>Designed for Sri Lanka</span>
+            <div className="h-1 w-1 rounded-full bg-[#E8A825]" />
+            <a href="https://www.artyreal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">Designed by Artyreal</a>
+          </div>
+          <div className="flex md:hidden flex-col gap-1 text-white/20">
+            <span>Designed for Sri Lanka</span>
+            <a href="https://www.artyreal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors">Designed by Artyreal</a>
           </div>
         </div>
 
