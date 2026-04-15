@@ -233,7 +233,7 @@ export default function Checkout() {
                 <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-200 mb-6 flex items-start gap-3">
                   <Shield className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   <div className="font-body text-sm text-emerald-800">
-                    <strong>Cancellation Policy:</strong> Free cancellation until 10 days before your trip starts. Cancellations within 10 days are subject to a 50% fee.
+                    <strong>Cancellation Policy:</strong> Free cancellation until 14 days before your trip starts. Cancellations within 14 days are subject to a 50% fee.
                   </div>
                 </div>
 

@@ -477,7 +477,7 @@ export default function AdminSettings() {
         {tab === 'Policies' && (
           <div className="bg-white rounded-xl border border-warm-100 p-6 space-y-4">
             {[
-              { label: 'Cancellation policy for tours', val: 'Cancellations made less than 10 days before start date will not be refunded. Cancellations made 10+ days before departure will receive a full refund minus a 5% processing fee.' },
+              { label: 'Cancellation policy for tours', val: 'Cancellations made less than 14 days before start date will not be refunded. Cancellations made 14+ days before departure will receive a full refund minus a 5% processing fee.' },
               { label: 'Cancellation policy for transfers', val: 'Cancellations made less than 48 hours before pickup will not be refunded.' },
               { label: 'Reschedule policy', val: 'One free reschedule permitted up to 7 days before start date. Subsequent reschedules incur a 10% fee.' },
               { label: 'No-show policy', val: 'No refund for no-shows. Driver will wait up to 30 minutes past the scheduled pickup time.' },

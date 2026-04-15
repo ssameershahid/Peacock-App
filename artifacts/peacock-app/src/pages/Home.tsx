@@ -30,12 +30,18 @@ export default function Home() {
       {/* 1. Cinematic Hero Section */}
       <div className="relative h-screen w-full flex items-center justify-center">
         <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* Fallback image — always present, visible on iOS when video fails to load */}
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69838bc1712205ff655de71c_5052216621-ezgif.com-webp-to-jpg-converter.jpg')" }}
+          />
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="h-full w-full object-cover animate-in fade-in duration-[2000ms]"
+            poster="https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69838bc1712205ff655de71c_5052216621-ezgif.com-webp-to-jpg-converter.jpg"
+            className="absolute inset-0 h-full w-full object-cover animate-in fade-in duration-[2000ms]"
           >
             <source src="https://s3.amazonaws.com/webflow-prod-assets/68fe492bc39e0e661cce824d/6983912e334f06ffc3475dd8_Screen%20Recording%202026-02-04%20at%2011.30.50%E2%80%AFPM.mp4" type="video/mp4" />
           </video>

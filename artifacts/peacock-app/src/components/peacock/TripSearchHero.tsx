@@ -297,7 +297,7 @@ const TripSearchHero = () => {
 
   return (
     <div ref={containerRef} className="w-full max-w-4xl mx-auto relative">
-      <div className="bg-white/15 backdrop-blur-xl rounded-full shadow-2xl p-2 flex flex-col md:flex-row items-center gap-2 animate-in slide-in-from-bottom-8 duration-700 delay-300 border border-white/30 ring-1 ring-white/10">
+      <div className="bg-white/15 backdrop-blur-xl rounded-3xl md:rounded-full shadow-2xl p-2 flex flex-col md:flex-row items-center gap-2 animate-in slide-in-from-bottom-8 duration-700 delay-300 border border-white/30 ring-1 ring-white/10">
         {/* WHERE */}
         <div role="button" tabIndex={0} aria-expanded={openDropdown === 'where'} onClick={() => toggle('where')}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle('where'); } }}

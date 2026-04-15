@@ -506,7 +506,7 @@ export default function AdminBookingDetail() {
         <div className="space-y-4">
           <div className="bg-red-50 rounded-xl p-4">
             <p className="font-body text-sm text-red-700">
-              Refund: Full refund if more than 10 days before departure. No refund within 10 days.
+              Refund: Full refund if more than 14 days before departure. No refund within 14 days.
             </p>
           </div>
           <div>
