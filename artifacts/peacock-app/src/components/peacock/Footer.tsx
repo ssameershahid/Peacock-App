@@ -34,7 +34,7 @@ const Footer = () => {
             <Link href="/tours/custom">
               <button className="group relative px-10 py-5 bg-transparent overflow-hidden rounded-full border border-white/20 hover:border-[#E8A825]/60 transition-all duration-500">
                 <div className="absolute inset-0 w-full h-full bg-white/5 group-hover:bg-[#E8A825]/10 transition-colors duration-500" />
-                <span className="relative flex items-center gap-4 font-serif text-2xl text-white group-hover:text-[#E8A825] transition-colors">
+                <span className="relative flex items-center gap-4 font-display text-2xl text-white group-hover:text-[#E8A825] transition-colors">
                   Start Your Journey <ArrowUpRight className="h-6 w-6 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                 </span>
               </button>

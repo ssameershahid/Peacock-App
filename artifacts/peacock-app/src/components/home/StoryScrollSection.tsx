@@ -198,7 +198,7 @@ export const StoryIntroSection: React.FC = () => {
           <H2
             className="font-normal"
             style={{
-              fontFamily: "'LLIvory', serif",
+              fontFamily: "'Instrument Serif', serif",
               fontWeight: 400,
               fontSize: "48px",
               lineHeight: "60px",

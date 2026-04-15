@@ -296,7 +296,7 @@ const DestinationCard: React.FC<{
             <h3
               className="font-bold text-white leading-tight mb-1"
               style={{
-                fontFamily: "'LLIvory', serif",
+                fontFamily: "'Instrument Serif', serif",
                 fontSize: large ? '2.75rem' : '1.75rem',
                 lineHeight: 1.05,
               }}
@@ -364,7 +364,7 @@ const ArticleCard: React.FC<{ article: Article; featured?: boolean; number?: num
             {number !== undefined && (
               <span
                 className="font-bold text-white/20"
-                style={{ fontFamily: "'LLIvory', serif", fontSize: '2rem' }}
+                style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2rem' }}
               >
                 {String(number).padStart(2, '0')}
               </span>
@@ -375,7 +375,7 @@ const ArticleCard: React.FC<{ article: Article; featured?: boolean; number?: num
             <h3
               className="font-bold text-white leading-snug mb-2"
               style={{
-                fontFamily: "'LLIvory', serif",
+                fontFamily: "'Instrument Serif', serif",
                 fontSize: featured ? '1.65rem' : '1.2rem',
                 lineHeight: 1.2,
               }}
@@ -414,7 +414,7 @@ const SeasonalGuide: React.FC<{ currentMonth: number }> = ({ currentMonth }) => 
           <h2
             className="font-bold leading-[1.05]"
             style={{
-              fontFamily: "'LLIvory', serif",
+              fontFamily: "'Instrument Serif', serif",
               fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
               color: '#FAF8F3',
               fontWeight: 600,
@@ -535,7 +535,7 @@ const ArticlesGrid: React.FC<{ articles: Article[]; showAll: boolean }> = ({ art
             <h2
               className="font-bold leading-[1.05]"
               style={{
-                fontFamily: "'LLIvory', serif",
+                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
                 color: '#0C2421',
                 fontWeight: 600,
@@ -582,7 +582,7 @@ const QuickTips: React.FC = () => (
         <h2
           className="font-bold"
           style={{
-            fontFamily: "'LLIvory', serif",
+            fontFamily: "'Instrument Serif', serif",
             fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
             color: '#FAF8F3',
             fontWeight: 600,
@@ -611,7 +611,7 @@ const QuickTips: React.FC = () => (
             <span
               className="block font-bold mb-4"
               style={{
-                fontFamily: "'LLIvory', serif",
+                fontFamily: "'Instrument Serif', serif",
                 fontSize: '3.5rem',
                 color: 'rgba(196,135,58,0.25)',
                 lineHeight: 1,
@@ -693,7 +693,7 @@ export default function DestinationsGuide() {
                 <h1
                   className="leading-[0.95] mb-7"
                   style={{
-                    fontFamily: "'LLIvory', serif",
+                    fontFamily: "'Instrument Serif', serif",
                     fontSize: 'clamp(3rem, 7vw, 6rem)',
                     color: '#FAF8F3',
                     fontWeight: 600,
@@ -767,7 +767,7 @@ export default function DestinationsGuide() {
                     </p>
                     <h3
                       className="font-bold text-white mb-1"
-                      style={{ fontFamily: "'LLIvory', serif", fontSize: '2.25rem', lineHeight: 1.05 }}
+                      style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2.25rem', lineHeight: 1.05 }}
                     >
                       Ella
                     </h3>
@@ -803,7 +803,7 @@ export default function DestinationsGuide() {
                 <h2
                   className="font-bold leading-[1.05]"
                   style={{
-                    fontFamily: "'LLIvory', serif",
+                    fontFamily: "'Instrument Serif', serif",
                     fontSize: 'clamp(2.5rem, 5vw, 3.75rem)',
                     color: '#0C2421',
                     fontWeight: 600,

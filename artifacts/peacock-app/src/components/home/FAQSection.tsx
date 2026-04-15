@@ -273,7 +273,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({ embedded = false }) => {
               <h2
                 className="text-4xl md:text-5xl lg:text-[3.4rem] font-normal leading-[1.1] mb-10 lg:mb-14"
                 style={{
-                  fontFamily: "'LLIvory', serif",
+                  fontFamily: "'Instrument Serif', serif",
                   color: C.text,
                   fontSize: "60px",
                 }}

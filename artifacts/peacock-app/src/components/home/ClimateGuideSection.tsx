@@ -434,7 +434,7 @@ const ClimateGuideSection: React.FC = () => {
         <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
           <h2
             className="font-display text-5xl sm:text-6xl text-[#0C2421] font-normal"
-            style={{ fontFamily: "LLIvory", color: "rgba(12,36,33,1)" }}
+            style={{ fontFamily: "'Instrument Serif', serif", color: "rgba(12,36,33,1)" }}
           >
             When to go
           </h2>
@@ -643,7 +643,7 @@ const ClimateGuideSection: React.FC = () => {
                     {/* Headline */}
                     <p
                       className="text-[24px] text-black font-extrabold flex flex-wrap"
-                      style={{ fontFamily: "LLIvory" }}
+                      style={{ fontFamily: "'Instrument Serif', serif" }}
                     >
                       {month.message}
                     </p>

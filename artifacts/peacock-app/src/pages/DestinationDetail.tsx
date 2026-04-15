@@ -408,7 +408,7 @@ export default function DestinationDetail() {
           </p>
           <h1
             className="font-bold mb-6"
-            style={{ fontFamily: "'LLIvory', serif", fontSize: '3rem', color: '#0C2421' }}
+            style={{ fontFamily: "'Instrument Serif', serif", fontSize: '3rem', color: '#0C2421' }}
           >
             We don't have a guide for this destination yet.
           </h1>
@@ -469,7 +469,7 @@ export default function DestinationDetail() {
               <h1
                 className="text-white leading-[0.95] mb-4"
                 style={{
-                  fontFamily: "'LLIvory', serif",
+                  fontFamily: "'Instrument Serif', serif",
                   fontSize: 'clamp(3.5rem, 10vw, 8rem)',
                   fontWeight: 600,
                 }}
@@ -584,7 +584,7 @@ export default function DestinationDetail() {
                   <p
                     className="font-bold italic leading-snug"
                     style={{
-                      fontFamily: "'LLIvory', serif",
+                      fontFamily: "'Instrument Serif', serif",
                       fontSize: '1.5rem',
                       color: '#0C2421',
                     }}
@@ -658,7 +658,7 @@ export default function DestinationDetail() {
             <h2
               className="font-bold mb-14 leading-[1.05]"
               style={{
-                fontFamily: "'LLIvory', serif",
+                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.25rem, 4vw, 3.5rem)',
                 color: '#FAF8F3',
                 fontWeight: 600,
@@ -685,13 +685,13 @@ export default function DestinationDetail() {
                   <div className="flex items-start gap-3 mb-3">
                     <span
                       className="font-bold shrink-0 text-sm"
-                      style={{ color: 'rgba(196,135,58,0.4)', fontFamily: "'LLIvory', serif", fontSize: '1.1rem' }}
+                      style={{ color: 'rgba(196,135,58,0.4)', fontFamily: "'Instrument Serif', serif", fontSize: '1.1rem' }}
                     >
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <h4
                       className="font-bold text-white leading-snug"
-                      style={{ fontFamily: "'LLIvory', serif", fontSize: '1.2rem' }}
+                      style={{ fontFamily: "'Instrument Serif', serif", fontSize: '1.2rem' }}
                     >
                       {h.name}
                     </h4>
@@ -719,7 +719,7 @@ export default function DestinationDetail() {
             <h2
               className="font-bold mb-12 leading-[1.05]"
               style={{
-                fontFamily: "'LLIvory', serif",
+                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.25rem, 4vw, 3.5rem)',
                 color: '#0C2421',
                 fontWeight: 600,
@@ -810,7 +810,7 @@ export default function DestinationDetail() {
             <h2
               className="font-bold mb-14 leading-[1.05]"
               style={{
-                fontFamily: "'LLIvory', serif",
+                fontFamily: "'Instrument Serif', serif",
                 fontSize: 'clamp(2.25rem, 4vw, 3.5rem)',
                 color: '#FAF8F3',
                 fontWeight: 600,
@@ -862,7 +862,7 @@ export default function DestinationDetail() {
                   >
                     <span
                       className="text-sm font-bold shrink-0 mt-0.5"
-                      style={{ fontFamily: "'LLIvory', serif", color: 'rgba(196,135,58,0.5)', fontSize: '1.25rem' }}
+                      style={{ fontFamily: "'Instrument Serif', serif", color: 'rgba(196,135,58,0.5)', fontSize: '1.25rem' }}
                     >
                       {String(i + 1).padStart(2, '0')}
                     </span>
@@ -892,7 +892,7 @@ export default function DestinationDetail() {
                 </p>
                 <h3
                   className="font-bold text-white mb-4 leading-snug"
-                  style={{ fontFamily: "'LLIvory', serif", fontSize: '2rem' }}
+                  style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2rem' }}
                 >
                   Browse tours that include {dest.name.split(' ')[0]}.
                 </h3>
@@ -926,7 +926,7 @@ export default function DestinationDetail() {
                     </p>
                     <h3
                       className="font-bold text-white mb-4 leading-snug group-hover:underline"
-                      style={{ fontFamily: "'LLIvory', serif", fontSize: '2rem' }}
+                      style={{ fontFamily: "'Instrument Serif', serif", fontSize: '2rem' }}
                     >
                       {dest.nearbyName}
                     </h3>

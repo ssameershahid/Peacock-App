@@ -26,10 +26,10 @@ const EditorialReviewCard: React.FC<{ review: Review }> = ({ review }) => {
       <div className="flex-1 flex flex-col justify-between py-1 pr-2">
         <div>
           <div className="flex items-center flex-wrap gap-2 mb-3">
-            <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 rounded-full font-medium text-[11px] uppercase tracking-wider px-2" style={{ fontFamily: "'LLIvory', serif" }}>
+            <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 rounded-full font-medium text-[11px] uppercase tracking-wider px-2" style={{ fontFamily: "'Instrument Serif', serif" }}>
               {review.tripLength || 'Trip'}
             </Badge>
-            <Badge variant="outline" className="text-muted-foreground border-border rounded-full font-medium text-[11px] uppercase tracking-wider px-2" style={{ fontFamily: "'LLIvory', serif" }}>
+            <Badge variant="outline" className="text-muted-foreground border-border rounded-full font-medium text-[11px] uppercase tracking-wider px-2" style={{ fontFamily: "'Instrument Serif', serif" }}>
               {review.travelerType || 'Traveler'}
             </Badge>
             <div className="hidden md:flex ml-auto text-amber-200 gap-0.5">
@@ -38,20 +38,20 @@ const EditorialReviewCard: React.FC<{ review: Review }> = ({ review }) => {
           </div>
           <div className="relative mb-4">
             <Quote className="absolute -left-2 -top-2 h-6 w-6 text-primary/10 -scale-x-100" />
-            <p className="font-serif text-lg leading-relaxed text-foreground line-clamp-4 relative z-10 pl-2">
+            <p className="font-display text-lg leading-relaxed text-foreground line-clamp-4 relative z-10 pl-2">
               "{review.text}"
             </p>
           </div>
         </div>
         <div className="pt-3 border-t border-border/40 flex items-center justify-between">
           <div>
-            <div className="font-bold text-sm text-foreground" style={{ fontFamily: "'LLIvory', serif" }}>{review.author}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1" style={{ fontFamily: "'LLIvory', serif" }}>
+            <div className="font-bold text-sm text-foreground" style={{ fontFamily: "'Instrument Serif', serif" }}>{review.author}</div>
+            <div className="text-xs text-muted-foreground flex items-center gap-1" style={{ fontFamily: "'Instrument Serif', serif" }}>
               <MapPin className="h-3 w-3" /> {review.origin || 'International Guest'}
             </div>
           </div>
           {review.itineraryName && (
-            <div className="text-xs text-muted-foreground font-medium text-right max-w-[120px] truncate" style={{ fontFamily: "'LLIvory', serif" }}>
+            <div className="text-xs text-muted-foreground font-medium text-right max-w-[120px] truncate" style={{ fontFamily: "'Instrument Serif', serif" }}>
               Verified Booking <br />
               <span className="text-primary">{review.itineraryName}</span>
             </div>
