@@ -4,10 +4,16 @@ import { motion, AnimatePresence } from "framer-motion";
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 interface CityData { temp: number; rain: number; }
+interface Festival { emoji: string; name: string; }
 interface MonthData {
   label: string; short: string;
   recommendation: "best" | "good" | "possible";
-  message: string; cities: CityData[];
+  message: string;
+  summary: string;
+  crowd: 1 | 2 | 3 | 4 | 5;
+  festivals: Festival[];
+  tripLength: { duration: string; note: string };
+  cities: CityData[];
 }
 interface ActivityRow { icon: string; name: string; locations: string; months: Record<number, "peak" | "good">; }
 interface LiveCity { name: string; temp: number; code: number; }
@@ -23,29 +29,65 @@ const CITIES = [
 const MONTH_ABBR = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 
 const MONTHS: MonthData[] = [
-  { label: "JAN", short: "JAN", recommendation: "best", message: "The best time to travel",
+  { label: "JAN", short: "JAN", recommendation: "best", message: "The best time to travel", crowd: 5,
+    summary: "The south and west coasts are at their finest — clear skies, flat seas, and warm beaches from Galle to Negombo.",
+    festivals: [{ emoji: "🪔", name: "Thai Pongal (Jan 14)" }, { emoji: "🐘", name: "Duruthu Perahera" }],
+    tripLength: { duration: "10–14 days", note: "West coast, south coast & hill country all at their best" },
     cities: [{temp:30,rain:74},{temp:29,rain:99},{temp:29,rain:136},{temp:28,rain:163},{temp:27,rain:176},{temp:19,rain:127},{temp:29,rain:105},{temp:30,rain:101}] },
-  { label: "FEB", short: "FEB", recommendation: "best", message: "The best time to travel",
+  { label: "FEB", short: "FEB", recommendation: "best", message: "The best time to travel", crowd: 4,
+    summary: "Peak conditions continue across the south; ideal for whale watching off Mirissa before crowds ease into March.",
+    festivals: [{ emoji: "🐘", name: "Navam Perahera" }, { emoji: "🇱🇰", name: "Independence Day (Feb 4)" }],
+    tripLength: { duration: "10–14 days", note: "Full circuit possible: beaches, wildlife, culture & tea country" },
     cities: [{temp:31,rain:74},{temp:31,rain:50},{temp:31,rain:80},{temp:30,rain:86},{temp:28,rain:119},{temp:19,rain:87},{temp:30,rain:94},{temp:31,rain:98}] },
-  { label: "MAR", short: "MAR", recommendation: "best", message: "The best time to travel",
+  { label: "MAR", short: "MAR", recommendation: "best", message: "The best time to travel", crowd: 3,
+    summary: "The last of the prime south coast weather before the rains; Kandy and Sigiriya are excellent and noticeably less busy.",
+    festivals: [{ emoji: "🕉️", name: "Maha Sivarathri" }],
+    tripLength: { duration: "7–10 days", note: "South coast + Cultural Triangle before the rains arrive" },
     cities: [{temp:32,rain:136},{temp:33,rain:78},{temp:33,rain:96},{temp:32,rain:95},{temp:30,rain:130},{temp:23,rain:82},{temp:31,rain:143},{temp:31,rain:159}] },
-  { label: "APR", short: "APR", recommendation: "best", message: "The best time to travel",
+  { label: "APR", short: "APR", recommendation: "best", message: "The best time to travel", crowd: 3,
+    summary: "Sinhala and Tamil New Year brings local festivities; showers begin on the west coast but the Cultural Triangle stays dry.",
+    festivals: [{ emoji: "🎊", name: "Sinhala & Tamil New Year (Apr 13–14)" }],
+    tripLength: { duration: "7–10 days", note: "New Year festivities add colour — stay for at least a week" },
     cities: [{temp:32,rain:247},{temp:33,rain:171},{temp:33,rain:175},{temp:32,rain:153},{temp:30,rain:211},{temp:24,rain:180},{temp:31,rain:239},{temp:32,rain:316}] },
-  { label: "MAY", short: "MAY", recommendation: "good", message: "A good time to travel, but there may be some factors to be aware of",
+  { label: "MAY", short: "MAY", recommendation: "good", message: "A good time to travel, but there may be some factors to be aware of", crowd: 1,
+    summary: "The southwest monsoon arrives on the west coast — great for the Cultural Triangle and a good time to find deals.",
+    festivals: [{ emoji: "🪔", name: "Vesak Full Moon Poya" }],
+    tripLength: { duration: "7–10 days", note: "Focus on the Cultural Triangle; east coast begins to open" },
     cities: [{temp:31,rain:361},{temp:33,rain:92},{temp:32,rain:91},{temp:32,rain:84},{temp:29,rain:228},{temp:21,rain:180},{temp:30,rain:307},{temp:30,rain:440}] },
-  { label: "JUN", short: "JUN", recommendation: "good", message: "A good time to travel, but there may be some factors to be aware of",
+  { label: "JUN", short: "JUN", recommendation: "good", message: "A good time to travel, but there may be some factors to be aware of", crowd: 1,
+    summary: "West coast beaches are quiet and wet; the east coast opens up with calm seas for Trincomalee and Arugam Bay.",
+    festivals: [{ emoji: "🏛️", name: "Poson Poya — Mihintale Pilgrimage" }],
+    tripLength: { duration: "7–10 days", note: "East coast beaches + Poson Poya pilgrimage" },
     cities: [{temp:30,rain:208},{temp:32,rain:12},{temp:31,rain:17},{temp:31,rain:11},{temp:28,rain:173},{temp:19,rain:168},{temp:29,rain:192},{temp:30,rain:260}] },
-  { label: "JUL", short: "JUL", recommendation: "possible", message: "Travel is possible, but this is not the best time of year",
+  { label: "JUL", short: "JUL", recommendation: "possible", message: "Travel is possible, but this is not the best time of year", crowd: 2,
+    summary: "East coast peak — Arugam Bay surf season hits its stride; west coast is off-season and uncrowded with lower prices.",
+    festivals: [{ emoji: "🎺", name: "Vel Festival (Colombo)" }],
+    tripLength: { duration: "7–10 days", note: "East coast peak; west coast less appealing but very affordable" },
     cities: [{temp:30,rain:135},{temp:32,rain:32},{temp:31,rain:42},{temp:31,rain:47},{temp:27,rain:172},{temp:18,rain:175},{temp:29,rain:167},{temp:29,rain:204}] },
-  { label: "AUG", short: "AUG", recommendation: "possible", message: "Travel is possible, but this is not the best time of year",
+  { label: "AUG", short: "AUG", recommendation: "possible", message: "Travel is possible, but this is not the best time of year", crowd: 2,
+    summary: "Best month for east coast beaches and wildlife at Yala; expect significantly lower prices and fewer tourists island-wide.",
+    festivals: [{ emoji: "🐘", name: "Kandy Esala Perahera (10 nights)" }],
+    tripLength: { duration: "10–14 days", note: "Allow extra days for the Kandy Perahera — it's unmissable" },
     cities: [{temp:30,rain:103},{temp:33,rain:41},{temp:31,rain:37},{temp:32,rain:42},{temp:28,rain:163},{temp:18,rain:154},{temp:28,rain:177},{temp:29,rain:190}] },
-  { label: "SEP", short: "SEP", recommendation: "possible", message: "Travel is possible, but this is not the best time of year",
+  { label: "SEP", short: "SEP", recommendation: "possible", message: "Travel is possible, but this is not the best time of year", crowd: 1,
+    summary: "A quiet transition month with occasional showers across the island — good for deals, cultural sites, and fewer crowds.",
+    festivals: [],
+    tripLength: { duration: "7–10 days", note: "Good value island-wide; fewer tourists and lower prices" },
     cities: [{temp:30,rain:184},{temp:33,rain:71},{temp:32,rain:86},{temp:32,rain:95},{temp:28,rain:176},{temp:21,rain:169},{temp:29,rain:222},{temp:29,rain:310}] },
-  { label: "OCT", short: "OCT", recommendation: "possible", message: "Travel is possible, but this is not the best time of year",
+  { label: "OCT", short: "OCT", recommendation: "possible", message: "Travel is possible, but this is not the best time of year", crowd: 1,
+    summary: "The northeast monsoon begins — the wettest and least-visited month, but prices hit their annual low across the island.",
+    festivals: [{ emoji: "✨", name: "Deepavali preparations begin" }],
+    tripLength: { duration: "5–7 days", note: "Keep it short; heavy rains limit access to many regions" },
     cities: [{temp:30,rain:360},{temp:31,rain:239},{temp:31,rain:264},{temp:30,rain:253},{temp:28,rain:323},{temp:19,rain:245},{temp:29,rain:354},{temp:29,rain:431}] },
-  { label: "NOV", short: "NOV", recommendation: "possible", message: "Travel is possible, but this is not the best time of year",
+  { label: "NOV", short: "NOV", recommendation: "possible", message: "Travel is possible, but this is not the best time of year", crowd: 2,
+    summary: "Rain eases toward month's end as the season begins to turn — a great time to arrive ahead of the December rush.",
+    festivals: [{ emoji: "✨", name: "Deepavali / Diwali" }],
+    tripLength: { duration: "7–10 days", note: "Rains ease late in the month; good timing to arrive early" },
     cities: [{temp:30,rain:318},{temp:30,rain:247},{temp:30,rain:265},{temp:29,rain:271},{temp:27,rain:340},{temp:20,rain:236},{temp:29,rain:316},{temp:30,rain:359}] },
-  { label: "DEC", short: "DEC", recommendation: "good", message: "A good time to travel, but there may be some factors to be aware of",
+  { label: "DEC", short: "DEC", recommendation: "good", message: "A good time to travel, but there may be some factors to be aware of", crowd: 5,
+    summary: "High season returns with Christmas and New Year bringing peak prices and packed beaches — but the weather is superb.",
+    festivals: [{ emoji: "🎄", name: "Christmas" }, { emoji: "🎆", name: "New Year's Eve" }],
+    tripLength: { duration: "10–14 days", note: "Book early — Christmas and New Year demand is extremely high" },
     cities: [{temp:30,rain:160},{temp:29,rain:225},{temp:29,rain:279},{temp:28,rain:328},{temp:27,rain:262},{temp:19,rain:228},{temp:29,rain:192},{temp:30,rain:218}] },
 ];
 
@@ -81,13 +123,23 @@ const ACTIVITIES: ActivityRow[] = [
 ];
 
 const LIVE_CITIES = [
-  { name: "Colombo", lat: 6.93, lon: 79.86 },
-  { name: "Kandy",   lat: 7.29, lon: 80.63 },
-  { name: "Galle",   lat: 6.03, lon: 80.22 },
+  { name: "Colombo",      lat: 6.93, lon: 79.86 },
+  { name: "Kandy",        lat: 7.29, lon: 80.63 },
+  { name: "Ella",         lat: 6.87, lon: 81.05 },
+  { name: "Galle",        lat: 6.03, lon: 80.22 },
+  { name: "Trincomalee",  lat: 8.57, lon: 81.23 },
 ];
 
 const MAX_TEMP = 40;
 const MAX_RAIN = 500;
+
+const CROWD_CONFIG: Record<number, { label: string; color: string; bg: string }> = {
+  1: { label: "Very Low",  color: "#4A8C6F", bg: "rgba(74,140,111,0.12)" },
+  2: { label: "Low",       color: "#5A9E7A", bg: "rgba(90,158,122,0.12)" },
+  3: { label: "Moderate",  color: "#B8903A", bg: "rgba(184,144,58,0.12)" },
+  4: { label: "Busy",      color: "#C4733A", bg: "rgba(196,115,58,0.12)" },
+  5: { label: "Peak",      color: "#B84A2E", bg: "rgba(184,74,46,0.12)" },
+};
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -143,7 +195,7 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
     style={{ backgroundColor: "#F5F5F0", border: "1px solid rgba(12,36,33,0.07)" }}
   >
     <div className="overflow-x-auto scrollbar-none">
-      <div style={{ minWidth: "640px" }}>
+      <div style={{ minWidth: "720px" }}>
 
         {/* Month header row */}
         <div
@@ -151,7 +203,7 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
           style={{ borderBottom: "1px solid rgba(12,36,33,0.07)" }}
         >
           <div
-            style={{ width: 196, flexShrink: 0, padding: "14px 20px", display: "flex", alignItems: "flex-end" }}
+            style={{ width: 236, flexShrink: 0, padding: "14px 20px", display: "flex", alignItems: "flex-end" }}
           >
             <span
               style={{
@@ -201,23 +253,23 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
             {/* Label */}
             <div
               style={{
-                width: 196,
+                width: 236,
                 flexShrink: 0,
-                padding: "10px 20px",
+                padding: "12px 20px",
                 display: "flex",
                 flexDirection: "column",
-                gap: 2,
+                gap: 3,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 14, lineHeight: 1 }}>{activity.icon}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                <span style={{ fontSize: 20, lineHeight: 1 }}>{activity.icon}</span>
                 <span
                   style={{
-                    fontSize: 12,
+                    fontSize: 18,
                     fontWeight: 600,
                     color: "#0C2421",
                     lineHeight: 1.25,
-                    fontFamily: '"DM Sans", sans-serif',
+                    fontFamily: '"Instrument Serif", serif',
                   }}
                 >
                   {activity.name}
@@ -225,9 +277,9 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
               </div>
               <span
                 style={{
-                  fontSize: 10,
+                  fontSize: 12.1,
                   color: "#8A7E74",
-                  paddingLeft: 22,
+                  paddingLeft: 29,
                   fontFamily: '"DM Sans", sans-serif',
                   lineHeight: 1.3,
                 }}
@@ -237,7 +289,7 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
             </div>
 
             {/* Bar chart */}
-            <div className="flex-1 relative" style={{ height: 54 }}>
+            <div className="flex-1 relative" style={{ height: 66 }}>
               {/* Current-month column highlight */}
               <div
                 style={{
@@ -270,7 +322,7 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
                       width: `calc(${widthPct}% - 4px)`,
                       top: "50%",
                       transform: "translateY(-50%)",
-                      height: 28,
+                      height: 32,
                       backgroundColor: bg,
                       borderRadius: 999,
                       display: "flex",
@@ -285,7 +337,7 @@ const ActivityCalendar: React.FC<{ currentMonth: number }> = ({ currentMonth }) 
                       <span
                         style={{
                           color: "rgba(255,255,255,0.88)",
-                          fontSize: 9,
+                          fontSize: 10.9,
                           fontWeight: 600,
                           letterSpacing: "0.03em",
                           whiteSpace: "nowrap",
@@ -393,7 +445,7 @@ const ClimateGuideSection: React.FC = () => {
               className="flex items-center p-1 rounded-full"
               style={{ backgroundColor: "#EDEAE4" }}
             >
-              {(["month", "activity"] as const).map((mode) => (
+              {(["activity", "month"] as const).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
@@ -586,8 +638,9 @@ const ClimateGuideSection: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 8 }}
                     transition={{ duration: 0.25 }}
-                    className="mb-[50px] text-left pt-[30px]"
+                    className="mb-[36px] text-left pt-[30px]"
                   >
+                    {/* Headline */}
                     <p
                       className="text-[24px] text-black font-extrabold flex flex-wrap"
                       style={{ fontFamily: "LLIvory" }}
@@ -606,6 +659,86 @@ const ClimateGuideSection: React.FC = () => {
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
                       />
                     </motion.svg>
+
+                    {/* Plain-language summary */}
+                    <p
+                      className="mt-4 text-[15px] leading-relaxed"
+                      style={{
+                        color: "#5A5046",
+                        fontFamily: '"DM Sans", sans-serif',
+                        maxWidth: 560,
+                      }}
+                    >
+                      {month.summary}
+                    </p>
+
+                    {/* Bottom info row: crowd + festivals + trip length */}
+                    <div className="flex flex-wrap gap-3 mt-5">
+
+                      {/* Crowd indicator */}
+                      {(() => {
+                        const cfg = CROWD_CONFIG[month.crowd];
+                        return (
+                          <div
+                            className="inline-flex items-center gap-3 px-4 py-2 rounded-full"
+                            style={{ backgroundColor: cfg.bg, border: `1px solid ${cfg.color}33` }}
+                          >
+                            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>
+                              Crowds
+                            </span>
+                            <div className="flex items-center gap-[5px]">
+                              {[1, 2, 3, 4, 5].map((n) => (
+                                <div key={n} style={{ width: n <= month.crowd ? 8 : 6, height: n <= month.crowd ? 8 : 6, borderRadius: "50%", backgroundColor: n <= month.crowd ? cfg.color : "#D5D0CA", transition: "all 0.2s ease" }} />
+                              ))}
+                            </div>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: cfg.color, fontFamily: '"DM Sans", sans-serif' }}>
+                              {cfg.label}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Trip length */}
+                      <div
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                        style={{ backgroundColor: "rgba(12,36,33,0.05)", border: "1px solid rgba(12,36,33,0.10)" }}
+                      >
+                        <span style={{ fontSize: 14 }}>🗓️</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#0C2421", fontFamily: '"DM Sans", sans-serif' }}>
+                          {month.tripLength.duration}
+                        </span>
+                        <span style={{ width: 1, height: 12, backgroundColor: "rgba(12,36,33,0.15)", display: "inline-block" }} />
+                        <span style={{ fontSize: 11, color: "#8A7E74", fontFamily: '"DM Sans", sans-serif' }}>
+                          {month.tripLength.note}
+                        </span>
+                      </div>
+
+                    </div>
+
+                    {/* Festivals */}
+                    {month.festivals.length > 0 && (
+                      <div
+                        className="flex flex-wrap items-center gap-2 mt-3 px-4 py-3 rounded-xl"
+                        style={{ backgroundColor: "rgba(196,135,58,0.07)", border: "1px solid rgba(196,135,58,0.18)" }}
+                      >
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C4873A", fontFamily: '"DM Sans", sans-serif', marginRight: 4 }}>
+                          What's on
+                        </span>
+                        {month.festivals.map((f, fi) => (
+                          <React.Fragment key={fi}>
+                            {fi > 0 && <span style={{ color: "#D5D0CA", fontSize: 12 }}>·</span>}
+                            <span
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
+                              style={{ backgroundColor: "rgba(196,135,58,0.10)", fontSize: 12, color: "#5A4020", fontFamily: '"DM Sans", sans-serif', fontWeight: 500 }}
+                            >
+                              <span>{f.emoji}</span>
+                              <span>{f.name}</span>
+                            </span>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
+
                   </motion.div>
                 </AnimatePresence>
 
