@@ -223,7 +223,7 @@ export function useTourVariant(groupSlug: string, duration: number) {
           ...group,
           durationDays: variant?.durationDays ?? duration,
           vehicleRates: variant?.vehicleRates ?? [],
-          itinerary: Array.from({ length: variant?.durationDays ?? duration }, (_, i) => ({
+          itinerary: variant?.itinerary ?? Array.from({ length: variant?.durationDays ?? duration }, (_, i) => ({
             dayNumber: i + 1,
             title: `Day ${i + 1}`,
             location: '',

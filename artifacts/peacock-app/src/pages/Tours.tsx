@@ -205,11 +205,18 @@ function TourGroupCard({ group, travellers, activeDuration }: { group: any; trav
 
       {/* Body */}
       <div className="p-5">
-        {/* Regions */}
+        {/* Best for */}
+        {group.bestFor && (
+          <p className="font-body text-xs text-warm-400 mb-3">
+            <span className="font-semibold text-warm-500">Best for:</span> {group.bestFor}
+          </p>
+        )}
+
+        {/* Highlight pills */}
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {group.regions?.slice(0, 2).map((r: string) => (
-            <span key={r} className="px-2.5 py-1 bg-warm-50 rounded-pill text-xs font-medium text-warm-400 font-body">
-              {r}
+          {(group.highlights ?? group.regions ?? []).slice(0, 4).map((h: string) => (
+            <span key={h} className="px-2.5 py-1 bg-warm-50 rounded-pill text-xs font-medium text-warm-400 font-body">
+              {h}
             </span>
           ))}
         </div>
