@@ -46,7 +46,7 @@ export default function Home() {
             <h1 className="text-[2.88rem] sm:text-[3.6rem] md:text-[5.4rem] lg:text-[86px] font-display font-normal text-white mb-5 md:mb-7 tracking-tight leading-[1.08] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
               Experience Sri Lanka's <br className="hidden sm:block" /> beauty like a <em className="italic">true native</em>
             </h1>
-            <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed mb-8 md:mb-10">
+            <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-[30px] mb-8 md:mb-10">
               Plan a Sri Lanka trip with local experts. Custom itineraries, concierge drivers, transparent pricing.
             </P>
             <Button variant="amber" size="lg" className="text-base md:text-[17px] px-10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.28)]" asChild>
