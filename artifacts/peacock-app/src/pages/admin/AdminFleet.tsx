@@ -6,11 +6,11 @@ import { formatDate } from '@/lib/date-utils';
 import AdminLayout from './AdminLayout';
 
 const VEHICLES = [
-  { id: 'car', name: 'Car', model: 'Toyota Prius / Axio', image: '/vehicles/car-new.png', count: 3, dailyRate: 45, perKm: 0.15 },
-  { id: 'minivan', name: 'Minivan', model: 'Toyota KDH', image: '/vehicles/minivan-new.png', count: 4, dailyRate: 65, perKm: 0.20 },
-  { id: 'large-van', name: 'Large Van', model: 'Toyota HiAce', image: '/vehicles/large-minivan-new.png', count: 2, dailyRate: 85, perKm: 0.25 },
-  { id: 'small-bus', name: 'Small Bus', model: 'Rosa / Coaster', image: '/vehicles/small-bus-new.png', count: 1, dailyRate: 120, perKm: 0.35 },
-  { id: 'medium-bus', name: 'Medium Bus', model: 'Mitsubishi Rosa', image: '/vehicles/medium-bus-new.png', count: 1, dailyRate: 175, perKm: 0.45 },
+  { id: 'car', name: 'Car', model: 'Toyota Prius / Axio', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc850133576a0f0dd01_car.png', count: 3, dailyRate: 45, perKm: 0.15 },
+  { id: 'minivan', name: 'Minivan', model: 'Toyota KDH', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc866a9748d607bd3d6_mini%20van.png', count: 4, dailyRate: 65, perKm: 0.20 },
+  { id: 'large-van', name: 'Large Van', model: 'Toyota HiAce', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc90efd8b08fe8622af_lage%20mini%20van.png', count: 2, dailyRate: 85, perKm: 0.25 },
+  { id: 'small-bus', name: 'Small Bus', model: 'Rosa / Coaster', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc8f280f0165506a485_small%20bus.png', count: 1, dailyRate: 120, perKm: 0.35 },
+  { id: 'medium-bus', name: 'Medium Bus', model: 'Mitsubishi Rosa', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fb9d7a6b519f150e3394_Screenshot%202026-04-28%20at%2011.23%20Background%20Removed.55%E2%80%AFPM.png', count: 1, dailyRate: 175, perKm: 0.45 },
 ];
 
 const FAKE_CUSTOMERS = [

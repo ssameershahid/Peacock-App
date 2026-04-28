@@ -52,11 +52,11 @@ interface VehicleOption {
 // IDs and images align with /public/vehicles/ assets and vehicles.json
 const VEHICLE_OPTIONS: VehicleOption[] = [
   { id: 'any',        label: 'Any vehicle',  model: "We'll recommend the best fit", capacity: '',           image: '' },
-  { id: 'car',        label: 'Car / Sedan',  model: 'Toyota Prius',                 capacity: 'Recommended for up to 3 pax', image: '/vehicles/car-v2.png' },
-  { id: 'minivan',    label: 'Minivan',      model: 'Toyota HiAce',                 capacity: 'Recommended for up to 6 pax', image: '/vehicles/minivan-v2.png' },
-  { id: 'large-van',  label: 'Large Van',    model: 'Toyota HiAce HR',              capacity: 'Recommended for up to 10 pax', image: '/vehicles/large-van-v3.png' },
-  { id: 'small-bus',  label: 'Small Bus',    model: 'Toyota Coaster',               capacity: 'Recommended for up to 20 pax', image: '/vehicles/small-bus-v2.png' },
-  { id: 'medium-bus', label: 'Medium Bus',   model: 'King Long',                    capacity: 'Recommended for up to 35 pax', image: '/vehicles/medium-bus-v2.png' },
+  { id: 'car',        label: 'Car / Sedan',  model: 'Toyota Prius',                 capacity: 'Recommended for up to 3 pax', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc850133576a0f0dd01_car.png' },
+  { id: 'minivan',    label: 'Minivan',      model: 'Toyota HiAce',                 capacity: 'Recommended for up to 6 pax', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc866a9748d607bd3d6_mini%20van.png' },
+  { id: 'large-van',  label: 'Large Van',    model: 'Toyota HiAce HR',              capacity: 'Recommended for up to 10 pax', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc90efd8b08fe8622af_lage%20mini%20van.png' },
+  { id: 'small-bus',  label: 'Small Bus',    model: 'Toyota Coaster',               capacity: 'Recommended for up to 20 pax', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc8f280f0165506a485_small%20bus.png' },
+  { id: 'medium-bus', label: 'Medium Bus',   model: 'King Long',                    capacity: 'Recommended for up to 35 pax', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fb9d7a6b519f150e3394_Screenshot%202026-04-28%20at%2011.23%20Background%20Removed.55%E2%80%AFPM.png' },
 ];
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

@@ -1,10 +1,10 @@
 // Mock data fallbacks — used when API returns empty or fails
 export const VEHICLES: any[] = [
-  { id: 'car', name: 'Car', model: 'Toyota Prius', image: '/vehicles/car-new.png', capacity: '3–4 pax', maxPassengers: 4, maxLuggage: 3, luggageLabel: '2–3 suitcases', pricePerDay: 45 },
-  { id: 'minivan', name: 'Minivan', model: 'Toyota HiAce', image: '/vehicles/minivan-new.png', capacity: '6–7 pax', maxPassengers: 7, maxLuggage: 5, luggageLabel: '4–5 suitcases', pricePerDay: 65 },
-  { id: 'large-van', name: 'Large Minivan', model: 'Toyota HiAce HR', image: '/vehicles/large-minivan-new.png', capacity: 'up to 10 pax', maxPassengers: 10, maxLuggage: 10, luggageLabel: '6–10 suitcases', pricePerDay: 85 },
-  { id: 'small-bus', name: 'Small Bus', model: 'Toyota Coaster', image: '/vehicles/small-bus-new.png', capacity: 'up to 20 pax', maxPassengers: 20, maxLuggage: 15, luggageLabel: '10–15 suitcases', pricePerDay: 120 },
-  { id: 'medium-bus', name: 'Medium Bus', model: 'King Long', image: '/vehicles/medium-bus-new.png', capacity: 'up to 35 pax', maxPassengers: 35, maxLuggage: 25, luggageLabel: 'up to 25 suitcases', pricePerDay: 175 },
+  { id: 'car', name: 'Car', model: 'Toyota Prius', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc850133576a0f0dd01_car.png', capacity: '3–4 pax', maxPassengers: 4, maxLuggage: 3, luggageLabel: '2–3 suitcases', pricePerDay: 45 },
+  { id: 'minivan', name: 'Minivan', model: 'Toyota HiAce', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc866a9748d607bd3d6_mini%20van.png', capacity: '6–7 pax', maxPassengers: 7, maxLuggage: 5, luggageLabel: '4–5 suitcases', pricePerDay: 65 },
+  { id: 'large-van', name: 'Large Minivan', model: 'Toyota HiAce HR', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc90efd8b08fe8622af_lage%20mini%20van.png', capacity: 'up to 10 pax', maxPassengers: 10, maxLuggage: 10, luggageLabel: '6–10 suitcases', pricePerDay: 85 },
+  { id: 'small-bus', name: 'Small Bus', model: 'Toyota Coaster', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fcc8f280f0165506a485_small%20bus.png', capacity: 'up to 20 pax', maxPassengers: 20, maxLuggage: 15, luggageLabel: '10–15 suitcases', pricePerDay: 120 },
+  { id: 'medium-bus', name: 'Medium Bus', model: 'King Long', image: 'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f0fb9d7a6b519f150e3394_Screenshot%202026-04-28%20at%2011.23%20Background%20Removed.55%E2%80%AFPM.png', capacity: 'up to 35 pax', maxPassengers: 35, maxLuggage: 25, luggageLabel: 'up to 25 suitcases', pricePerDay: 175 },
 ];
 
 export const TOURS: any[] = [
