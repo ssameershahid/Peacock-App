@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { SectionHeading } from '@/components/shared/SectionHeading';
+import HowItWorksSteps from '@/components/peacock/HowItWorksSteps';
 import { MapView } from '@/components/shared/MapView';
 import { PlacesAutocomplete, type PlaceResult } from '@/components/shared/PlacesAutocomplete';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -381,7 +382,22 @@ export default function Transfers() {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-6">
+      <HowItWorksSteps steps={[
+        {
+          title: 'Choose your journey',
+          desc: 'Browse a selection of popular island-wide transfers or enter your own pickup & drop-off locations for a custom route.',
+        },
+        {
+          title: 'Select your vehicle',
+          desc: 'Select your vehicle, pickup time and number of passengers, and pay securely online. Stripe-powered checkout.',
+        },
+        {
+          title: 'Meet your driver',
+          desc: 'Your personal, English-speaking concierge driver arrives on time, ready to escort you to your destination in safety and comfort.',
+        },
+      ]} />
+
+      <div className="max-w-[1200px] mx-auto px-6 mt-16">
 
         {/* ── Airport pickup & drop-off ─────────────────────────────────── */}
         <div className="mb-16">

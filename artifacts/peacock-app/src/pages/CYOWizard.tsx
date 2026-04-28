@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import HowItWorksSteps from '@/components/peacock/HowItWorksSteps';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { VehicleSelector } from '@/components/shared/VehicleSelector';
@@ -890,7 +891,22 @@ export default function CYOWizard() {
         </div>
       </div>
 
-      <div className="max-w-[1000px] mx-auto px-6">
+      <HowItWorksSteps steps={[
+        {
+          title: 'Create your own journey',
+          desc: 'Use any of our Ready to Go templates as a starting point or build your very own dream journey using our Trip Wizard.',
+        },
+        {
+          title: 'Select your vehicle',
+          desc: 'Select your vehicle, number of travellers, and pay securely online. Stripe-powered checkout.',
+        },
+        {
+          title: 'Meet your driver',
+          desc: 'Your personal, English-speaking and Tourist Board-certified concierge driver arrives on time, ready to bring your bespoke Sri Lankan wish list to life.',
+        },
+      ]} />
+
+      <div className="max-w-[1000px] mx-auto px-6 mt-16">
 
         {/* Recovery banner */}
         {showRecovery && (

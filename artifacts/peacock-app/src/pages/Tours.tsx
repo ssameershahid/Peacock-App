@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { SectionHeading } from '@/components/shared/SectionHeading';
+import HowItWorksSteps from '@/components/peacock/HowItWorksSteps';
 import { useTourGroups } from '@/hooks/use-app-data';
 import { Button } from '@/components/ui/button';
 import { Map, SlidersHorizontal, ArrowRight, Clock, Users, ChevronDown, Minus, Plus } from 'lucide-react';
@@ -281,7 +282,22 @@ export default function Tours() {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-6">
+      <HowItWorksSteps steps={[
+        {
+          title: 'Choose your journey',
+          desc: 'Browse our selection of ready-made tours. Each tour has 5, 7, 10 & 14-day itineraries with the added option to select an alternative start and end location so you get the best experience whatever your timeframe is.',
+        },
+        {
+          title: 'Select your vehicle',
+          desc: 'Select your vehicle, number of travellers, and pay securely online. Stripe-powered checkout.',
+        },
+        {
+          title: 'Meet your driver',
+          desc: 'Your personal, English-speaking and Tourist Board-certified concierge driver arrives on time, ready to show you the real Sri Lanka.',
+        },
+      ]} />
+
+      <div className="max-w-[1200px] mx-auto px-6 mt-16">
         {/* Custom tour banner */}
         <Link href="/tours/custom" className="block mb-12">
           <div className="bg-sage rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 border border-forest-100 hover:shadow-card-hover transition-shadow cursor-pointer group">
