@@ -123,22 +123,31 @@ const TropicalParadiseSection: React.FC = () => {
             <Kicker className="text-primary mb-4">Our Philosophy</Kicker>
 
             <H2 className="text-4xl sm:text-5xl md:text-6xl leading-tight mb-8" style={{ color: "rgba(12, 36, 33, 1)" }}>
-              From far-flung coasts to ancient cities.
+              From exotic sun-kissed coasts to ancient cities
             </H2>
 
             <div className="space-y-5 text-base sm:text-lg text-muted-foreground font-light leading-relaxed max-w-lg mb-10">
               <p>
-                There's lots to think about and choose from—and that's where
-                our interactive trip planner comes in.
+                Sri Lanka offers an incredible variety in a single island —
+                golden beaches, wildlife, ancient cities and spectacular scenery
+                including 8 UNESCO World Heritage Sites.
               </p>
               <p>
-                Put just like flip-flops and sandy toes, or maps and big
-                dreams, some things are better together. Enter, our team of
-                travel experts who will turn your dreams into reality.
+                With Peacock Drivers, you have the tools to create your unique
+                Sri Lankan experience. Our hand-picked chauffeur drivers are at
+                the heart of what we do — think of them as your very own
+                personal concierge, combining the roles of driver, guide, and
+                local expert. They're there not just to take you from place
+                to place, but to enhance every moment of your trip and make it
+                truly unforgettable.
               </p>
               <p>
-                Go on, travel with Peacock and make your trip extraordinary
-                from beginning to end.
+                We believe travel should be flexible, not restrictive.
+                That's why you're free to choose your own accommodation
+                and make the most of your private vehicle and chauffeur
+                throughout your journey. Whether it's discovering hidden gems
+                or visiting must-see highlights, your experience is designed
+                around you — personal, seamless, and uniquely yours.
               </p>
             </div>
 

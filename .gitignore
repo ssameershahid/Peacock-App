@@ -48,8 +48,10 @@ Thumbs.db
 .cache/
 .local/
 
-# Environment secrets
+# Environment secrets (repo root `.env`; Vite reads same dir via envDir)
 .env
+.env.local
+.env.*.local
 
 # Package manager store
 .pnpm-store/

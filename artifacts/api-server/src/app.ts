@@ -12,6 +12,7 @@ app.set("trust proxy", 1);
 // CORS: support comma-separated FRONTEND_URL and Vercel preview URLs
 const allowedOrigins: (string | RegExp)[] = [
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://localhost:3000",
 ];
 if (process.env.FRONTEND_URL) {
