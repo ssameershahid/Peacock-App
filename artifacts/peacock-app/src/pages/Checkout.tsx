@@ -200,7 +200,7 @@ export default function Checkout() {
                       onChange={e => setContact({ ...contact, flightNumber: e.target.value })}
                       maxLength={80}
                       className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                      placeholder="Provide your flight number if available so we can track your arrival and adjust pickup time."
+                      placeholder="Help us track your arrival so we can adjust pickup time."
                     />
                   </div>
                 </div>
