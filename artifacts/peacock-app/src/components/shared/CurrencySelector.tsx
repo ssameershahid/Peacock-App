@@ -37,19 +37,19 @@ export function CurrencySelector({ variant = 'light' }: CurrencySelectorProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-modal border border-warm-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 top-full mt-2 min-w-[13.5rem] max-w-[min(100vw-2rem,18rem)] bg-white rounded-xl shadow-modal border border-warm-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
           {currencies.map((c) => (
             <button
               key={c.code}
               onClick={() => { setCurrency(c); setOpen(false); }}
               className={cn(
-                'w-full flex items-center gap-3 px-4 py-2.5 text-sm font-body hover:bg-warm-50 transition-colors',
+                'w-full flex items-center gap-3 px-4 py-2.5 text-sm font-body hover:bg-warm-50 transition-colors whitespace-nowrap',
                 c.code === currency.code ? 'bg-forest-50 text-forest-600 font-medium' : 'text-warm-600'
               )}
             >
-              <span className="text-lg">{c.flag}</span>
-              <span>{c.code}</span>
-              <span className="text-warm-400 text-xs ml-auto">{c.name}</span>
+              <span className="text-lg shrink-0">{c.flag}</span>
+              <span className="shrink-0">{c.code}</span>
+              <span className="text-warm-400 text-xs ml-auto truncate min-w-0">{c.name}</span>
             </button>
           ))}
         </div>

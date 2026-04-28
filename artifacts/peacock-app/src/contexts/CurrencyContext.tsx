@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { suggestedCurrencyCodeFromCountry } from '@/lib/geoCurrency';
 
 export type Currency = {
   code: string;
@@ -18,12 +19,12 @@ type CurrencyContextType = {
 
 const STORAGE_KEY = 'peacock_currency';
 const BASE_CURRENCIES: Currency[] = [
-  { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'British Pound', rate: 1 },
-  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'US Dollar', rate: 1.27 },
-  { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'Euro', rate: 1.17 },
-  { code: 'CAD', symbol: 'CA$', flag: '🇨🇦', name: 'Canadian Dollar', rate: 1.71 },
-  { code: 'AUD', symbol: 'A$', flag: '🇦🇺', name: 'Australian Dollar', rate: 1.95 },
-  { code: 'LKR', symbol: 'Rs', flag: '🇱🇰', name: 'Sri Lankan Rupee', rate: 380 },
+  { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'United Kingdom', rate: 1 },
+  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'United States', rate: 1.27 },
+  { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'Europe', rate: 1.17 },
+  { code: 'CAD', symbol: 'CA$', flag: '🇨🇦', name: 'Canada', rate: 1.71 },
+  { code: 'AUD', symbol: 'A$', flag: '🇦🇺', name: 'Australia', rate: 1.95 },
+  { code: 'LKR', symbol: 'Rs', flag: '🇱🇰', name: 'Sri Lanka', rate: 380 },
 ];
 
 const CurrencyContext = createContext<CurrencyContextType | null>(null);
@@ -44,6 +45,41 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrencyState] = useState<Currency>(
     getSavedCurrency() ?? BASE_CURRENCIES[0]
   );
+  const geoHintApplied = useRef(false);
+  const currenciesRef = useRef(currencies);
+  currenciesRef.current = currencies;
+
+  // First visit only (no saved currency): rough currency from Vercel geo — production + same-origin /api/geo only
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+    if (geoHintApplied.current) return;
+    try {
+      if (localStorage.getItem(STORAGE_KEY)) return;
+    } catch {
+      return;
+    }
+
+    fetch('/api/geo')
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data: { country: string | null }) => {
+        const code = suggestedCurrencyCodeFromCountry(data.country);
+        if (!code) return;
+        const match =
+          currenciesRef.current.find((c) => c.code === code) ??
+          BASE_CURRENCIES.find((c) => c.code === code);
+        if (!match) return;
+        geoHintApplied.current = true;
+        setCurrencyState(match);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(code));
+        } catch {
+          /* ignore */
+        }
+      })
+      .catch(() => {
+        /* dev / no Vercel headers / offline */
+      });
+  }, []);
 
   // Fetch live exchange rates from API on mount
   useEffect(() => {

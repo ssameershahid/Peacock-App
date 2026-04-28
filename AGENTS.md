@@ -22,3 +22,5 @@ These defaults are optimized for AI coding agents (and humans) working on apps t
   needed. Always curl https://ai-gateway.vercel.sh/v1/models first; never trust model IDs from memory
 - For durable agent loops or untrusted code: use Workflow (pause/resume/state) + Sandbox; use Vercel MCP for secure infra access
 <!-- VERCEL BEST PRACTICES END -->
+
+Peacock frontend (`artifacts/peacock-app`): currency auto-hint requires Vercel + `/api/geo` (reads `x-vercel-ip-country`); without that deployment, the hint is skipped.
