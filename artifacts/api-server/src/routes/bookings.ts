@@ -251,6 +251,7 @@ router.post("/", authenticate, async (req, res) => {
     passportNumber: z.string().optional(),
     hotelDetails: z.string().optional(),
     flightNumber: z.string().optional(),
+    arrivalTime: z.string().optional(),
   });
 
   const parsed = schema.safeParse(req.body);

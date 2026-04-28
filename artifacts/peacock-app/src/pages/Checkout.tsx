@@ -23,6 +23,8 @@ interface BookingData {
   addOnsTotal: number;
   selectedAddOns: { id: string; name: string; price: number }[];
   totalPrice: number;
+  flightNumber?: string;
+  arrivalTime?: string;
 }
 
 export default function Checkout() {
@@ -43,7 +45,13 @@ export default function Checkout() {
   useEffect(() => {
     const stored = sessionStorage.getItem('peacock_booking');
     if (stored) {
-      try { setBooking(JSON.parse(stored)); } catch { /* ignore */ }
+      try {
+        const parsed = JSON.parse(stored);
+        setBooking(parsed);
+        if (parsed.flightNumber) {
+          setContact(c => ({ ...c, flightNumber: parsed.flightNumber }));
+        }
+      } catch { /* ignore */ }
     }
   }, []);
 
@@ -83,7 +91,8 @@ export default function Checkout() {
         endDate: booking.endDate,
         numDays: booking.numDays,
         passengers: booking.passengers,
-        flightNumber: contact.flightNumber.trim() || undefined,
+        flightNumber: contact.flightNumber.trim() || booking.flightNumber || undefined,
+        arrivalTime: booking.arrivalTime || undefined,
         specialRequests: contact.requests || undefined,
         addOns: booking.selectedAddOns,
         pricingBreakdown: {

@@ -373,6 +373,8 @@ export default function Transfers() {
     childAges?: string[];
     luggage?: number;
     routeId?: string;
+    flightNumber?: string;
+    arrivalTime?: string;
   }) => {
     const data = {
       type: 'TRANSFER',
@@ -393,6 +395,8 @@ export default function Transfers() {
       addOnsTotal: 0,
       selectedAddOns: [],
       totalPrice: opts.price,
+      flightNumber: opts.flightNumber || undefined,
+      arrivalTime: opts.arrivalTime || undefined,
     };
     sessionStorage.setItem('peacock_booking', JSON.stringify(data));
     setLocation('/checkout');
@@ -499,6 +503,8 @@ export default function Transfers() {
                           children: opts.children,
                           childAges: opts.childAges,
                           luggage: opts.luggage,
+                          flightNumber: opts.flightNumber,
+                          arrivalTime: opts.arrivalTime,
                         });
                       }}
                       format={format}
@@ -589,6 +595,8 @@ export default function Transfers() {
                           children: opts.children,
                           childAges: opts.childAges,
                           luggage: opts.luggage,
+                          flightNumber: opts.flightNumber,
+                          arrivalTime: opts.arrivalTime,
                         });
                       }}
                       format={format}
