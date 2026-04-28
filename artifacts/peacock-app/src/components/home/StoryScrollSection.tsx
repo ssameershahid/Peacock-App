@@ -21,33 +21,25 @@ interface StoryBlock {
 
 const STORY_BLOCKS: StoryBlock[] = [
   {
-    kicker: "Rooted in the Island",
-    heading: "Gently rooted in timeless charm",
-    body: "Our story begins on the ancient roads of Sri Lanka, where history meets quiet, modern comfort. Blending heritage and design, inspired by old-world island life.",
+    kicker: "Concierge-level care",
+    heading: "Trusted concierge drivers",
+    body: "All of our drivers are specially selected Tourist board-certified professionals with expert local knowledge and a passion for showcasing the very best Sri Lanka has to offer. With us, you will have 24/7 all-inclusive access to your very own personal concierge service throughout your journey, allowing you to travel in safety and comfort.",
     image:
-      "https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6989df099e7a4a0b5ecbcd53_Screenshot%202026-02-09%20at%203.57.01%E2%80%AFPM.png",
+      "https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f03b1181c38d9d844422a9_Screenshot%202026-04-28%20at%209.43.54%E2%80%AFAM.png",
   },
   {
-    kicker: "Every Traveler Feels at Home",
-    heading: "Crafted for calm moments",
-    body: "We believe in genuine hospitality, details, and a slower way to travel. We keep things simple: good drivers, scenic routes, and moments that feel real.",
+    kicker: "Craft your perfect trip",
+    heading: "Immersive trip planning",
+    body: "Choose from a carefully curated selection of inspired tours highlighting the very pinnacle of Sri Lankan beauty or use our Trip Wizard to help you build your own unique dream holiday tour, just how you want it.",
     image:
-      "https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6989df190501fea92245c727_Screenshot%202026-02-09%20at%203.55.06%E2%80%AFPM.png",
+      "https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f03e01ad423f55b45fd6b1_Screenshot%202026-04-28%20at%209.56.28%E2%80%AFAM.png",
   },
   {
-    kicker: "Rooted in the Island",
-    heading: "Created for life-long memories",
-    body: "Just like flip-flops and sandy toes, or maps and big dreams, some things are better together. Enter, our team of travel experts who will turn your dreams into reality.",
+    kicker: "Honest, upfront pricing",
+    heading: "Transparent pricing on your terms",
+    body: "Whether you are looking to book a curated tour or build your own, we have options to suit all budget ranges and timeframes, and with immediate, transparent and all-inclusive pricing, you know exactly what to expect from the start and can have peace of mind and assurance and relax and enjoy your holiday with no surprises.",
     image:
-      "https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6989c9da9422f8c13806555f_Screenshot%202026-02-09%20at%204.49.15%E2%80%AFPM.png",
-  },
-  {
-    kicker: "Warm Welcome Every Time",
-    heading: "Where adventure meets ease",
-    body: "Natural landscapes, golden light, and timeless textures shape every mile of your journey. Locally crafted itineraries with an unhurried, balanced pace.",
-    image:
-      "https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/6989df2274d427fd46cdd3f3_Screenshot%202026-02-09%20at%203.55.33%E2%80%AFPM.png",
-    cta: { label: "Start Planning", href: "/tours/custom" },
+      "https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f03b1aa1f9a564cd723048_Screenshot%202026-04-28%20at%209.43.31%E2%80%AFAM.png",
   },
 ];
 
