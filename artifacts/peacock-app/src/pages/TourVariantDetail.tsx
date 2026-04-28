@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useTourVariant, useTourGroups, useVehicles } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -10,7 +10,8 @@ import { haversineKm, calcLocationSurcharge } from '@/lib/haversine';
 import { SRI_LANKA_CITIES, findCity, type SLCity } from '@/lib/sriLankaCities';
 import {
   MapPin, Clock, Calendar as CalendarIcon, Users, Check, X,
-  ChevronDown, ChevronUp, Shield, ArrowRight, AlertCircle, Navigation,
+  ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
+  Shield, ArrowRight, AlertCircle, Navigation,
   Mail, Bookmark, BookmarkCheck, Sparkles, Maximize2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -401,6 +402,40 @@ export default function TourVariantDetail() {
   const [selectedAddOns, setSelectedAddOns] = useState<Record<string, boolean>>({});
 
   const startDateRef = useRef<HTMLInputElement>(null);
+  const vehicleScrollRef = useRef<HTMLDivElement>(null);
+  const [vehicleScrollState, setVehicleScrollState] = useState({ canLeft: false, canRight: true });
+
+  const syncVehicleScrollState = useCallback(() => {
+    const el = vehicleScrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    const max = scrollWidth - clientWidth;
+    setVehicleScrollState({
+      canLeft: scrollLeft > 2,
+      canRight: max > 2 && scrollLeft < max - 2,
+    });
+  }, []);
+
+  useEffect(() => {
+    syncVehicleScrollState();
+    const el = vehicleScrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', syncVehicleScrollState, { passive: true });
+    const ro = new ResizeObserver(syncVehicleScrollState);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', syncVehicleScrollState);
+      ro.disconnect();
+    };
+  }, [vehicles, syncVehicleScrollState]);
+
+  const scrollVehicleRow = (dir: 'prev' | 'next') => {
+    const el = vehicleScrollRef.current;
+    if (!el) return;
+    const step = Math.max(Math.round(el.clientWidth * 0.75), 160);
+    el.scrollBy({ left: dir === 'next' ? step : -step, behavior: 'smooth' });
+  };
+
   const [mapExpanded, setMapExpanded] = useState(false);
 
   // Close map lightbox on Escape
@@ -801,6 +836,33 @@ export default function TourVariantDetail() {
           <div className="sticky top-24 bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-warm-100 p-6 flex flex-col gap-5">
             <h3 className="font-display text-2xl text-forest-600">Book this tour</h3>
 
+            {/* Duration — 4-pill selector */}
+            <div>
+              <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
+                Duration: <span className="text-amber-500">{duration} days / {duration - 1} nights</span>
+              </label>
+              <div className="grid grid-cols-4 gap-1.5 p-1 bg-warm-50 rounded-xl border border-warm-100">
+                {DURATIONS.map(d => {
+                  const exists = availableDurations.length === 0 || availableDurations.includes(d);
+                  if (!exists) return null;
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => switchDuration(d)}
+                      className={`py-2 rounded-lg font-body text-sm font-medium transition-all ${
+                        duration === d
+                          ? 'bg-forest-500 text-white shadow-sm'
+                          : 'text-warm-500 hover:text-forest-600 hover:bg-white'
+                      }`}
+                    >
+                      {d}d
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="font-body text-xs text-warm-400 mt-1.5">Switch duration to see a different itinerary</p>
+            </div>
+
             {/* Start Date + End Date */}
             <div className="flex flex-col gap-3">
               <div>
@@ -844,37 +906,35 @@ export default function TourVariantDetail() {
               </div>
             </div>
 
-            {/* Duration — 4-pill selector */}
-            <div>
-              <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
-                Duration: <span className="text-amber-500">{duration} days / {duration - 1} nights</span>
-              </label>
-              <div className="grid grid-cols-4 gap-1.5 p-1 bg-warm-50 rounded-xl border border-warm-100">
-                {DURATIONS.map(d => {
-                  const exists = availableDurations.length === 0 || availableDurations.includes(d);
-                  if (!exists) return null;
-                  return (
-                    <button
-                      key={d}
-                      onClick={() => switchDuration(d)}
-                      className={`py-2 rounded-lg font-body text-sm font-medium transition-all ${
-                        duration === d
-                          ? 'bg-forest-500 text-white shadow-sm'
-                          : 'text-warm-500 hover:text-forest-600 hover:bg-white'
-                      }`}
-                    >
-                      {d}d
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="font-body text-xs text-warm-400 mt-1.5">Switch duration to see a different itinerary</p>
-            </div>
-
             {/* Vehicle */}
             <div>
-              <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Vehicle</label>
-              <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-none -mx-1 px-1">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <span className="text-sm font-medium text-forest-600 font-body">Vehicle</span>
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <button
+                    type="button"
+                    aria-label="Scroll vehicles left"
+                    disabled={!vehicleScrollState.canLeft}
+                    onClick={() => scrollVehicleRow('prev')}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-warm-200 bg-warm-50 text-forest-600 transition-colors hover:bg-warm-100 disabled:pointer-events-none disabled:opacity-30"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Scroll vehicles right"
+                    disabled={!vehicleScrollState.canRight}
+                    onClick={() => scrollVehicleRow('next')}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-warm-200 bg-warm-50 text-forest-600 transition-colors hover:bg-warm-100 disabled:pointer-events-none disabled:opacity-30"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <div
+                ref={vehicleScrollRef}
+                className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-none -mx-1 px-1"
+              >
                 {vehicles?.map((v: any) => (
                   <div
                     key={v.id}

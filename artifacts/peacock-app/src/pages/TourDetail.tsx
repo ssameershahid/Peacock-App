@@ -249,21 +249,6 @@ export default function TourDetail() {
             <h3 className="font-display text-2xl text-forest-600">Book this tour</h3>
 
             <div>
-              <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start Date</label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                <input
-                  type="date"
-                  lang="en-GB"
-                  min={minDateStr}
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                  className="w-full bg-warm-50 border border-warm-200 rounded-xl py-2.5 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">
                 Duration: <span className="text-amber-200">{totalDays} days</span>
               </label>
@@ -288,6 +273,21 @@ export default function TourDetail() {
                   {extraDays > 0 ? `+${extraDays} extra` : `${extraDays}`} days from standard {tour.durationDays}-day itinerary
                 </p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start Date</label>
+              <div className="relative">
+                <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                <input
+                  type="date"
+                  lang="en-GB"
+                  min={minDateStr}
+                  value={startDate}
+                  onChange={e => setStartDate(e.target.value)}
+                  className="w-full bg-warm-50 border border-warm-200 rounded-xl py-2.5 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                />
+              </div>
             </div>
 
             <div>
