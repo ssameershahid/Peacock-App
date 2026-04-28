@@ -11,7 +11,7 @@ import { SRI_LANKA_CITIES, findCity, type SLCity } from '@/lib/sriLankaCities';
 import {
   MapPin, Clock, Calendar as CalendarIcon, Users, Check, X,
   ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-  Shield, ArrowRight, AlertCircle, Navigation,
+  Shield, ArrowRight, AlertCircle, Navigation, Plane,
   Mail, Bookmark, BookmarkCheck, Sparkles, Maximize2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -446,6 +446,9 @@ export default function TourVariantDetail() {
     return () => document.removeEventListener('keydown', handler);
   }, [mapExpanded]);
 
+  const [flightNumber, setFlightNumber] = useState('');
+  const [arrivalTime, setArrivalTime] = useState('');
+
   // Alternative location state
   const [showAltLocation, setShowAltLocation] = useState(false);
   const [altStartCity, setAltStartCity] = useState<SLCity | null>(null);
@@ -553,6 +556,8 @@ export default function TourVariantDetail() {
       customEndLocation: altEndCity ? { name: altEndCity.name, surcharge: endSurcharge } : null,
       locationSurcharge: locationSurchargeTotal,
       totalPrice,
+      flightNumber: flightNumber.trim() || undefined,
+      arrivalTime: arrivalTime.trim() || undefined,
     };
     sessionStorage.setItem('peacock_booking', JSON.stringify(bookingData));
     setLocation('/checkout');
@@ -1037,6 +1042,34 @@ export default function TourVariantDetail() {
                 </div>
               </div>
             )}
+
+            {/* Flight details */}
+            <div className="border-t border-warm-100 pt-4">
+              <p className="font-body text-sm font-medium text-forest-600 mb-0.5">Flight details <span className="text-warm-400 font-normal">(Optional)</span></p>
+              <p className="font-body text-xs text-warm-400 mb-3">Help us track your arrival so we can adjust pickup time.</p>
+              <div className="space-y-3">
+                <div className="relative">
+                  <Plane className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                  <input
+                    type="text"
+                    value={flightNumber}
+                    onChange={e => setFlightNumber(e.target.value)}
+                    maxLength={80}
+                    placeholder="Flight number (e.g. EK651)"
+                    className="w-full bg-white border border-warm-200 rounded-xl py-2.5 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                  />
+                </div>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                  <input
+                    type="time"
+                    value={arrivalTime}
+                    onChange={e => setArrivalTime(e.target.value)}
+                    className="w-full bg-white border border-warm-200 rounded-xl py-2.5 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
 
             {/* Price summary */}
             <div className="border-t border-warm-100 pt-4 space-y-2">

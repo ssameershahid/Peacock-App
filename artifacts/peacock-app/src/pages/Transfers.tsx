@@ -21,6 +21,8 @@ interface RouteOptions {
   children: number;
   childAges: string[];
   luggage: number;
+  flightNumber: string;
+  arrivalTime: string;
 }
 
 const DEFAULT_ROUTE_OPTIONS: RouteOptions = {
@@ -30,6 +32,8 @@ const DEFAULT_ROUTE_OPTIONS: RouteOptions = {
   children: 0,
   childAges: [],
   luggage: 2,
+  flightNumber: '',
+  arrivalTime: '',
 };
 
 // ── Stepper ───────────────────────────────────────────────────────────────────
@@ -255,6 +259,34 @@ function BookingPanel({
             )}
           </div>
         )}
+      </div>
+
+      {/* Flight details */}
+      <div className="border-t border-warm-100 pt-4">
+        <p className="font-body text-sm font-medium text-forest-600 mb-0.5">Flight details <span className="text-warm-400 font-normal">(Optional)</span></p>
+        <p className="font-body text-xs text-warm-400 mb-3">Help us track your arrival so we can adjust pickup time.</p>
+        <div className="space-y-2">
+          <div className="relative">
+            <Plane className="absolute left-3 top-2.5 w-3.5 h-3.5 text-warm-400" />
+            <input
+              type="text"
+              value={options.flightNumber}
+              onChange={e => onPatch({ flightNumber: e.target.value })}
+              maxLength={80}
+              placeholder="Flight number (e.g. EK651)"
+              className="w-full bg-white border border-warm-200 rounded-xl py-2 pl-9 pr-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+            />
+          </div>
+          <div className="relative">
+            <Clock className="absolute left-3 top-2.5 w-3.5 h-3.5 text-warm-400" />
+            <input
+              type="time"
+              value={options.arrivalTime}
+              onChange={e => onPatch({ arrivalTime: e.target.value })}
+              className="w-full bg-white border border-warm-200 rounded-xl py-2 pl-9 pr-3 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
+            />
+          </div>
+        </div>
       </div>
 
       {/* CTA */}

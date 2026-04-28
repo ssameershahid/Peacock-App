@@ -6,13 +6,14 @@ import { VehicleSelector } from '@/components/shared/VehicleSelector';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
 import {
   Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft,
-  RotateCcw, MapPin, Car, Users, Plane,
+  RotateCcw, MapPin, Car, Users, Plane, Clock,
   Bookmark, Mail, Download, X, Loader2, Eye, Minus, Plus, Maximize2,
 } from 'lucide-react';
 import { useVehicles, useTourGroups, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip } from '@/hooks/use-app-data';
 import { ItineraryBuilder, itineraryToMapMarkers, type ItineraryDay } from '@/components/wizard/ItineraryBuilder';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
 import { analytics, trackEvent } from '@/lib/analytics';
 
@@ -80,6 +81,7 @@ type WizardSelections = {
   interests: string[];
   specialRequests: string;
   flightNumber: string;
+  arrivalTime: string;
   name: string;
   email: string;
   phone: string;
@@ -108,6 +110,7 @@ const DEFAULT_SELECTIONS: WizardSelections = {
   interests: [],
   specialRequests: '',
   flightNumber: '',
+  arrivalTime: '',
   name: '',
   email: '',
   phone: '',
@@ -170,6 +173,7 @@ function autoVehicle(totalPax: number, vehicleList: any[]): string {
 
 export default function CYOWizard() {
   const [step, setStep] = useState(1);
+  const { format } = useCurrency();
   const { data: vehicles } = useVehicles();
   const { data: tourGroups, isLoading: isLoadingGroups } = useTourGroups();
   const { user, login, register } = useAuth();
@@ -709,6 +713,7 @@ export default function CYOWizard() {
             ${selections.flexibleDates ? `<p><strong>Date flexibility:</strong> Yes</p>` : ''}
             ${selections.specialRequests ? `<p><strong>Special requests:</strong> ${selections.specialRequests}</p>` : ''}
             ${selections.flightNumber.trim() ? `<p><strong>Flight number:</strong> ${selections.flightNumber.trim()}</p>` : ''}
+            ${selections.arrivalTime ? `<p><strong>Scheduled arrival time:</strong> ${selections.arrivalTime}</p>` : ''}
           </div>
 
           <h2>Selected Destinations</h2>
@@ -779,6 +784,7 @@ export default function CYOWizard() {
         interests: selections.interests,
         specialRequests: selections.specialRequests || undefined,
         flightNumber: selections.flightNumber.trim() || undefined,
+        arrivalTime: selections.arrivalTime.trim() || undefined,
       });
       const ref = result.referenceCode || result.id || `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`;
       setCyoRef(ref);
@@ -1342,8 +1348,8 @@ export default function CYOWizard() {
               <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                 <h2 className="font-display text-3xl text-forest-600 mb-8">Who's travelling & when?</h2>
 
-                {/* ── Travellers + Vehicle ── */}
-                <div className="grid md:grid-cols-2 gap-10 mb-10 pb-10 border-b border-warm-100">
+                {/* ── Row 1: Travellers + Dates side by side ── */}
+                <div className="grid md:grid-cols-2 gap-10 mb-10">
                   {/* Travellers */}
                   <div>
                     <label className="block text-sm font-medium text-forest-600 mb-4 font-body">Who's travelling?</label>
@@ -1413,64 +1419,111 @@ export default function CYOWizard() {
                     </div>
                   </div>
 
-                  {/* Vehicle */}
-                  <div>
-                    <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Vehicle</label>
-                    <VehicleSelector
-                      vehicles={vehicles || []}
-                      selected={selections.vehicle}
-                      onSelect={(id) => setSelections(s => ({ ...s, vehicle: id }))}
-                    />
-                    <p className="font-body text-xs text-warm-400 mt-3">
-                      <span className="text-forest-500 font-medium">Auto-selected</span> based on {selections.pax} traveller{selections.pax !== 1 ? 's' : ''} — you can override above
-                    </p>
+                  {/* Start date + Trip duration */}
+                  <div className="space-y-5">
+                    <div>
+                      <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date</label>
+                      <input
+                        type="date"
+                        lang="en-GB"
+                        value={selections.startDate}
+                        min={new Date().toISOString().split('T')[0]}
+                        onChange={e => setSelections(s => ({ ...s, startDate: e.target.value }))}
+                        onKeyDown={e => e.preventDefault()}
+                        className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
+                      />
+                      <label className="flex items-center gap-3 mt-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selections.flexibleDates}
+                          onChange={e => setSelections(s => ({ ...s, flexibleDates: e.target.checked }))}
+                          className="w-4 h-4 rounded accent-forest-600"
+                        />
+                        <span className="font-body text-sm text-warm-600">My dates are flexible</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Trip duration</label>
+                      <div className="flex items-center gap-3 bg-warm-50 border border-warm-200 rounded-xl py-3 px-4">
+                        <Calendar className="w-4 h-4 text-forest-500 shrink-0" />
+                        <span className="font-body text-sm text-forest-600 font-medium">{displayDays} day{displayDays !== 1 ? 's' : ''}</span>
+                        <span className="font-body text-xs text-warm-400">
+                          — {selections.tripType === 'scratch' ? 'from your itinerary' : 'from your template'}
+                        </span>
+                      </div>
+                      {selections.startDate && endDate && (
+                        <div className="mt-3 bg-sage rounded-xl p-4">
+                          <p className="font-body text-xs text-warm-500 mb-1">Your trip window</p>
+                          <p className="font-body text-sm text-forest-600 font-medium">{fmtDate(selections.startDate)} → {fmtDate(endDate)}</p>
+                          <p className="font-body text-xs text-warm-400 mt-1">{displayDays} days · {displayDays - 1} nights</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* ── Dates ── */}
-                <div className="grid md:grid-cols-2 gap-10">
-                  <div>
-                    <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date</label>
-                    <input
-                      type="date"
-                      lang="en-GB"
-                      value={selections.startDate}
-                      min={new Date().toISOString().split('T')[0]}
-                      onChange={e => setSelections(s => ({ ...s, startDate: e.target.value }))}
-                      onKeyDown={e => e.preventDefault()}
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
-                    />
-                    {endDate && (
-                      <p className="font-body text-sm text-warm-500 mt-2">
-                        End date: <span className="text-forest-600 font-medium">{fmtDate(endDate)}</span>
-                      </p>
-                    )}
-                    <label className="flex items-center gap-3 mt-4 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selections.flexibleDates}
-                        onChange={e => setSelections(s => ({ ...s, flexibleDates: e.target.checked }))}
-                        className="w-4 h-4 rounded accent-forest-600"
-                      />
-                      <span className="font-body text-sm text-warm-600">My dates are flexible</span>
-                    </label>
+                {/* ── Row 2: Vehicle (full width, all visible) ── */}
+                <div className="mb-10 pb-10 border-b border-warm-100">
+                  <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Vehicle</label>
+                  <div className="flex flex-wrap gap-3">
+                    {(vehicles || []).map(v => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setSelections(s => ({ ...s, vehicle: v.id }))}
+                        className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all duration-200 flex-1 min-w-[100px] cursor-pointer ${
+                          selections.vehicle === v.id
+                            ? 'border-forest-500 bg-forest-50 ring-2 ring-forest-500 shadow-sm'
+                            : 'border-warm-200 bg-white hover:border-forest-300 hover:shadow-sm'
+                        }`}
+                      >
+                        <img src={v.image} alt={v.name} className="w-16 h-10 object-contain mb-2" />
+                        <span className="font-body font-semibold text-sm text-forest-600">{v.name}</span>
+                        <span className="font-body text-xs text-warm-400 mt-0.5">{v.capacity}</span>
+                        <span className="font-body text-sm font-semibold text-forest-500 mt-1">
+                          {format(v.pricePerDay)}<span className="text-xs font-normal text-warm-400">/day</span>
+                        </span>
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Trip duration</label>
-                    <div className="flex items-center gap-3 bg-warm-50 border border-warm-200 rounded-xl py-3 px-4">
-                      <Calendar className="w-4 h-4 text-forest-500 shrink-0" />
-                      <span className="font-body text-sm text-forest-600 font-medium">{displayDays} day{displayDays !== 1 ? 's' : ''}</span>
-                      <span className="font-body text-xs text-warm-400">
-                        — {selections.tripType === 'scratch' ? 'from your itinerary' : 'from your template'}
-                      </span>
-                    </div>
-                    {selections.startDate && endDate && (
-                      <div className="mt-4 bg-sage rounded-xl p-4">
-                        <p className="font-body text-xs text-warm-500 mb-1">Your trip window</p>
-                        <p className="font-body text-sm text-forest-600 font-medium">{fmtDate(selections.startDate)} → {fmtDate(endDate)}</p>
-                        <p className="font-body text-xs text-warm-400 mt-1">{displayDays} days · {displayDays - 1} nights</p>
+                  <p className="font-body text-xs text-warm-400 mt-3">
+                    <span className="text-forest-500 font-medium">Auto-selected</span> based on {selections.pax} traveller{selections.pax !== 1 ? 's' : ''} — you can override above
+                  </p>
+                </div>
+
+                {/* ── Row 3: Flight details ── */}
+                <div>
+                  <div className="mb-4">
+                    <p className="font-body text-sm font-medium text-forest-600">Flight details <span className="text-warm-400 font-normal">(Optional)</span></p>
+                    <p className="font-body text-xs text-warm-400 mt-1">Help us track your arrival so we can adjust pickup time.</p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-warm-500 mb-1.5 font-body uppercase tracking-wide">Flight number</label>
+                      <div className="relative">
+                        <Plane className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                        <input
+                          type="text"
+                          value={selections.flightNumber}
+                          onChange={e => setSelections(s => ({ ...s, flightNumber: e.target.value }))}
+                          maxLength={80}
+                          placeholder="e.g. EK651"
+                          className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                        />
                       </div>
-                    )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-warm-500 mb-1.5 font-body uppercase tracking-wide">Scheduled arrival time</label>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                        <input
+                          type="time"
+                          value={selections.arrivalTime}
+                          onChange={e => setSelections(s => ({ ...s, arrivalTime: e.target.value }))}
+                          className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1658,6 +1711,12 @@ export default function CYOWizard() {
                     <p className="font-body text-sm text-forest-600">{selections.flightNumber.trim()}</p>
                   </div>
                 )}
+                {selections.arrivalTime && (
+                  <div>
+                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Scheduled arrival</span>
+                    <p className="font-body text-sm text-forest-600">{selections.arrivalTime}</p>
+                  </div>
+                )}
               </div>
 
               {/* "Not ready" nudge */}
@@ -1720,20 +1779,6 @@ export default function CYOWizard() {
                     <option value="IN">India</option>
                     <option value="Other">Other</option>
                   </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Flight number <span className="text-warm-400 font-normal">(optional)</span></label>
-                  <div className="relative">
-                    <Plane className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
-                    <input
-                      type="text"
-                      value={selections.flightNumber}
-                      onChange={e => setSelections(s => ({ ...s, flightNumber: e.target.value }))}
-                      maxLength={80}
-                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
-                      placeholder="Help us track your arrival so we can adjust pickup time."
-                    />
-                  </div>
                 </div>
               </div>
 

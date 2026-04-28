@@ -61,6 +61,7 @@ export const bookingsTable = pgTable("bookings", {
   passportNumber: text("passport_number"),
   hotelDetails: text("hotel_details"),
   flightNumber: text("flight_number"),
+  arrivalTime: text("arrival_time"),
   driverNotes: text("driver_notes"),
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),

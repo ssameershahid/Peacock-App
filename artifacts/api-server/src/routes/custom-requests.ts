@@ -47,6 +47,7 @@ router.post("/", authenticate, async (req, res) => {
     interests: z.array(z.string()).optional(),
     specialRequests: z.string().max(500).optional(),
     flightNumber: z.string().max(80).optional(),
+    arrivalTime: z.string().max(50).optional(),
   });
 
   const parsed = schema.safeParse(req.body);

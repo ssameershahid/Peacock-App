@@ -40,6 +40,7 @@ export const customTourRequestsTable = pgTable("custom_tour_requests", {
   interests: text("interests").array().notNull().default([]),
   specialRequests: text("special_requests"),
   flightNumber: text("flight_number"),
+  arrivalTime: text("arrival_time"),
   quote: json("quote"),
   abandonReason: text("abandon_reason"),
   bookingId: text("booking_id"),
