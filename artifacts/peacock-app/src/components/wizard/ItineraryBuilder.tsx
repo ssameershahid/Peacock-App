@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MapPin, Plus, X, ChevronDown, ArrowRight, Search, Info } from 'lucide-react';
-import { geocodeLocation, getCoords } from '@/lib/mapbox';
+import { geocodeLocation, getCoords, MAPBOX_TOKEN } from '@/lib/mapbox';
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor,
   useSensor, useSensors, type DragEndEvent,
@@ -99,6 +99,13 @@ function DestPreviewPopup({ dest, onClose }: { dest: DestInfo; onClose: () => vo
 
 // ── LocationPickerDropdown ─────────────────────────────────────────────────────
 
+interface MapboxSuggestion {
+  name: string;
+  fullName: string;
+  lat: number;
+  lng: number;
+}
+
 function LocationPickerDropdown({
   value,
   valueId,
@@ -115,13 +122,15 @@ function LocationPickerDropdown({
   refLat?: number;
   refLng?: number;
   pickerDests: DestInfo[];
-  onSelect: (name: string, id: string) => void;
+  onSelect: (name: string, id: string, coords?: { lat: number; lng: number }) => void;
   onClose: () => void;
 }) {
   const [search, setSearch] = useState('');
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<MapboxSuggestion[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
@@ -138,6 +147,37 @@ function LocationPickerDropdown({
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
+
+  const fetchSuggestions = useCallback((query: string) => {
+    clearTimeout(debounceRef.current);
+    if (!query.trim() || query.length < 2 || !MAPBOX_TOKEN) {
+      setSuggestions([]);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const encoded = encodeURIComponent(query);
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encoded}.json?country=LK&proximity=80.6350,7.8731&autocomplete=true&limit=5&types=place,locality,neighborhood,poi,address&access_token=${MAPBOX_TOKEN}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        const items: MapboxSuggestion[] = (data.features ?? []).map((f: any) => ({
+          name: f.text ?? f.place_name,
+          fullName: f.place_name,
+          lat: f.center[1],
+          lng: f.center[0],
+        }));
+        setSuggestions(items);
+      } catch { /* silent */ }
+    }, 280);
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setSearch(v);
+    fetchSuggestions(v);
+    if (!v) setSuggestions([]);
+  };
 
   const filtered = pickerDests.filter(
     d =>
@@ -158,17 +198,39 @@ function LocationPickerDropdown({
             ref={inputRef}
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             placeholder={placeholder}
             className="flex-1 bg-transparent font-body text-sm text-forest-600 outline-none placeholder:text-warm-400"
           />
           {search && (
-            <button type="button" onClick={() => setSearch('')} className="text-warm-300 hover:text-warm-500">
+            <button type="button" onClick={() => { setSearch(''); setSuggestions([]); }} className="text-warm-300 hover:text-warm-500">
               <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
+
+      {/* Mapbox live suggestions */}
+      {suggestions.length > 0 && (
+        <div className="border-b border-warm-100">
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => { onSelect(s.name, '', { lat: s.lat, lng: s.lng }); onClose(); }}
+              className="w-full text-left px-4 py-2.5 hover:bg-forest-50 transition-colors border-b border-warm-50 last:border-0 flex items-center gap-2"
+            >
+              <MapPin className="w-3.5 h-3.5 text-forest-400 shrink-0" />
+              <div>
+                <p className="font-body text-sm font-medium text-forest-700">{s.name}</p>
+                {s.fullName !== s.name && (
+                  <p className="font-body text-[11px] text-warm-400 truncate">{s.fullName}</p>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Destination chips */}
       <div className="p-3 max-h-[260px] overflow-y-auto">
@@ -225,20 +287,6 @@ function LocationPickerDropdown({
             );
           })}
         </div>
-
-        {/* Custom text entry when search doesn't match any known destination */}
-        {search && !filtered.some(d => d.name.toLowerCase() === search.toLowerCase()) && (
-          <button
-            type="button"
-            onClick={() => { onSelect(search, ''); onClose(); }}
-            className="mt-2 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-warm-300 hover:border-forest-400 hover:bg-forest-50 text-left transition-all"
-          >
-            <Plus className="w-3.5 h-3.5 text-warm-400 shrink-0" />
-            <span className="font-body text-sm text-warm-600">
-              Use "<strong className="text-forest-600">{search}</strong>"
-            </span>
-          </button>
-        )}
 
         {filtered.length === 0 && !search && (
           <p className="font-body text-xs text-warm-400 text-center py-4">No destinations found</p>
@@ -497,7 +545,7 @@ export function ItineraryBuilder({
     setExpandedDay(dayIdx);
   }
 
-  async function handleSelect(name: string, id: string) {
+  async function handleSelect(name: string, id: string, googleCoords?: { lat: number; lng: number }) {
     // Capture picker state immediately before any async work
     const field = pickerField;
     const dayIdx = pickerDay;
@@ -512,7 +560,6 @@ export function ItineraryBuilder({
     if (id) {
       // Known dropdown destination — no geocoding needed
       if (field === 'from' && dayIdx === 0) {
-        // Known location for startFrom — clear any custom coords
         onChange(itinerary, name, id, undefined);
       } else if (field === 'to' && dayIdx !== null) {
         const next = itinerary.map((d, i) =>
@@ -523,15 +570,18 @@ export function ItineraryBuilder({
       return;
     }
 
-    // Custom location (id === '') — resolve coordinates
-    let coords: { lat: number; lng: number } | undefined;
-    const synced = getCoords(name); // fast text lookup in known coords table
-    if (synced) {
-      coords = { lat: synced[1], lng: synced[0] };
-    } else {
-      // Fall back to Mapbox Geocoding API (Sri Lanka bounding box)
-      const gc = await geocodeLocation(name);
-      if (gc) coords = { lat: gc[1], lng: gc[0] };
+    // Google Places selection — use authoritative coords directly, skip geocoding
+    let coords: { lat: number; lng: number } | undefined = googleCoords;
+
+    if (!coords) {
+      // Fallback: local lookup then Mapbox (only reached if Google API unavailable)
+      const synced = getCoords(name);
+      if (synced) {
+        coords = { lat: synced[1], lng: synced[0] };
+      } else {
+        const gc = await geocodeLocation(name);
+        if (gc) coords = { lat: gc[1], lng: gc[0] };
+      }
     }
 
     if (field === 'from' && dayIdx === 0) {
