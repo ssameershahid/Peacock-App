@@ -492,12 +492,14 @@ export default function TourVariantDetail() {
 
   // ── Pricing ──────────────────────────────────────────────────────────────
 
-  const vehicleRate = tour.vehicleRates?.[selectedVehicle as keyof typeof tour.vehicleRates] ?? 45;
+  const vehicleDetails = vehicles?.find((v: any) => v.id === selectedVehicle);
+  const vehicleRate = tour.vehicleRates?.[selectedVehicle as keyof typeof tour.vehicleRates]
+    ?? vehicleDetails?.pricePerDay
+    ?? 45;
   const vehicleTotal = vehicleRate * duration;
   const addOnsTotal = (tour.addOns || []).reduce((sum: number, a: any) => sum + (selectedAddOns[a.id] ? a.price : 0), 0);
   const totalPrice = vehicleTotal + addOnsTotal + locationSurchargeTotal;
 
-  const vehicleDetails = vehicles?.find((v: any) => v.id === selectedVehicle);
   const maxPax = vehicleDetails?.maxPassengers ?? 35;
 
   // ── Itinerary display location overrides ─────────────────────────────────
