@@ -1533,7 +1533,8 @@ export default function CYOWizard() {
           {/* ── STEP 4: Preferences ────────────────────────────────────── */}
           {step === 4 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="font-display text-3xl text-forest-600 mb-8">Your preferences</h2>
+              <h2 className="font-display text-3xl text-forest-600 mb-3">Your preferences</h2>
+              <p className="font-body text-sm text-warm-600 mb-8">You're welcome to use this optional section to tell us a little more about your preferences, so we—along with your driver—can share personalised recommendations and help you get the very most from your itinerary.</p>
 
               <div className="mb-8">
                 <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Budget range</label>
