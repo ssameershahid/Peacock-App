@@ -11,8 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const SERVICE_LINKS = [
   { href: '/tours', label: 'Ready To Go', icon: Map, desc: 'Expertly crafted island itineraries' },
-  { href: '/transfers', label: 'Island Transfers', icon: Plane, desc: 'Airport & point-to-point rides' },
   { href: '/tours/custom', label: 'Create Your Own', icon: Sparkles, desc: 'Build your bespoke journey' },
+  { href: '/transfers', label: 'Island Transfers', icon: Plane, desc: 'Airport & point-to-point rides' },
 ];
 
 const MORE_LINKS = [
