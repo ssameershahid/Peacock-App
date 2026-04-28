@@ -150,13 +150,8 @@ export function useTours() {
   return useQuery({
     queryKey: ["tours"],
     queryFn: async () => {
-      try {
-        const tours = await api.get<any[]>("/tours");
-        const normalized = normalizeTourList(tours);
-        return normalized.length > 0 ? normalized : normalizeTourList(MOCK_TOURS);
-      } catch {
-        return normalizeTourList(MOCK_TOURS);
-      }
+      const tours = await api.get<any[]>("/tours");
+      return normalizeTourList(tours ?? []);
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -167,12 +162,8 @@ export function useTourGroups() {
   return useQuery({
     queryKey: ["tour-groups"],
     queryFn: async () => {
-      try {
-        const groups = await api.get<any[]>("/tours/groups");
-        return groups?.length > 0 ? groups : MOCK_TOUR_GROUPS;
-      } catch {
-        return MOCK_TOUR_GROUPS;
-      }
+      const groups = await api.get<any[]>("/tours/groups");
+      return groups ?? [];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -295,14 +286,8 @@ export function useTour(slug: string) {
   return useQuery({
     queryKey: ["tours", slug],
     queryFn: async () => {
-      try {
-        const tour = await api.get<any>(`/tours/${slug}`);
-        return normalizeTour(tour);
-      } catch {
-        const mock = MOCK_TOURS.find(t => t.slug === slug);
-        if (!mock) throw new Error("Tour not found");
-        return mock;
-      }
+      const tour = await api.get<any>(`/tours/${slug}`);
+      return normalizeTour(tour);
     },
     enabled: !!slug,
   });
