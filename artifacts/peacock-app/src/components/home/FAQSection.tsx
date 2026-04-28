@@ -36,7 +36,8 @@ const FAQS: FAQ[] = [
   },
   {
     question: "How does pricing work?",
-    answer: "For multi-day tours, we charge a fixed daily rate that covers the vehicle and driver. For point-to-point transfers, pricing is based on distance (km). To secure a booking, you only pay a small deposit (approx. 20%) online. The remaining balance is paid directly to your driver upon arrival.",
+    answer:
+      "For multi-day tours, we charge a fixed daily rate that covers the vehicle and driver. For point-to-point transfers, pricing is based on distance (km). To secure a booking, you pay a 50% refundable deposit, with the balance paid 21 days before your start date. This enables our drivers to fully prepare for your upcoming journey.",
     category: "Booking & Pricing",
   },
   {
@@ -46,7 +47,8 @@ const FAQS: FAQ[] = [
   },
   {
     question: "What is the cancellation policy?",
-    answer: "We offer free cancellation up to 24 hours before your pickup time for a full refund of your deposit. We understand travel plans change, so we keep it stress-free.",
+    answer:
+      "We offer free cancellation up to 21 days before your pickup time for a full refund of your deposit. We understand travel plans change, so if you need to alter your journey, you can get in touch with us directly.",
     category: "Booking & Pricing",
   },
   {
@@ -55,13 +57,8 @@ const FAQS: FAQ[] = [
     category: "Booking & Pricing",
   },
   {
-    question: "Do you offer discounts for longer trips?",
-    answer: "Yes! We offer competitive rates for extended multi-day tours. The longer your trip, the better value you get. Contact us with your itinerary and dates, and we'll provide a customized quote that reflects the duration of your journey.",
-    category: "Booking & Pricing",
-  },
-  {
     question: "What payment methods do you accept?",
-    answer: "We accept credit cards and debit cards for the initial deposit payment online. The remaining balance can be paid in cash (USD, EUR, or Sri Lankan Rupees) directly to your driver upon arrival, or via bank transfer if arranged in advance.",
+    answer: "All payments are processed securely through Stripe — we never store card details.",
     category: "Booking & Pricing",
   },
   {

@@ -31,18 +31,17 @@ const TRUST_ITEMS = [
   { Icon: ShieldCheck, label: 'Secure checkout', sub: 'Powered by Stripe' },
   { Icon: UserCheck,   label: 'Vetted drivers',  sub: 'Handpicked & trained' },
   { Icon: Headphones,  label: 'Human support',   sub: '24/7 via WhatsApp' },
-  { Icon: RefreshCcw,  label: 'Flexible changes',sub: 'Cancel up to 48 h' },
-  { Icon: Star,        label: '4.9 / 5 rating',  sub: '2,400+ verified reviews' },
+  { Icon: RefreshCcw,  label: 'Flexible changes', sub: 'Whilst you travel' },
 ];
 
 const FAQS = [
   {
     q: 'Do I need to book far in advance?',
-    a: 'For multi-day tours we recommend booking 2–4 weeks ahead during peak season (December–March). Transfers can often be arranged same-day. Availability is always shown live at checkout.',
+    a: 'For multi-day tours we recommend booking at least 4 weeks ahead during peak season (December–March). Transfers can often be arranged same-day. Availability is always shown live at checkout.',
   },
   {
     q: 'What if my plans change?',
-    a: 'You can cancel or reschedule up to 48 hours before your start date for a full refund on your deposit. Last-minute changes? Message our support team directly via WhatsApp and we\'ll sort it out.',
+    a: 'You can cancel or reschedule up to 21 days before your start date for a full refund on your deposit. If you need to alter your journey you can message our support team directly via WhatsApp.',
   },
   {
     q: 'Is my driver English-speaking?',
@@ -50,11 +49,11 @@ const FAQS = [
   },
   {
     q: 'How does payment work?',
-    a: 'Multi-day tours require a small refundable deposit to hold your booking; the balance is settled before your start date. Transfers are paid in full at checkout. All payments run through Stripe — we never store card details.',
+    a: 'Multi-day tours require a 50% refundable deposit to hold your booking; the balance is settled up to 21 days before your start date. Transfers are paid in full at checkout. All payments run through Stripe — we never store card details.',
   },
   {
     q: 'Can I mix modalities — e.g. a custom tour plus an airport transfer?',
-    a: 'Absolutely. Many guests book an airport transfer to arrive comfortably, then start a ready-to-go or custom tour the following day. Each booking is independent and confirmed separately.',
+    a: 'Absolutely. Many guests book an airport transfer to arrive comfortably, then start a ready-to-go or custom tour at a later date. Each booking is independent and confirmed separately.',
   },
 ];
 
@@ -512,7 +511,7 @@ export default function HowItWorks() {
             variants={stagger}
             initial="hidden"
             animate={trustInView ? 'visible' : 'hidden'}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
           >
             {TRUST_ITEMS.map(({ Icon, label, sub }) => (
               <motion.div
