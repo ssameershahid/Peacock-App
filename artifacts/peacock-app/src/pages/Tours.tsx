@@ -283,7 +283,7 @@ export default function Tours() {
           <HowItWorksSteps steps={[
             {
               title: 'Choose your journey',
-              desc: 'Browse our selection of ready-made tours. Each tour has 5, 7, 10 & 14-day itineraries with the added option to select an alternative start and end location so you get the best experience whatever your timeframe is.',
+              desc: 'Browse our ready-made tours. Each tour has 5, 7, 10 & 14-day itineraries with the added flexibility to select alternative start/end locations so you get the best experience.',
             },
             {
               title: 'Select your vehicle',
