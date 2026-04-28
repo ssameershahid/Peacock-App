@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Star, ArrowRight, CheckCircle2, ShieldCheck, Map, Plane } from 'lucide-react';
-import { Container, Section } from '@/components/peacock/Container';
+import { Star, ArrowRight, Map, Plane } from 'lucide-react';
+import { Container } from '@/components/peacock/Container';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import TripSearchHero from '@/components/peacock/TripSearchHero';
 import MarqueeTestimonials from '@/components/peacock/MarqueeTestimonials';
 import FAQSection from '@/components/home/FAQSection';
 import { StoryBlocksSection } from '@/components/home/StoryScrollSection';
@@ -43,41 +41,23 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
         </div>
 
-        <Container className="relative z-10 w-full pt-20 flex flex-col items-center">
-          <div className="text-center max-w-4xl mx-auto mb-6 md:mb-12 animate-in slide-in-from-bottom-8 fade-in duration-1000">
-            <h1 className="text-[2.4rem] sm:text-5xl md:text-7xl lg:text-[72px] font-display font-normal text-white mb-4 md:mb-6 tracking-tight leading-[1.1] drop-shadow-sm">
+        <Container className="relative z-10 w-full pt-20 flex flex-col items-center justify-center">
+          <div className="text-center max-w-4xl mx-auto px-4 flex flex-col items-center animate-in slide-in-from-bottom-8 fade-in duration-1000">
+            <h1 className="text-[2.88rem] sm:text-[3.6rem] md:text-[5.4rem] lg:text-[86px] font-display font-normal text-white mb-5 md:mb-7 tracking-tight leading-[1.08] drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
               Experience Sri Lanka's <br className="hidden sm:block" /> beauty like a <em className="italic">true native</em>
             </h1>
-            <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
+            <P className="text-white/90 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed mb-8 md:mb-10">
               Plan a Sri Lanka trip with local experts. Custom itineraries, concierge drivers, transparent pricing.
             </P>
-          </div>
-
-          <div className="w-full flex flex-col items-center gap-6">
-            <div className="w-full max-w-4xl relative">
-              <TripSearchHero />
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-6 animate-in slide-in-from-bottom-4 fade-in duration-1000 delay-300">
-              <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
-                <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 text-emerald-400 shrink-0" />
-                <span className="text-xs md:text-sm font-medium text-white">Free Cancellation</span>
-              </div>
-              <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
-                <ShieldCheck className="h-3 w-3 md:h-4 md:w-4 text-emerald-400 shrink-0" />
-                <span className="text-xs md:text-sm font-medium text-white">24/7 Support</span>
-              </div>
-              <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-sm transition-transform hover:scale-105 cursor-default">
-                <Star className="h-3 w-3 md:h-4 md:w-4 text-amber-200 fill-amber-200 shrink-0" />
-                <span className="text-xs md:text-sm font-medium text-white">4.9/5 Guest Rating</span>
-              </div>
-            </div>
+            <Button variant="amber" size="lg" className="text-base md:text-[17px] px-10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.28)]" asChild>
+              <a href="#what-we-do">Start planning your trip</a>
+            </Button>
           </div>
         </Container>
       </div>
 
       {/* Three Product Cards — "What We Do" (2nd section, right after hero) */}
-      <section className="py-24 px-6 bg-white relative z-20">
+      <section id="what-we-do" className="py-24 px-6 bg-white relative z-20 scroll-mt-20">
         <div className="max-w-[1200px] mx-auto">
           <SectionHeading overline="WHAT WE DO" title="Your journey, your *way*" subtitle="Whether you want a ready-made itinerary, a fully custom adventure, or a simple airport transfer — we've got you covered." align="center" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
