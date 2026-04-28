@@ -988,7 +988,7 @@ export default function CYOWizard() {
                         >
                           <div
                             className="relative h-[160px] w-full"
-                            style={{ background: `url(${heroImg}) center/cover no-repeat` }}
+                            style={{ background: `url('${heroImg}') center/cover no-repeat` }}
                           >
                             <div className="absolute inset-0 bg-gradient-to-t from-forest-700/85 via-forest-700/20 to-transparent" />
                             {isSelected && (
