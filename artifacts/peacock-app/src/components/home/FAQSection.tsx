@@ -24,6 +24,12 @@ interface FAQ {
 
 const FAQS: FAQ[] = [
   {
+    question: "A quick word about Sri Lanka's airport…",
+    answer:
+      'Sri Lanka actually has several international and domestic airports but the main one is Bandaranaike International Airport (BIA), but you will also see it referred to as "Colombo International Airport" and more commonly locally as "Katunayake Airport"',
+    category: "Booking & Pricing",
+  },
+  {
     question: "Is this a private driver or shared tour?",
     answer: "Every booking with Peacock Drivers is 100% private. You get your own dedicated vehicle and driver-guide for the duration of your trip. No strangers, no rigid schedules — just you and your travel companions.",
     category: "Booking & Pricing",
