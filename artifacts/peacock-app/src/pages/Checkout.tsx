@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateBooking } from '@/hooks/use-app-data';
-import { Check, Lock, ArrowRight, ArrowLeft, Shield, User, Mail, Phone, Globe, AlertCircle } from 'lucide-react';
+import { Check, Lock, ArrowRight, ArrowLeft, Shield, User, Mail, Phone, Globe, AlertCircle, Plane } from 'lucide-react';
 
 interface BookingData {
   type: string;
@@ -36,7 +36,7 @@ export default function Checkout() {
   const [error, setError] = useState('');
 
   const [contact, setContact] = useState({
-    firstName: '', lastName: '', email: '', phone: '', country: '', requests: ''
+    firstName: '', lastName: '', email: '', phone: '', country: '', flightNumber: '', requests: ''
   });
   const [agreed, setAgreed] = useState(false);
 
@@ -83,6 +83,7 @@ export default function Checkout() {
         endDate: booking.endDate,
         numDays: booking.numDays,
         passengers: booking.passengers,
+        flightNumber: contact.flightNumber.trim() || undefined,
         specialRequests: contact.requests || undefined,
         addOns: booking.selectedAddOns,
         pricingBreakdown: {
@@ -189,6 +190,20 @@ export default function Checkout() {
                     </select>
                   </div>
                 </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-warm-600 mb-2 font-body">Flight number <span className="text-warm-400">(optional)</span></label>
+                  <div className="relative">
+                    <Plane className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                    <input
+                      type="text"
+                      value={contact.flightNumber}
+                      onChange={e => setContact({ ...contact, flightNumber: e.target.value })}
+                      maxLength={80}
+                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                      placeholder="Provide your flight number if available so we can track your arrival and adjust pickup time."
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-warm-600 mb-2 font-body">Special Requests <span className="text-warm-400">(optional)</span></label>
                   <textarea rows={3} maxLength={500} value={contact.requests} onChange={e => setContact({ ...contact, requests: e.target.value })} className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none resize-none" placeholder="Flight arriving at 2AM, require child seat, etc." />
@@ -216,6 +231,9 @@ export default function Checkout() {
                     <div><span className="text-warm-400">Vehicle</span><p className="text-forest-600 font-medium">{booking.vehicleName}</p></div>
                     <div><span className="text-warm-400">Passengers</span><p className="text-forest-600 font-medium">{booking.passengers}</p></div>
                     <div><span className="text-warm-400">Duration</span><p className="text-forest-600 font-medium">{booking.numDays} days</p></div>
+                    {contact.flightNumber.trim() && (
+                      <div className="sm:col-span-2"><span className="text-warm-400">Flight number</span><p className="text-forest-600 font-medium">{contact.flightNumber.trim()}</p></div>
+                    )}
                   </div>
                   <div className="mt-4 pt-4 border-t border-warm-200 space-y-2 font-body text-sm">
                     <div className="flex justify-between"><span className="text-warm-500">Vehicle & Driver ({booking.numDays} days)</span><span className="text-forest-600 font-medium">{format(booking.vehicleTotal)}</span></div>

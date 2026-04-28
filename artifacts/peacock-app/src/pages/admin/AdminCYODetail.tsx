@@ -93,6 +93,12 @@ export default function AdminCYODetail() {
                 </div>
               </div>
             )}
+            {request.flightNumber && (
+              <div className="mb-4">
+                <p className="font-body text-xs text-warm-400 mb-1">Flight number</p>
+                <p className="font-body text-sm text-forest-600">{request.flightNumber}</p>
+              </div>
+            )}
             {request.specialRequests && (
               <div className="bg-amber-50 rounded-xl p-4">
                 <p className="font-body text-xs font-semibold text-amber-800 mb-1">Special requests</p>

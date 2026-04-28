@@ -6,7 +6,7 @@ import { VehicleSelector } from '@/components/shared/VehicleSelector';
 import { MapView, type MapMarker } from '@/components/shared/MapView';
 import {
   Check, Map, Calendar, Settings2, Sparkles, Send, ArrowRight, ArrowLeft,
-  RotateCcw, MapPin, Car, Users,
+  RotateCcw, MapPin, Car, Users, Plane,
   Bookmark, Mail, Download, X, Loader2, Eye, Minus, Plus, Maximize2,
 } from 'lucide-react';
 import { useVehicles, useTourGroups, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip } from '@/hooks/use-app-data';
@@ -79,6 +79,7 @@ type WizardSelections = {
   travelStyle: string[];
   interests: string[];
   specialRequests: string;
+  flightNumber: string;
   name: string;
   email: string;
   phone: string;
@@ -106,6 +107,7 @@ const DEFAULT_SELECTIONS: WizardSelections = {
   travelStyle: [],
   interests: [],
   specialRequests: '',
+  flightNumber: '',
   name: '',
   email: '',
   phone: '',
@@ -706,6 +708,7 @@ export default function CYOWizard() {
             ${selections.startDate ? `<p><strong>Start date:</strong> ${selections.startDate}</p>` : ''}
             ${selections.flexibleDates ? `<p><strong>Date flexibility:</strong> Yes</p>` : ''}
             ${selections.specialRequests ? `<p><strong>Special requests:</strong> ${selections.specialRequests}</p>` : ''}
+            ${selections.flightNumber.trim() ? `<p><strong>Flight number:</strong> ${selections.flightNumber.trim()}</p>` : ''}
           </div>
 
           <h2>Selected Destinations</h2>
@@ -775,6 +778,7 @@ export default function CYOWizard() {
         travelStyle: selections.travelStyle,
         interests: selections.interests,
         specialRequests: selections.specialRequests || undefined,
+        flightNumber: selections.flightNumber.trim() || undefined,
       });
       const ref = result.referenceCode || result.id || `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`;
       setCyoRef(ref);
@@ -1648,6 +1652,12 @@ export default function CYOWizard() {
                     <p className="font-body text-sm text-forest-600">{selections.specialRequests}</p>
                   </div>
                 )}
+                {selections.flightNumber.trim() && (
+                  <div>
+                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Flight number</span>
+                    <p className="font-body text-sm text-forest-600">{selections.flightNumber.trim()}</p>
+                  </div>
+                )}
               </div>
 
               {/* "Not ready" nudge */}
@@ -1710,6 +1720,20 @@ export default function CYOWizard() {
                     <option value="IN">India</option>
                     <option value="Other">Other</option>
                   </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Flight number <span className="text-warm-400 font-normal">(optional)</span></label>
+                  <div className="relative">
+                    <Plane className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                    <input
+                      type="text"
+                      value={selections.flightNumber}
+                      onChange={e => setSelections(s => ({ ...s, flightNumber: e.target.value }))}
+                      maxLength={80}
+                      className="w-full bg-white border border-warm-200 rounded-xl py-3 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                      placeholder="Provide your flight number if available so we can track your arrival and adjust pickup time."
+                    />
+                  </div>
                 </div>
               </div>
 
