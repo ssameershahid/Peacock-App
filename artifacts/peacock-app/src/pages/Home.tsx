@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import TripSearchHero from '@/components/peacock/TripSearchHero';
 import MarqueeTestimonials from '@/components/peacock/MarqueeTestimonials';
-import DesignAdventureCTA from '@/components/peacock/DesignAdventureCTA';
 import FAQSection from '@/components/home/FAQSection';
 import { StoryBlocksSection } from '@/components/home/StoryScrollSection';
 import ParallaxDestinationsSection from '@/components/home/ParallaxDestinationsSection';
@@ -129,7 +128,6 @@ export default function Home() {
       {/* Explore Destinations + Design your own adventure */}
       <section className="bg-background">
         <ParallaxDestinationsSection />
-        <DesignAdventureCTA />
       </section>
 
       {/* Climate Guide ("When to go") */}
@@ -140,23 +138,6 @@ export default function Home() {
         className="relative overflow-hidden"
         style={{ backgroundColor: "rgba(251, 250, 249, 1)" }}
       >
-        {/* As Seen In */}
-        <div className="py-16">
-          <Container>
-            <div className="text-center mb-10">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                We are one of the world's best tour operators
-              </span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-              <span className="text-2xl font-display font-normal">Travel+Leisure</span>
-              <span className="text-2xl font-display font-normal">Cond&#233; Nast</span>
-              <span className="text-2xl font-display font-normal">VOGUE</span>
-              <span className="text-2xl font-display font-normal">Lonely Planet</span>
-            </div>
-          </Container>
-        </div>
-
         {/* FAQs */}
         <FAQSection embedded />
 
