@@ -379,25 +379,25 @@ export default function Transfers() {
             Private driver transfers to any destination in Sri Lanka. Airport pickups, city-to-city
             routes, and custom journeys — all with English-speaking drivers.
           </p>
+
+          <HowItWorksSteps steps={[
+            {
+              title: 'Choose your journey',
+              desc: 'Browse a selection of popular island-wide transfers or enter your own pickup & drop-off locations for a custom route.',
+            },
+            {
+              title: 'Select your vehicle',
+              desc: 'Select your vehicle, pickup time and number of passengers, and pay securely online. Stripe-powered checkout.',
+            },
+            {
+              title: 'Meet your driver',
+              desc: 'Your personal, English-speaking concierge driver arrives on time, ready to escort you to your destination in safety and comfort.',
+            },
+          ]} />
         </div>
       </div>
 
-      <HowItWorksSteps steps={[
-        {
-          title: 'Choose your journey',
-          desc: 'Browse a selection of popular island-wide transfers or enter your own pickup & drop-off locations for a custom route.',
-        },
-        {
-          title: 'Select your vehicle',
-          desc: 'Select your vehicle, pickup time and number of passengers, and pay securely online. Stripe-powered checkout.',
-        },
-        {
-          title: 'Meet your driver',
-          desc: 'Your personal, English-speaking concierge driver arrives on time, ready to escort you to your destination in safety and comfort.',
-        },
-      ]} />
-
-      <div className="max-w-[1200px] mx-auto px-6 mt-16">
+      <div className="max-w-[1200px] mx-auto px-6">
 
         {/* ── Airport pickup & drop-off ─────────────────────────────────── */}
         <div className="mb-16">

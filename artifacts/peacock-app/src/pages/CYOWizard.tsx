@@ -888,25 +888,25 @@ export default function CYOWizard() {
             Design your perfect Sri Lankan itinerary in minutes. Choose your destinations,
             set your pace, and we'll build the trip around you.
           </p>
+
+          <HowItWorksSteps steps={[
+            {
+              title: 'Create your own journey',
+              desc: 'Use any of our Ready to Go templates as a starting point or build your very own dream journey using our Trip Wizard.',
+            },
+            {
+              title: 'Select your vehicle',
+              desc: 'Select your vehicle, number of travellers, and pay securely online. Stripe-powered checkout.',
+            },
+            {
+              title: 'Meet your driver',
+              desc: 'Your personal, English-speaking and Tourist Board-certified concierge driver arrives on time, ready to bring your bespoke Sri Lankan wish list to life.',
+            },
+          ]} />
         </div>
       </div>
 
-      <HowItWorksSteps steps={[
-        {
-          title: 'Create your own journey',
-          desc: 'Use any of our Ready to Go templates as a starting point or build your very own dream journey using our Trip Wizard.',
-        },
-        {
-          title: 'Select your vehicle',
-          desc: 'Select your vehicle, number of travellers, and pay securely online. Stripe-powered checkout.',
-        },
-        {
-          title: 'Meet your driver',
-          desc: 'Your personal, English-speaking and Tourist Board-certified concierge driver arrives on time, ready to bring your bespoke Sri Lankan wish list to life.',
-        },
-      ]} />
-
-      <div className="max-w-[1000px] mx-auto px-6 mt-16">
+      <div className="max-w-[1000px] mx-auto px-6">
 
         {/* Recovery banner */}
         {showRecovery && (
