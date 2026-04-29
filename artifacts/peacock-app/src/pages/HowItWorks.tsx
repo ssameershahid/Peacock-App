@@ -13,6 +13,7 @@ import {
   CreateYourOwnVisual,
   TransfersVisual,
 } from '@/components/home/how-it-works/FlowVisuals';
+import SriLankaMapVisual from '@/components/home/how-it-works/SriLankaMapVisual';
 
 /* ─── Animation variants ─────────────────────────────────────── */
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -357,7 +358,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-start justify-between py-5 text-left gap-6 cursor-pointer group"
       >
-        <span className="font-display text-lg font-normal text-[#0C2421] group-hover:text-forest-500 transition-colors leading-snug">
+        <span className="font-display text-xl md:text-2xl font-normal text-[#0C2421] group-hover:text-forest-500 transition-colors leading-snug">
           {q}
         </span>
         <motion.div
@@ -378,7 +379,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.35, ease }}
             className="overflow-hidden"
           >
-            <p className="pb-5 text-[15px] text-warm-500 leading-relaxed max-w-2xl">{a}</p>
+            <p className="pb-5 text-base text-warm-500 leading-relaxed max-w-2xl">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -408,70 +409,78 @@ export default function HowItWorks() {
         <div className="absolute bottom-0 left-0 w-[480px] h-[480px] rounded-full bg-amber-500/8 blur-3xl pointer-events-none" />
 
         <Container className="relative z-10">
-          <div className="max-w-3xl">
-            {/* Eyebrow */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/8 border border-white/12 mb-8"
-            >
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">
-                For first-time visitors
-              </span>
-            </motion.div>
+          <div className="grid lg:grid-cols-[1fr_460px] gap-12 lg:gap-16 items-center">
+            {/* ── Left: Text ── */}
+            <div>
+              {/* Eyebrow */}
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55 }}
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/8 border border-white/12 mb-8"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">
+                  For first-time visitors
+                </span>
+              </motion.div>
 
-            {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 36 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.85, delay: 0.08, ease }}
-              className="font-display text-6xl md:text-7xl lg:text-8xl font-normal text-white mb-6 leading-[1.04]"
-            >
-              How it{' '}
-              <em className="italic text-amber-400">works</em>
-            </motion.h1>
+              {/* Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 36 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.85, delay: 0.08, ease }}
+                className="font-display text-6xl md:text-7xl lg:text-8xl font-normal text-white mb-6 leading-[1.04]"
+              >
+                How it{' '}
+                <em className="italic text-amber-400">works</em>
+              </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease }}
-              className="text-xl md:text-2xl text-white/60 font-light leading-relaxed mb-4 max-w-xl"
-            >
-              Three ways to explore Sri Lanka with a trusted local driver-guide.
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.28, ease }}
-              className="text-base text-white/40 mb-12 max-w-lg"
-            >
-              Pick the experience that matches how you travel — we handle the rest.
-            </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease }}
+                className="text-xl md:text-2xl text-white/60 font-light leading-relaxed mb-4 max-w-xl"
+              >
+                Three ways to explore Sri Lanka with a trusted local driver-guide.
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.28, ease }}
+                className="text-base text-white/40 mb-12 max-w-lg"
+              >
+                Pick the experience that matches how you travel — we handle the rest.
+              </motion.p>
 
-            {/* Anchor pills */}
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.38, ease }}
-              className="flex flex-wrap gap-3"
-            >
-              {MODALITIES.map(m => {
-                const { Icon } = m;
-                return (
-                  <a
-                    key={m.id}
-                    href={`#${m.id}`}
-                    className="group flex items-center gap-2.5 px-5 py-3 rounded-full bg-white/8 border border-white/12 hover:bg-white/15 hover:border-white/25 transition-all duration-200 text-sm font-semibold text-white"
-                  >
-                    <Icon className="w-4 h-4 text-amber-400" />
-                    <span>{m.label}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-white/30 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all duration-200" />
-                  </a>
-                );
-              })}
-            </motion.div>
+              {/* Anchor pills */}
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.38, ease }}
+                className="flex flex-wrap gap-3"
+              >
+                {MODALITIES.map(m => {
+                  const { Icon } = m;
+                  return (
+                    <a
+                      key={m.id}
+                      href={`#${m.id}`}
+                      className="group flex items-center gap-2.5 px-5 py-3 rounded-full bg-white/8 border border-white/12 hover:bg-white/15 hover:border-white/25 transition-all duration-200 text-sm font-semibold text-white"
+                    >
+                      <Icon className="w-4 h-4 text-amber-400" />
+                      <span>{m.label}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-white/30 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all duration-200" />
+                    </a>
+                  );
+                })}
+              </motion.div>
+            </div>
+
+            {/* ── Right: Sri Lanka Map Visual ── */}
+            <div className="hidden lg:block h-[480px]">
+              <SriLankaMapVisual />
+            </div>
           </div>
         </Container>
 
@@ -494,9 +503,9 @@ export default function HowItWorks() {
       {/* ══════════════════════════════════════════════════════════
           DIVIDER BAND — reassurance
       ══════════════════════════════════════════════════════════ */}
-      <div className="bg-[#0C2421] py-6">
+      <div className="bg-[#0C2421] py-12">
         <Container>
-          <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-white/30">
+          <p className="font-display text-xl md:text-2xl italic text-center text-white/60">
             Every booking — every modality — includes the same guarantees
           </p>
         </Container>
@@ -517,13 +526,13 @@ export default function HowItWorks() {
               <motion.div
                 key={label}
                 variants={fadeUp}
-                className="flex flex-col items-center text-center p-5 rounded-2xl bg-white/5 border border-white/8 hover:bg-white/10 transition-colors duration-200"
+                className="flex flex-col items-center text-center p-6 rounded-2xl bg-white/5 border border-white/8 hover:bg-white/10 transition-colors duration-200"
               >
-                <div className="w-11 h-11 rounded-xl bg-[#CCFFDE]/10 flex items-center justify-center mb-3">
-                  <Icon className="w-5 h-5 text-[#CCFFDE]" />
+                <div className="w-12 h-12 rounded-xl bg-[#CCFFDE]/10 flex items-center justify-center mb-4">
+                  <Icon className="w-6 h-6 text-[#CCFFDE]" />
                 </div>
-                <span className="text-sm font-bold text-white mb-0.5">{label}</span>
-                <span className="text-xs text-white/35">{sub}</span>
+                <span className="text-base font-bold text-white mb-1">{label}</span>
+                <span className="text-[13px] text-white/45">{sub}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -533,7 +542,7 @@ export default function HowItWorks() {
       {/* ══════════════════════════════════════════════════════════
           PROCESS TIMELINE — condensed visual overview
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-[#FAF7F2] py-24 md:py-32 border-t border-warm-100">
+      <section className="bg-[#FAF7F2] py-24 md:py-32">
         <Container>
           <div className="max-w-3xl mx-auto text-center mb-16">
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-500 mb-3 block">
@@ -548,25 +557,23 @@ export default function HowItWorks() {
           {/* Horizontal flow — desktop */}
           <div className="hidden md:flex items-start gap-0 relative">
             {/* Connector line */}
-            <div className="absolute top-9 left-[calc(16.67%-1px)] right-[calc(16.67%-1px)] h-px bg-warm-200" />
+            <div className="absolute top-10 left-[calc(12.5%)] right-[calc(12.5%)] h-px bg-warm-200" />
 
             {[
-              { num: '1', Icon: Sparkles, title: 'Choose your journey', desc: 'Browse, build, or transfer — whichever fits your trip.' },
-              { num: '2', Icon: Calendar, title: 'Set dates & vehicle', desc: 'Pick your dates, group size, and preferred vehicle class.' },
-              { num: '3', Icon: CheckCircle2, title: 'Confirm & pay', desc: 'Secure checkout via Stripe. Instant confirmation email.' },
-              { num: '4', Icon: MapPin, title: 'Meet your driver', desc: 'Your driver arrives on time with your full itinerary loaded.' },
-              { num: '5', Icon: Star, title: 'Enjoy Sri Lanka', desc: 'Sit back and let a local show you the island at its best.' },
-              { num: '6', Icon: ShieldCheck, title: 'We\'re here throughout', desc: 'Human support reachable by WhatsApp every step of the way.' },
+              { num: '1', Icon: Sparkles, title: 'Choose your journey', desc: 'Browse a tour, build a custom route, or book a transfer — whichever fits your trip.' },
+              { num: '2', Icon: Calendar, title: 'Set dates, vehicle & pay', desc: 'Pick dates, group size, and vehicle. Secure Stripe checkout with instant confirmation.' },
+              { num: '3', Icon: MapPin, title: 'Meet your driver', desc: 'Your driver arrives on time with your full itinerary loaded and ready to go.' },
+              { num: '4', Icon: Star, title: 'Enjoy Sri Lanka', desc: 'Sit back and let a trusted local show you the island at its absolute best.' },
             ].map((step, i) => {
               const { Icon } = step;
               return (
-                <div key={i} className="flex-1 flex flex-col items-center text-center px-3 relative z-10">
-                  <div className="w-16 h-16 rounded-full bg-white border-4 border-forest-100 flex items-center justify-center shadow-sm mb-4 hover:border-amber-300 transition-colors duration-300">
-                    <Icon className="w-5 h-5 text-forest-500" />
+                <div key={i} className="flex-1 flex flex-col items-center text-center px-4 relative z-10">
+                  <div className="w-20 h-20 rounded-full bg-white border-4 border-forest-100 flex items-center justify-center shadow-sm mb-5 hover:border-amber-300 transition-colors duration-300">
+                    <Icon className="w-7 h-7 text-forest-500" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 mb-1">{step.num}</span>
-                  <h4 className="font-display text-base font-normal text-[#0C2421] mb-1.5 leading-tight">{step.title}</h4>
-                  <p className="text-[12px] text-warm-400 leading-relaxed">{step.desc}</p>
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-2">{step.num}</span>
+                  <h4 className="font-display text-xl font-normal text-[#0C2421] mb-2 leading-tight">{step.title}</h4>
+                  <p className="text-[14px] text-warm-400 leading-relaxed">{step.desc}</p>
                 </div>
               );
             })}
@@ -575,28 +582,26 @@ export default function HowItWorks() {
           {/* Stacked — mobile */}
           <div className="md:hidden space-y-0">
             {[
-              { num: '1', Icon: Sparkles, title: 'Choose your journey', desc: 'Browse, build, or transfer — whichever fits.' },
-              { num: '2', Icon: Calendar, title: 'Set dates & vehicle', desc: 'Dates, group size, and vehicle class.' },
-              { num: '3', Icon: CheckCircle2, title: 'Confirm & pay', desc: 'Stripe checkout. Instant confirmation.' },
-              { num: '4', Icon: MapPin, title: 'Meet your driver', desc: 'On time with your full itinerary loaded.' },
-              { num: '5', Icon: Star, title: 'Enjoy Sri Lanka', desc: 'A local shows you the island at its best.' },
-              { num: '6', Icon: ShieldCheck, title: 'Support throughout', desc: 'WhatsApp support every step of the way.' },
+              { num: '1', Icon: Sparkles, title: 'Choose your journey', desc: 'Browse, build, or book a transfer — whichever fits.' },
+              { num: '2', Icon: Calendar, title: 'Set dates, vehicle & pay', desc: 'Dates, group size, vehicle, and Stripe checkout.' },
+              { num: '3', Icon: MapPin, title: 'Meet your driver', desc: 'On time with your full itinerary loaded.' },
+              { num: '4', Icon: Star, title: 'Enjoy Sri Lanka', desc: 'A trusted local shows you the island at its best.' },
             ].map((step, i, arr) => {
               const { Icon } = step;
               return (
                 <div key={i} className="flex gap-5">
                   <div className="flex flex-col items-center shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-white border-4 border-forest-100 flex items-center justify-center shadow-sm">
-                      <Icon className="w-4 h-4 text-forest-500" />
+                    <div className="w-12 h-12 rounded-full bg-white border-4 border-forest-100 flex items-center justify-center shadow-sm">
+                      <Icon className="w-5 h-5 text-forest-500" />
                     </div>
                     {i < arr.length - 1 && (
                       <div className="w-px flex-1 min-h-[40px] bg-warm-200 mt-1" />
                     )}
                   </div>
                   <div className="pb-8 last:pb-0">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{step.num}</span>
-                    <h4 className="font-display text-base font-normal text-[#0C2421] mb-1 leading-tight">{step.title}</h4>
-                    <p className="text-[13px] text-warm-400 leading-relaxed">{step.desc}</p>
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 block mb-1">{step.num}</span>
+                    <h4 className="font-display text-lg font-normal text-[#0C2421] mb-1.5 leading-tight">{step.title}</h4>
+                    <p className="text-[14px] text-warm-400 leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
               );

@@ -56,3 +56,4 @@ Thumbs.db
 # Package manager store
 .pnpm-store/
 .vercel
+.env*.local
