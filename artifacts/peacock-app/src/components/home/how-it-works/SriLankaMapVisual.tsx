@@ -21,8 +21,6 @@ import { motion } from 'framer-motion';
 const MAP_URL =
   'https://cdn.prod.website-files.com/68fe492bc39e0e661cce824d/69f187790f4ca7415125670b_Sri%20Lanka%20Map.png';
 
-const AMBER = '#E8A825';
-const AMBER_GLOW = 'rgba(232,168,37,0.5)';
 const WHITE = 'rgba(255,255,255,0.88)';
 const WHITE_GLOW = 'rgba(255,255,255,0.32)';
 
@@ -31,11 +29,12 @@ const ROUTES = [
     id: 'r1',
     // Jaffna → Sigiriya → Colombo  (top → centre → southwest)
     d: 'M 43,10 C 44,24 46,36 48,47 C 41,62 33,72 26,82',
-    color: AMBER,
-    glowColor: AMBER_GLOW,
+    color: WHITE,
+    glowColor: WHITE_GLOW,
     drawDelay: 0.2,
     flowDelay: '2.4s',
     flowDuration: '2.6s',
+    reverse: false,
     nodes: [
       { cx: 43, cy: 10,  key: 'jaffna' },
       { cx: 48, cy: 47,  key: 'sigiriya' },
@@ -44,13 +43,14 @@ const ROUTES = [
   },
   {
     id: 'r2',
-    // Mannar → Kandy → Ella → Hambantota  (northwest → centre → southeast coast)
+    // Hambantota → Ella → Kandy → Mannar  (bottom → top, reversed)
     d: 'M 22,30 C 28,40 35,49 41,57 C 46,65 50,72 53,79 C 53,91 53,99 53,107',
     color: WHITE,
     glowColor: WHITE_GLOW,
     drawDelay: 1.05,
     flowDelay: '3.3s',
     flowDuration: '2.9s',
+    reverse: true,
     nodes: [
       { cx: 22, cy: 30,  key: 'mannar' },
       { cx: 41, cy: 57,  key: 'kandy' },
@@ -62,11 +62,12 @@ const ROUTES = [
     id: 'r3',
     // Trincomalee → Batticaloa → Arugam Bay → Galle  (east coast → south)
     d: 'M 68,37 C 70,44 72,48 74,52 C 74,58 74,62 75,65 C 59,85 44,96 30,105',
-    color: AMBER,
-    glowColor: AMBER_GLOW,
+    color: WHITE,
+    glowColor: WHITE_GLOW,
     drawDelay: 1.9,
     flowDelay: '4.2s',
     flowDuration: '2.7s',
+    reverse: false,
     nodes: [
       { cx: 68, cy: 37,  key: 'trinco' },
       { cx: 74, cy: 52,  key: 'batticaloa' },
@@ -80,9 +81,8 @@ const CSS = `
     .slm-flow, .slm-pulse { animation: none !important; }
     .slm-draw { opacity: 0.55 !important; }
   }
-  @keyframes slm-flow-r1 { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
-  @keyframes slm-flow-r2 { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
-  @keyframes slm-flow-r3 { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
+  @keyframes slm-flow-fwd { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
+  @keyframes slm-flow-rev { from { stroke-dashoffset: 0; } to { stroke-dashoffset:  1; } }
   @keyframes slm-pulse {
     0%, 100% { r: 1.8; opacity: 0.8; }
     50%       { r: 3.2; opacity: 0.2; }
@@ -140,10 +140,6 @@ export default function SriLankaMapVisual() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <filter id="glow-amber" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="1.1" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
           <filter id="glow-white" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="0.9" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -151,8 +147,8 @@ export default function SriLankaMapVisual() {
         </defs>
 
         {ROUTES.map((route, ri) => {
-          const flowAnim = `slm-flow-r${ri + 1}`;
-          const filterId = route.color === AMBER ? 'glow-amber' : 'glow-white';
+          const flowAnim = route.reverse ? 'slm-flow-rev' : 'slm-flow-fwd';
+          const filterId = 'glow-white';
 
           return (
             <g key={route.id}>
