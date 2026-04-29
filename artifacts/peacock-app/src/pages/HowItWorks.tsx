@@ -412,19 +412,6 @@ export default function HowItWorks() {
           <div className="grid lg:grid-cols-[1fr_460px] gap-12 lg:gap-16 items-center">
             {/* ── Left: Text ── */}
             <div>
-              {/* Eyebrow */}
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55 }}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/8 border border-white/12 mb-8"
-              >
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">
-                  For first-time visitors
-                </span>
-              </motion.div>
-
               {/* Title */}
               <motion.h1
                 initial={{ opacity: 0, y: 36 }}
