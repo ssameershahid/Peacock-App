@@ -874,8 +874,8 @@ export default function TourVariantDetail() {
             <div className="flex flex-col gap-3">
               <div>
                 <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start Date</label>
-                <div className="relative">
-                  <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+                <div className="relative cursor-pointer" onClick={() => startDateRef.current?.showPicker()}>
+                  <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400 pointer-events-none" />
                   <input
                     ref={startDateRef}
                     type="date"

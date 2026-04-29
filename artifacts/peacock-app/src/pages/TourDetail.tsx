@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useTour, useVehicles } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -21,6 +21,7 @@ export default function TourDetail() {
   const [extraDays, setExtraDays] = useState(0);
   const [expandedDay, setExpandedDay] = useState<number | null>(1);
   const [startDate, setStartDate] = useState('');
+  const startDateRef = useRef<HTMLInputElement>(null);
   const [selectedAddOns, setSelectedAddOns] = useState<Record<string, boolean>>({});
 
   if (isLoading) return <div className="min-h-screen pt-32 text-center font-body">Loading journey details...</div>;
@@ -277,15 +278,18 @@ export default function TourDetail() {
 
             <div>
               <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start Date</label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400" />
+              <div className="relative cursor-pointer" onClick={() => startDateRef.current?.showPicker()}>
+                <CalendarIcon className="absolute left-3 top-3 w-4 h-4 text-warm-400 pointer-events-none" />
                 <input
+                  ref={startDateRef}
                   type="date"
                   lang="en-GB"
                   min={minDateStr}
                   value={startDate}
                   onChange={e => setStartDate(e.target.value)}
-                  className="w-full bg-warm-50 border border-warm-200 rounded-xl py-2.5 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none"
+                  onKeyDown={e => e.preventDefault()}
+                  onClick={() => startDateRef.current?.showPicker()}
+                  className="w-full bg-warm-50 border border-warm-200 rounded-xl py-2.5 pl-10 pr-4 font-body text-sm focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
                 />
               </div>
             </div>

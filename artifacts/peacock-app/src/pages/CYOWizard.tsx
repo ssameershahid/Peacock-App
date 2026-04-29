@@ -222,6 +222,7 @@ export default function CYOWizard() {
   const emailTripPlan = useEmailTripPlan();
 
   const emailCaptureRef = useRef<HTMLDivElement>(null);
+  const startDateRef = useRef<HTMLInputElement>(null);
 
   // ── Close expanded map on Escape ───────────────────────────────────────
   useEffect(() => {
@@ -1423,15 +1424,19 @@ export default function CYOWizard() {
                   <div className="space-y-5">
                     <div>
                       <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date</label>
-                      <input
-                        type="date"
-                        lang="en-GB"
-                        value={selections.startDate}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={e => setSelections(s => ({ ...s, startDate: e.target.value }))}
-                        onKeyDown={e => e.preventDefault()}
-                        className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
-                      />
+                      <div className="relative cursor-pointer" onClick={() => startDateRef.current?.showPicker()}>
+                        <input
+                          ref={startDateRef}
+                          type="date"
+                          lang="en-GB"
+                          value={selections.startDate}
+                          min={new Date().toISOString().split('T')[0]}
+                          onChange={e => setSelections(s => ({ ...s, startDate: e.target.value }))}
+                          onKeyDown={e => e.preventDefault()}
+                          onClick={() => startDateRef.current?.showPicker()}
+                          className="w-full bg-white border border-warm-200 rounded-xl py-3 px-4 font-body focus:ring-2 focus:ring-forest-500 outline-none cursor-pointer"
+                        />
+                      </div>
                       <label className="flex items-center gap-3 mt-3 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1448,7 +1453,7 @@ export default function CYOWizard() {
                         <Calendar className="w-4 h-4 text-forest-500 shrink-0" />
                         <span className="font-body text-sm text-forest-600 font-medium">{displayDays} day{displayDays !== 1 ? 's' : ''}</span>
                         <span className="font-body text-xs text-warm-400">
-                          — {selections.tripType === 'scratch' ? 'from your itinerary' : 'from your template'}
+                          — {selections.tripType === 'scratch' ? 'from your itinerary' : 'from your selection'}
                         </span>
                       </div>
                       {selections.startDate && endDate && (
