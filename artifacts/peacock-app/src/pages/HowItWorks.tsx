@@ -448,9 +448,9 @@ export default function HowItWorks() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.28, ease }}
-                className="text-base text-white/40 mb-12 max-w-lg"
+                className="text-base text-white/40 mb-12 max-w-lg leading-relaxed"
               >
-                Pick the experience that matches how you travel — we handle the rest.
+                Whether you want every detail sorted in advance, the freedom to build your own route stop by stop, or simply a reliable ride from A to B — we have a way to travel that fits. Every option comes with a vetted local driver, transparent pricing, and the flexibility to adjust as your plans evolve.
               </motion.p>
 
               {/* Anchor pills */}
