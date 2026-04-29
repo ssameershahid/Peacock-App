@@ -600,7 +600,7 @@ export default function HowItWorks() {
       {/* ══════════════════════════════════════════════════════════
           FAQ
       ══════════════════════════════════════════════════════════ */}
-      <section ref={faqRef} className="bg-white py-24 md:py-32 border-t border-warm-100">
+      <section ref={faqRef} className="bg-white py-24 md:py-32">
         <Container>
           <div className="max-w-2xl mx-auto">
             <motion.div
