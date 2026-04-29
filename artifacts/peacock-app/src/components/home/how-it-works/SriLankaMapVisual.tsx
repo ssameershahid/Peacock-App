@@ -127,7 +127,7 @@ export default function SriLankaMapVisual() {
         src={MAP_URL}
         alt=""
         className="absolute inset-0 w-full h-full"
-        style={{ objectFit: 'contain', objectPosition: 'top center', opacity: 0.88 }}
+        style={{ objectFit: 'contain', objectPosition: 'top center', opacity: 0.88, transform: 'scale(1.1)', transformOrigin: 'top center' }}
         loading="eager"
         draggable={false}
       />
