@@ -140,76 +140,101 @@ export default function SriLankaMapVisual() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <filter id="glow-white" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="0.9" result="blur" />
+          {/* Wide outer glow — just blur, no source merge */}
+          <filter id="glow-wide" x="-300%" y="-300%" width="700%" height="700%">
+            <feGaussianBlur stdDeviation="3.2" />
+          </filter>
+          {/* Mid glow — blur + source */}
+          <filter id="glow-mid" x="-120%" y="-120%" width="340%" height="340%">
+            <feGaussianBlur stdDeviation="1.4" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          {/* Crisp core glow */}
+          <filter id="glow-crisp" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="0.5" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
         {ROUTES.map((route, ri) => {
           const flowAnim = route.reverse ? 'slm-flow-rev' : 'slm-flow-fwd';
-          const filterId = 'glow-white';
+          const drawTransition = {
+            pathLength:    { duration: 1.7, delay: route.drawDelay, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] },
+            strokeOpacity: { duration: 0.35, delay: route.drawDelay },
+          };
 
           return (
             <g key={route.id}>
-              {/* Faint static trace */}
-              <path
+              {/* Beam: outermost soft glow */}
+              <motion.path
                 d={route.d}
                 fill="none"
                 stroke={route.color}
-                strokeWidth="0.35"
-                strokeOpacity="0.12"
+                strokeWidth="1.9"
                 strokeLinecap="round"
+                filter="url(#glow-wide)"
+                initial={{ pathLength: 0, strokeOpacity: 0 }}
+                animate={{ pathLength: 1, strokeOpacity: 0.033 }}
+                transition={drawTransition}
               />
 
-              {/* Draw-on (runs once) */}
+              {/* Beam: mid glow */}
+              <motion.path
+                d={route.d}
+                fill="none"
+                stroke={route.color}
+                strokeWidth="0.84"
+                strokeLinecap="round"
+                filter="url(#glow-mid)"
+                initial={{ pathLength: 0, strokeOpacity: 0 }}
+                animate={{ pathLength: 1, strokeOpacity: 0.08 }}
+                transition={drawTransition}
+              />
+
+              {/* Beam: crisp core draw-on */}
               <motion.path
                 className="slm-draw"
                 d={route.d}
                 fill="none"
                 stroke={route.color}
-                strokeWidth="0.75"
+                strokeWidth="0.4"
                 strokeLinecap="round"
-                strokeOpacity={0}
-                filter={`url(#${filterId})`}
+                filter="url(#glow-crisp)"
                 initial={{ pathLength: 0, strokeOpacity: 0 }}
-                animate={{ pathLength: 1, strokeOpacity: 0.45 }}
-                transition={{
-                  pathLength:    { duration: 1.7, delay: route.drawDelay, ease: [0.4, 0, 0.2, 1] },
-                  strokeOpacity: { duration: 0.35, delay: route.drawDelay },
-                }}
+                animate={{ pathLength: 1, strokeOpacity: 0.43 }}
+                transition={drawTransition}
               />
 
-              {/* Glow halo — traveling segment */}
+              {/* Flow: wide glow halo traveling the beam */}
               <path
                 d={route.d}
                 fill="none"
                 stroke={route.glowColor}
-                strokeWidth="2.8"
+                strokeWidth="1.44"
                 strokeLinecap="round"
                 pathLength={1}
                 style={{
-                  strokeDasharray: '0.2 0.8',
+                  strokeDasharray: '0.18 0.82',
                   strokeDashoffset: 0,
                   animation: `${flowAnim} ${route.flowDuration} linear ${route.flowDelay} infinite`,
-                  filter: 'blur(1px)',
+                  filter: 'blur(2px)',
                 }}
               />
 
-              {/* Crisp traveling segment */}
+              {/* Flow: crisp bright dot */}
               <path
                 className="slm-flow"
                 d={route.d}
                 fill="none"
                 stroke={route.color}
-                strokeWidth="1.1"
+                strokeWidth="0.5"
                 strokeLinecap="round"
                 pathLength={1}
                 style={{
-                  strokeDasharray: '0.16 0.84',
+                  strokeDasharray: '0.13 0.87',
                   strokeDashoffset: 0,
                   animation: `${flowAnim} ${route.flowDuration} linear ${route.flowDelay} infinite`,
-                  filter: `url(#${filterId})`,
+                  filter: 'url(#glow-crisp)',
                 }}
               />
 
