@@ -478,7 +478,7 @@ export default function HowItWorks() {
             </div>
 
             {/* ── Right: Sri Lanka Map Visual ── */}
-            <div className="hidden lg:block h-[480px]">
+            <div className="hidden lg:block h-[540px]">
               <SriLankaMapVisual />
             </div>
           </div>
