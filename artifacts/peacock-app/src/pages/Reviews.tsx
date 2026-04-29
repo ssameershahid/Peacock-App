@@ -950,7 +950,7 @@ export default function Reviews() {
                 <Link href="/tours">
                   <Button
                     size="lg"
-                    className="rounded-full px-10 h-14 text-base font-bold gap-2 bg-amber-400 hover:bg-amber-300 text-[#0C2421]"
+                    className="rounded-full px-10 h-14 text-base font-bold gap-2 bg-amber-200 hover:bg-amber-300 text-[#0C2421]"
                   >
                     Browse tours <ArrowRight className="w-4 h-4" />
                   </Button>

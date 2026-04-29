@@ -713,7 +713,7 @@ export default function TripDetail() {
           </div>
         </div>
 
-        <Button className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-forest-800 text-lg py-6 font-body font-semibold transition-all duration-200">
+        <Button className="w-full rounded-full bg-amber-200 hover:bg-amber-300 text-warm-900 text-lg py-6 font-body font-semibold transition-all duration-200">
           Pay Now — {format(cyoData.quotedAmount)}
         </Button>
       </div>

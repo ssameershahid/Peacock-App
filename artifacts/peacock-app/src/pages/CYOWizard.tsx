@@ -1941,7 +1941,7 @@ export default function CYOWizard() {
                 size="lg"
                 onClick={handleSubmit}
                 disabled={!canProceed() || submitting}
-                className="h-14 px-10 text-lg bg-amber-400 text-forest-600 hover:bg-amber-300 font-body"
+                className="h-14 px-10 text-lg bg-amber-200 text-warm-900 hover:bg-amber-300 font-body"
               >
                 {submitting ? 'Submitting…' : 'Submit request'}
               </Button>
