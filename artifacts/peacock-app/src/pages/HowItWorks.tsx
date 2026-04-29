@@ -450,7 +450,7 @@ export default function HowItWorks() {
                 transition={{ duration: 0.8, delay: 0.28, ease }}
                 className="text-base text-white/40 mb-12 max-w-lg leading-relaxed"
               >
-                Whether you want every detail sorted in advance, the freedom to build your own route stop by stop, or simply a reliable ride from A to B — we have a way to travel that fits. Every option comes with a vetted local driver, transparent pricing, and the flexibility to adjust as your plans evolve.
+                Pick a curated itinerary, build your own route from scratch, or book a single transfer — every option includes a vetted local driver, transparent pricing, and the freedom to travel entirely on your terms.
               </motion.p>
 
               {/* Anchor pills */}
