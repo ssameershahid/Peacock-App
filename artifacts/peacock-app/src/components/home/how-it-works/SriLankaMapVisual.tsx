@@ -157,8 +157,8 @@ export default function SriLankaMapVisual() {
                 d={route.d}
                 fill="none"
                 stroke={route.color}
-                strokeWidth="0.5"
-                strokeOpacity="0.18"
+                strokeWidth="0.35"
+                strokeOpacity="0.12"
                 strokeLinecap="round"
               />
 
@@ -168,12 +168,12 @@ export default function SriLankaMapVisual() {
                 d={route.d}
                 fill="none"
                 stroke={route.color}
-                strokeWidth="1.1"
+                strokeWidth="0.75"
                 strokeLinecap="round"
                 strokeOpacity={0}
                 filter={`url(#${filterId})`}
                 initial={{ pathLength: 0, strokeOpacity: 0 }}
-                animate={{ pathLength: 1, strokeOpacity: 0.65 }}
+                animate={{ pathLength: 1, strokeOpacity: 0.45 }}
                 transition={{
                   pathLength:    { duration: 1.7, delay: route.drawDelay, ease: [0.4, 0, 0.2, 1] },
                   strokeOpacity: { duration: 0.35, delay: route.drawDelay },
@@ -185,14 +185,14 @@ export default function SriLankaMapVisual() {
                 d={route.d}
                 fill="none"
                 stroke={route.glowColor}
-                strokeWidth="4"
+                strokeWidth="2.8"
                 strokeLinecap="round"
                 pathLength={1}
                 style={{
                   strokeDasharray: '0.2 0.8',
                   strokeDashoffset: 0,
                   animation: `${flowAnim} ${route.flowDuration} linear ${route.flowDelay} infinite`,
-                  filter: 'blur(1.4px)',
+                  filter: 'blur(1px)',
                 }}
               />
 
@@ -202,7 +202,7 @@ export default function SriLankaMapVisual() {
                 d={route.d}
                 fill="none"
                 stroke={route.color}
-                strokeWidth="1.6"
+                strokeWidth="1.1"
                 strokeLinecap="round"
                 pathLength={1}
                 style={{
