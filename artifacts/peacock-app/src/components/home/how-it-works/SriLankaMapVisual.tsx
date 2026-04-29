@@ -136,7 +136,7 @@ export default function SriLankaMapVisual() {
       <svg
         viewBox="0 0 100 123"
         className="absolute inset-0 w-full h-full"
-        style={{ overflow: 'visible', transform: 'translateY(5%)' }}
+        style={{ overflow: 'visible', transform: 'translateY(9%)' }}
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
