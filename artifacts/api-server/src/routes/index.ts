@@ -14,6 +14,7 @@ import adminRouter from "./admin.js";
 import accountRouter from "./account.js";
 import savedTripsRouter from "./saved-trips.js";
 import tripLeadsRouter from "./trip-leads.js";
+import cyoPricingRouter from "./cyo-pricing.js";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use("/admin", adminRouter);
 router.use("/account", accountRouter);
 router.use("/saved-trips", savedTripsRouter);
 router.use("/trip-leads", tripLeadsRouter);
+router.use("/cyo-pricing", cyoPricingRouter);
 
 export default router;

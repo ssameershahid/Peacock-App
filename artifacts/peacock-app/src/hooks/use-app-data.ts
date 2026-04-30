@@ -309,6 +309,25 @@ export function useVehicles() {
   });
 }
 
+export function useCYOPricing() {
+  return useQuery({
+    queryKey: ["cyo-pricing"],
+    queryFn: async () => {
+      try {
+        return await api.get<{ vehicleRates: Record<string, number>; upsells: any[] }>("/cyo-pricing");
+      } catch {
+        // Fallback to mock vehicle base rates if API unavailable
+        const vehicleRates = MOCK_VEHICLES.reduce((acc: Record<string, number>, v: any) => {
+          acc[v.id] = v.pricePerDay;
+          return acc;
+        }, {});
+        return { vehicleRates, upsells: [] };
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useTransfers() {
   return useQuery({
     queryKey: ["transfers"],

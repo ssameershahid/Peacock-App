@@ -24,6 +24,8 @@ import {
   customTourRequestsTable,
   bookingActivitiesTable,
   globalSeasonalPricingTable,
+  cyoVehicleRatesTable,
+  cyoUpsellItemsTable,
 } from "./schema/index.js";
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
@@ -1427,6 +1429,33 @@ async function seed() {
   }
 
   console.log("  ✓ Custom tour requests created");
+
+  // ─── CYO Vehicle Rates ────────────────────────────────────────────────────
+  console.log("  Creating CYO vehicle rates...");
+  await db
+    .insert(cyoVehicleRatesTable)
+    .values([
+      { vehicleType: "car", pricePerDay: 45 },
+      { vehicleType: "minivan", pricePerDay: 65 },
+      { vehicleType: "large-van", pricePerDay: 85 },
+      { vehicleType: "small-bus", pricePerDay: 120 },
+      { vehicleType: "medium-bus", pricePerDay: 175 },
+    ])
+    .onConflictDoNothing();
+  console.log("  ✓ CYO vehicle rates created");
+
+  // ─── CYO Upsell Items ─────────────────────────────────────────────────────
+  console.log("  Creating CYO upsell items...");
+  await db
+    .insert(cyoUpsellItemsTable)
+    .values([
+      { name: "Airport Pickup", description: "Meet & greet at Bandaranaike International Airport (BIA)", priceGBP: 35, sortOrder: 1 },
+      { name: "Welcome Pack", description: "Local SIM card, bottled water, snacks & destination guidebook", priceGBP: 15, sortOrder: 2 },
+      { name: "Tuk-tuk Day Trip", description: "Private tuk-tuk for a half-day local exploration", priceGBP: 25, sortOrder: 3 },
+      { name: "Professional Photography", description: "Dedicated photographer for one full day of your tour", priceGBP: 120, sortOrder: 4 },
+    ])
+    .onConflictDoNothing();
+  console.log("  ✓ CYO upsell items created");
 
   console.log("\n✅ Seed complete!");
   console.log("\nLogin credentials:");

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
   LayoutDashboard, Map, Users, Calendar, MessageSquare, Truck, Settings,
-  LogOut, Menu, X, Search, Bell, UserRound, Loader2, Mail
+  LogOut, Menu, X, Search, Bell, UserRound, Loader2, Mail, Tag
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Drivers', icon: Users, href: '/admin/drivers', badgeKey: 'drivers', badgeColor: 'red' },
   { label: 'Bookings', icon: Calendar, href: '/admin/bookings', badgeKey: 'bookings', badgeColor: 'amber' },
   { label: 'Custom Requests', icon: MessageSquare, href: '/admin/requests', badgeKey: 'customRequests', badgeColor: 'amber' },
+  { label: 'CYO Pricing', icon: Tag, href: '/admin/cyo-pricing' },
   { label: 'Leads', icon: Mail, href: '/admin/leads' },
   { label: 'Fleet', icon: Truck, href: '/admin/fleet' },
   { label: 'Customers', icon: UserRound, href: '/admin/customers' },

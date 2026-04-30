@@ -7,6 +7,16 @@ import {
   usersTable,
 } from "@workspace/db";
 import { authenticate, requireAdmin } from "../middleware/auth.js";
+import { verifyToken } from "../lib/auth.js";
+
+function optionalAuthenticate(req: any, res: any, next: any) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return next();
+  try {
+    req.user = verifyToken(authHeader.slice(7));
+  } catch { /* invalid token — treat as guest */ }
+  next();
+}
 import { createPaymentLink } from "../lib/stripe.js";
 import {
   sendCYORequestReceived,
@@ -32,8 +42,8 @@ async function generateRefCode(): Promise<string> {
   return `${prefix}${String(next).padStart(3, "0")}`;
 }
 
-// POST /api/custom-requests
-router.post("/", authenticate, async (req, res) => {
+// POST /api/custom-requests — works for both logged-in users and guests
+router.post("/", optionalAuthenticate, async (req, res) => {
   const schema = z.object({
     tripType: z.string().optional(),
     locations: z.array(z.string()),
@@ -48,6 +58,11 @@ router.post("/", authenticate, async (req, res) => {
     specialRequests: z.string().max(500).optional(),
     flightNumber: z.string().max(80).optional(),
     arrivalTime: z.string().max(50).optional(),
+    guestName: z.string().max(200).optional(),
+    guestEmail: z.string().email().optional(),
+    guestPhone: z.string().max(50).optional(),
+    estimatedTotal: z.number().int().positive().optional(),
+    selectedUpsellIds: z.array(z.string()).optional(),
   });
 
   const parsed = schema.safeParse(req.body);
@@ -56,14 +71,25 @@ router.post("/", authenticate, async (req, res) => {
     return;
   }
 
+  const isGuest = !req.user;
+  if (isGuest && !parsed.data.guestEmail) {
+    res.status(400).json({ error: "Email address is required to submit a request." });
+    return;
+  }
+
   try {
     const referenceCode = await generateRefCode();
+    const { guestName, guestEmail, guestPhone, ...tripData } = parsed.data;
+
     const [request] = await db
       .insert(customTourRequestsTable)
       .values({
-        ...parsed.data,
+        ...tripData,
         referenceCode,
-        customerId: req.user!.userId,
+        customerId: req.user?.userId ?? null,
+        guestName: isGuest ? (guestName ?? null) : null,
+        guestEmail: isGuest ? (guestEmail ?? null) : null,
+        guestPhone: isGuest ? (guestPhone ?? null) : null,
         status: "NEW",
         locations: parsed.data.locations || [],
         travelStyle: parsed.data.travelStyle || [],
@@ -71,16 +97,29 @@ router.post("/", authenticate, async (req, res) => {
       })
       .returning();
 
-    const [customer] = await db
-      .select({ email: usersTable.email, firstName: usersTable.firstName })
-      .from(usersTable)
-      .where(eq(usersTable.id, req.user!.userId))
-      .limit(1);
+    // Determine who to send the confirmation email to
+    let confirmEmail: string | null = null;
+    let confirmFirstName = "there";
 
-    if (customer) {
+    if (!isGuest) {
+      const [customer] = await db
+        .select({ email: usersTable.email, firstName: usersTable.firstName })
+        .from(usersTable)
+        .where(eq(usersTable.id, req.user!.userId))
+        .limit(1);
+      if (customer) {
+        confirmEmail = customer.email;
+        confirmFirstName = customer.firstName || "there";
+      }
+    } else {
+      confirmEmail = guestEmail ?? null;
+      confirmFirstName = guestName?.split(" ")[0] || "there";
+    }
+
+    if (confirmEmail) {
       sendCYORequestReceived({
-        to: customer.email,
-        firstName: customer.firstName || "there",
+        to: confirmEmail,
+        firstName: confirmFirstName,
         referenceCode,
         locations: parsed.data.locations,
         durationDays: parsed.data.durationDays,
@@ -103,7 +142,7 @@ router.get("/", authenticate, requireAdmin, async (_req, res) => {
       .orderBy(desc(customTourRequestsTable.createdAt));
 
     // Enrich with customer names
-    const customerIds = [...new Set(requests.map(r => r.customerId))];
+    const customerIds = [...new Set(requests.map(r => r.customerId).filter((id): id is string => !!id))];
     const customers = customerIds.length > 0
       ? await db.select({ id: usersTable.id, firstName: usersTable.firstName, lastName: usersTable.lastName, email: usersTable.email }).from(usersTable).where(inArray(usersTable.id, customerIds))
       : [];
@@ -111,11 +150,13 @@ router.get("/", authenticate, requireAdmin, async (_req, res) => {
     for (const c of customers) custMap[c.id] = c;
 
     const enriched = requests.map(r => {
-      const cust = custMap[r.customerId];
+      const cust = r.customerId ? custMap[r.customerId] : null;
       return {
         ...r,
-        customerName: cust ? [cust.firstName, cust.lastName].filter(Boolean).join(" ") : "Unknown",
-        customerEmail: cust?.email || "",
+        customerName: cust
+          ? [cust.firstName, cust.lastName].filter(Boolean).join(" ")
+          : (r.guestName || "Guest"),
+        customerEmail: cust?.email || r.guestEmail || "",
       };
     });
 

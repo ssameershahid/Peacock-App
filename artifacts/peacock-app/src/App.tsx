@@ -1,10 +1,10 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 
 import Home from "@/pages/Home";
@@ -53,6 +53,24 @@ function PublicRoute({ component: Component }: { component: React.ComponentType<
   );
 }
 
+function AdminRoute({ component: Component }: { component: React.ComponentType<any> }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-warm-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-forest-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== 'ADMIN') {
+    return <Redirect to="/login" />;
+  }
+
+  return <Component />;
+}
+
 function Router() {
   return (
     <Switch>
@@ -94,23 +112,24 @@ function Router() {
       <Route path="/driver/earnings" component={DriverDashboard} />
       <Route path="/driver/profile" component={DriverDashboard} />
 
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/tours" component={AdminDashboard} />
-      <Route path="/admin/tours/new" component={AdminDashboard} />
-      <Route path="/admin/tours/:slug/edit" component={AdminDashboard} />
-      <Route path="/admin/bookings" component={AdminDashboard} />
-      <Route path="/admin/bookings/:id" component={AdminDashboard} />
-      <Route path="/admin/drivers" component={AdminDashboard} />
-      <Route path="/admin/drivers/new" component={AdminDashboard} />
-      <Route path="/admin/drivers/:id/edit" component={AdminDashboard} />
-      <Route path="/admin/drivers/:id" component={AdminDashboard} />
-      <Route path="/admin/customers" component={AdminDashboard} />
-      <Route path="/admin/customers/:id" component={AdminDashboard} />
-      <Route path="/admin/requests" component={AdminDashboard} />
-      <Route path="/admin/requests/:id" component={AdminDashboard} />
-      <Route path="/admin/fleet" component={AdminDashboard} />
-      <Route path="/admin/leads" component={AdminDashboard} />
-      <Route path="/admin/settings" component={AdminDashboard} />
+      <Route path="/admin" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/tours" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/tours/new" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/tours/:slug/edit" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/bookings" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/bookings/:id" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/drivers" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/drivers/new" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/drivers/:id/edit" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/drivers/:id" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/customers" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/customers/:id" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/requests" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/requests/:id" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/fleet" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/leads" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/cyo-pricing" component={() => <AdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/settings" component={() => <AdminRoute component={AdminDashboard} />} />
 
       <Route component={NotFound} />
     </Switch>

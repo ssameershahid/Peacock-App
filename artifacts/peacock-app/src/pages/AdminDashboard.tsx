@@ -14,6 +14,7 @@ import AdminDriverDetail from './admin/AdminDriverDetail';
 import AdminCustomers from './admin/AdminCustomers';
 import AdminCustomerDetail from './admin/AdminCustomerDetail';
 import AdminLeads from './admin/AdminLeads';
+import AdminCYOPricing from './admin/AdminCYOPricing';
 
 export default function AdminDashboard() {
   const [rawLocation] = useLocation();
@@ -47,6 +48,7 @@ export default function AdminDashboard() {
     '/admin/leads': AdminLeads,
     '/admin/customers': AdminCustomers,
     '/admin/fleet': AdminFleet,
+    '/admin/cyo-pricing': AdminCYOPricing,
     '/admin/settings': AdminSettings,
   };
 

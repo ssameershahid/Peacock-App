@@ -9,7 +9,7 @@ import {
   RotateCcw, MapPin, Car, Users, Plane, Clock,
   Bookmark, Mail, Download, X, Loader2, Eye, Minus, Plus, Maximize2,
 } from 'lucide-react';
-import { useVehicles, useTourGroups, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip } from '@/hooks/use-app-data';
+import { useVehicles, useTourGroups, useCreateSavedTrip, useUpdateSavedTrip, useEmailTripPlan, useLeadTripData, useSavedTrip, useCYOPricing } from '@/hooks/use-app-data';
 import { ItineraryBuilder, itineraryToMapMarkers, type ItineraryDay } from '@/components/wizard/ItineraryBuilder';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -175,12 +175,14 @@ export default function CYOWizard() {
   const [step, setStep] = useState(1);
   const { format } = useCurrency();
   const { data: vehicles } = useVehicles();
+  const { data: cyoPricing } = useCYOPricing();
   const { data: tourGroups, isLoading: isLoadingGroups } = useTourGroups();
   const { user, login, register } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
   const [selections, setSelections] = useState<WizardSelections>({ ...DEFAULT_SELECTIONS });
+  const [selectedUpsells, setSelectedUpsells] = useState<Record<string, boolean>>({});
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -517,8 +519,8 @@ export default function CYOWizard() {
       // Both scratch and template now use the itinerary
       return selections.itinerary.length > 0 && selections.itinerary.some(d => d.to !== '');
     }
-    if (step === 3) return true;
-    if (step === 4) return selections.budget !== '';
+    if (step === 3) return (!!selections.startDate || selections.flexibleDates) && !!selections.vehicle;
+    if (step === 4) return selections.budget !== '' && selections.travelStyle.length > 0 && selections.interests.length > 0;
     if (step === 5) return selections.name && selections.email;
     return true;
   };
@@ -715,6 +717,7 @@ export default function CYOWizard() {
             ${selections.specialRequests ? `<p><strong>Special requests:</strong> ${selections.specialRequests}</p>` : ''}
             ${selections.flightNumber.trim() ? `<p><strong>Flight number:</strong> ${selections.flightNumber.trim()}</p>` : ''}
             ${selections.arrivalTime ? `<p><strong>Scheduled arrival time:</strong> ${selections.arrivalTime}</p>` : ''}
+            ${hasEstimate ? `<p style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd"><strong>Estimated price:</strong> from ${format(estimatedTotal)} &nbsp;<span style="color:#888;font-size:13px">(per vehicle · subject to final confirmation)</span></p>` : ''}
           </div>
 
           <h2>Selected Destinations</h2>
@@ -727,8 +730,8 @@ export default function CYOWizard() {
           ${selections.otherPlaces ? `<div class="dest"><strong>Also visiting:</strong> ${selections.otherPlaces}</div>` : ''}
 
           <h2>What happens next?</h2>
-          <p><strong>1. Submit your trip for a quote</strong> \u2014 Our team will review your selections and create a detailed itinerary with exact pricing.</p>
-          <p><strong>2. Review your personalised quote</strong> \u2014 We'll email you a custom quote within 24\u201348 hours.</p>
+          <p><strong>1. Submit your request</strong> \u2014 Hit submit and our team will review your trip details.</p>
+          <p><strong>2. We'll reach out within 24 hrs</strong> \u2014 We'll contact you to confirm your trip and send a final quote${hasEstimate ? ` (estimated from ${format(estimatedTotal)})` : ''}.</p>
           <p><strong>3. Book and meet your driver</strong> \u2014 Pay securely online and we'll assign your personal driver.</p>
 
           <p style="margin-top:32px"><strong>Questions? Get in touch</strong></p>
@@ -786,11 +789,17 @@ export default function CYOWizard() {
         specialRequests: selections.specialRequests || undefined,
         flightNumber: selections.flightNumber.trim() || undefined,
         arrivalTime: selections.arrivalTime.trim() || undefined,
+        guestName: selections.name || undefined,
+        guestEmail: selections.email || undefined,
+        guestPhone: selections.phone || undefined,
+        estimatedTotal: estimatedTotal > 0 ? estimatedTotal : undefined,
+        selectedUpsellIds: Object.entries(selectedUpsells).filter(([, v]) => v).map(([id]) => id),
       });
       const ref = result.referenceCode || result.id || `CYO-${Date.now().toString(36).toUpperCase().slice(-6)}`;
       setCyoRef(ref);
       setSubmitted(true);
       clearWizardState();
+      window.scrollTo({ top: 0, behavior: 'instant' });
 
       analytics.cyoRequestSubmitted(locations, selections.days);
       trackEvent('cyo_request_submitted', {
@@ -870,12 +879,27 @@ export default function CYOWizard() {
         ...(selections.startFrom ? [selections.startFrom] : []),
         ...selections.itinerary.filter(d => d.to).map(d => d.to),
       ]
-    : selectedDestNames;
+    : selectedDestNames.length > 0
+      ? selectedDestNames
+      : selections.itinerary.filter(d => d.to).map(d => d.to);
 
   // Both scratch and template now use itinerary — fall back to selections.days if not yet loaded
   const displayDays = selections.itinerary.length > 0
     ? selections.itinerary.length
     : selections.days;
+
+  // ── Estimated price (step 5) ────────────────────────────────────────────
+  // Prefer CYO-specific rates from admin; fall back to base vehicle pricePerDay
+  const selectedVehicleObj = (vehicles ?? []).find((v: any) => v.id === selections.vehicle);
+  const vehicleSlug = selectedVehicleObj?.slug ?? selectedVehicleObj?.type ?? selections.vehicle;
+  const estimatedRate: number =
+    (cyoPricing?.vehicleRates?.[vehicleSlug] ?? selectedVehicleObj?.pricePerDay ?? 0);
+  const activeUpsells = (cyoPricing?.upsells ?? []).filter((u: any) => u.isActive);
+  const upsellsTotal: number = activeUpsells.reduce(
+    (sum: number, u: any) => sum + (selectedUpsells[u.id] ? u.priceGBP : 0), 0
+  );
+  const estimatedTotal: number = estimatedRate * displayDays + upsellsTotal;
+  const hasEstimate = !!selections.vehicle && displayDays > 0 && estimatedRate > 0;
 
   // ── Determine which actions to show in summary bar ──────────────────────
 
@@ -1423,7 +1447,7 @@ export default function CYOWizard() {
                   {/* Start date + Trip duration */}
                   <div className="space-y-5">
                     <div>
-                      <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date</label>
+                      <label className="block text-sm font-medium text-forest-600 mb-2 font-body">Start date <span className="text-red-500">*</span></label>
                       <div className="relative cursor-pointer" onClick={() => startDateRef.current?.showPicker()}>
                         <input
                           ref={startDateRef}
@@ -1469,27 +1493,30 @@ export default function CYOWizard() {
 
                 {/* ── Row 2: Vehicle (full width, all visible) ── */}
                 <div className="mb-10 pb-10 border-b border-warm-100">
-                  <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Vehicle</label>
+                  <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Vehicle <span className="text-red-500">*</span></label>
                   <div className="flex flex-wrap gap-3">
-                    {(vehicles || []).map(v => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSelections(s => ({ ...s, vehicle: v.id }))}
-                        className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all duration-200 flex-1 min-w-[100px] cursor-pointer ${
-                          selections.vehicle === v.id
-                            ? 'border-forest-500 bg-forest-50 ring-2 ring-forest-500 shadow-sm'
-                            : 'border-warm-200 bg-white hover:border-forest-300 hover:shadow-sm'
-                        }`}
-                      >
-                        <img src={v.image} alt={v.name} className="w-16 h-10 object-contain mb-2" />
-                        <span className="font-body font-semibold text-sm text-forest-600">{v.name}</span>
-                        <span className="font-body text-xs text-warm-400 mt-0.5">{v.capacity}</span>
-                        <span className="font-body text-sm font-semibold text-forest-500 mt-1">
-                          {format(v.pricePerDay)}<span className="text-xs font-normal text-warm-400">/day</span>
-                        </span>
-                      </button>
-                    ))}
+                    {(vehicles || []).map(v => {
+                      const cyoRate = cyoPricing?.vehicleRates?.[v.slug ?? v.type ?? v.id] ?? v.pricePerDay;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelections(s => ({ ...s, vehicle: v.id }))}
+                          className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all duration-200 flex-1 min-w-[100px] cursor-pointer ${
+                            selections.vehicle === v.id
+                              ? 'border-forest-500 bg-forest-50 ring-2 ring-forest-500 shadow-sm'
+                              : 'border-warm-200 bg-white hover:border-forest-300 hover:shadow-sm'
+                          }`}
+                        >
+                          <img src={v.image} alt={v.name} className="w-16 h-10 object-contain mb-2" />
+                          <span className="font-body font-semibold text-sm text-forest-600">{v.name}</span>
+                          <span className="font-body text-xs text-warm-400 mt-0.5">{v.capacity}</span>
+                          <span className="font-body text-sm font-semibold text-forest-500 mt-1">
+                            {format(cyoRate)}<span className="text-xs font-normal text-warm-400">/day</span>
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                   <p className="font-body text-xs text-warm-400 mt-3">
                     <span className="text-forest-500 font-medium">Auto-selected</span> based on {selections.pax} traveller{selections.pax !== 1 ? 's' : ''} — you can override above
@@ -1539,10 +1566,10 @@ export default function CYOWizard() {
           {step === 4 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h2 className="font-display text-3xl text-forest-600 mb-3">Your preferences</h2>
-              <p className="font-body text-sm text-warm-600 mb-8">You're welcome to use this optional section to tell us a little more about your preferences, so we—along with your driver—can share personalised recommendations and help you get the very most from your itinerary.</p>
+              <p className="font-body text-sm text-warm-600 mb-8">Tell us a little more about your preferences so we—along with your driver—can share personalised recommendations and help you get the very most from your itinerary.</p>
 
               <div className="mb-8">
-                <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Budget range</label>
+                <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Budget range <span className="text-red-500">*</span></label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {['Budget', 'Mid-range', 'Premium', 'Flexible'].map(b => (
                     <div
@@ -1561,7 +1588,7 @@ export default function CYOWizard() {
               </div>
 
               <div className="mb-8">
-                <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Travel style</label>
+                <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Travel style <span className="text-red-500">*</span></label>
                 <div className="flex flex-wrap gap-3">
                   {['Adventure', 'Cultural', 'Relaxation', 'Mix'].map(style => (
                     <label key={style} className="flex items-center gap-2 cursor-pointer">
@@ -1578,7 +1605,7 @@ export default function CYOWizard() {
               </div>
 
               <div className="mb-8">
-                <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Interests</label>
+                <label className="block text-sm font-medium text-forest-600 mb-3 font-body">Interests <span className="text-red-500">*</span></label>
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS.map(interest => (
                     <button
@@ -1631,99 +1658,161 @@ export default function CYOWizard() {
               )}
 
               {/* Full trip summary */}
-              <div className="bg-warm-50 rounded-2xl p-6 mb-8 border border-warm-200 space-y-4">
-                <div className="grid grid-cols-2 gap-4 font-body text-sm">
+              <div className="bg-warm-50 rounded-2xl p-6 mb-8 border border-warm-200">
+                {/* 3-column stat grid */}
+                <div className="grid grid-cols-3 gap-x-6 gap-y-5 font-body text-sm pb-5 mb-5 border-b border-warm-200">
                   <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Template</span>
-                    <span className="text-forest-600 font-medium capitalize">
+                    <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Trip type</span>
+                    <span className="text-forest-600 font-medium">
                       {selections.tripType === 'scratch' ? 'Custom trip' : ((tourGroups ?? []).find((g: any) => g.groupSlug === selections.tripType)?.name ?? selections.tripType) || '—'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Travellers</span>
+                    <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Travellers</span>
                     <span className="text-forest-600 font-medium">
                       {selections.adults} Adult{selections.adults !== 1 ? 's' : ''}
                       {selections.children > 0 && `, ${selections.children} Child${selections.children !== 1 ? 'ren' : ''}`}
                     </span>
                   </div>
                   <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Duration</span>
-                    <span className="text-forest-600 font-medium">{selections.days} days</span>
+                    <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Duration</span>
+                    <span className="text-forest-600 font-medium">{displayDays} day{displayDays !== 1 ? 's' : ''}</span>
                   </div>
                   <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Budget</span>
-                    <span className="text-forest-600 font-medium capitalize">{selections.budget}</span>
+                    <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Start date</span>
+                    <span className="text-forest-600 font-medium">
+                      {selections.flexibleDates && !selections.startDate
+                        ? 'Flexible'
+                        : selections.startDate
+                          ? new Date(selections.startDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : '—'}
+                    </span>
                   </div>
-                  {selections.startDate && (
-                    <div>
-                      <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Start date</span>
-                      <span className="text-forest-600 font-medium">{selections.startDate}</span>
-                    </div>
-                  )}
                   <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1">Vehicle</span>
-                    <span className="text-forest-600 font-medium capitalize">{selections.vehicle}</span>
+                    <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Budget</span>
+                    <span className="text-forest-600 font-medium capitalize">{selections.budget || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Vehicle</span>
+                    <span className="text-forest-600 font-medium">
+                      {(vehicles ?? []).find((v: any) => v.id === selections.vehicle)?.name ?? selections.vehicle ?? '—'}
+                    </span>
                   </div>
                 </div>
-                <div>
-                  <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">
+
+                {/* Destinations / Itinerary */}
+                <div className="pb-5 mb-5 border-b border-warm-200">
+                  <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-2 font-body">
                     {selections.tripType === 'scratch' ? 'Itinerary' : 'Destinations'}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {selections.tripType === 'scratch'
                       ? selections.itinerary.filter(d => d.to).map((d, i) => (
-                          <span key={d.id} className="px-3 py-1 bg-sage rounded-pill text-xs font-medium text-forest-600 font-body">
-                            Day {i + 1}: {selections.itinerary[i] && i === 0 && selections.startFrom ? `${selections.startFrom} → ` : ''}{d.to}
+                          <span key={d.id} className="px-3 py-1 bg-white border border-warm-200 rounded-full text-xs font-medium text-forest-600 font-body">
+                            {i + 1}. {d.to}
                           </span>
                         ))
                       : scratchDestNames.map(n => (
-                          <span key={n} className="px-3 py-1 bg-sage rounded-pill text-xs font-medium text-forest-600 font-body">{n}</span>
+                          <span key={n} className="px-3 py-1 bg-white border border-warm-200 rounded-full text-xs font-medium text-forest-600 font-body">{n}</span>
                         ))
                     }
                     {selections.tripType !== 'scratch' && selections.otherPlaces && (
-                      <span className="px-3 py-1 bg-amber-100 rounded-pill text-xs font-medium text-amber-700 font-body">{selections.otherPlaces}</span>
+                      <span className="px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-medium text-amber-700 font-body">{selections.otherPlaces}</span>
                     )}
                   </div>
                 </div>
-                {selections.travelStyle.length > 0 && (
-                  <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Travel style</span>
-                    <div className="flex flex-wrap gap-2">
-                      {selections.travelStyle.map(s => (
-                        <span key={s} className="px-3 py-1 bg-forest-100 rounded-pill text-xs font-medium text-forest-600 font-body">{s}</span>
-                      ))}
+
+                {/* Travel style + Interests side by side */}
+                <div className="grid grid-cols-2 gap-6 pb-5 mb-5 border-b border-warm-200">
+                  {selections.travelStyle.length > 0 && (
+                    <div>
+                      <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-2 font-body">Travel style</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {selections.travelStyle.map(s => (
+                          <span key={s} className="px-2.5 py-1 bg-forest-50 border border-forest-200 rounded-full text-xs font-medium text-forest-600 font-body">{s}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {selections.interests.length > 0 && (
-                  <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Interests</span>
-                    <div className="flex flex-wrap gap-2">
-                      {selections.interests.map(i => (
-                        <span key={i} className="px-3 py-1 bg-forest-100 rounded-pill text-xs font-medium text-forest-600 font-body">{i}</span>
-                      ))}
+                  )}
+                  {selections.interests.length > 0 && (
+                    <div>
+                      <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-2 font-body">Interests</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {selections.interests.map(i => (
+                          <span key={i} className="px-2.5 py-1 bg-forest-50 border border-forest-200 rounded-full text-xs font-medium text-forest-600 font-body">{i}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {selections.specialRequests && (
-                  <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Special requests</span>
-                    <p className="font-body text-sm text-forest-600">{selections.specialRequests}</p>
-                  </div>
-                )}
-                {selections.flightNumber.trim() && (
-                  <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Flight number</span>
-                    <p className="font-body text-sm text-forest-600">{selections.flightNumber.trim()}</p>
-                  </div>
-                )}
-                {selections.arrivalTime && (
-                  <div>
-                    <span className="text-warm-400 block text-xs uppercase tracking-wider mb-1 font-body">Scheduled arrival</span>
-                    <p className="font-body text-sm text-forest-600">{selections.arrivalTime}</p>
+                  )}
+                </div>
+
+                {/* Optional extras — only shown if present */}
+                {(selections.specialRequests || selections.flightNumber.trim() || selections.arrivalTime) && (
+                  <div className="grid grid-cols-3 gap-x-6 gap-y-4 font-body text-sm">
+                    {selections.specialRequests && (
+                      <div className="col-span-3">
+                        <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Special requests</span>
+                        <p className="text-forest-600 text-sm">{selections.specialRequests}</p>
+                      </div>
+                    )}
+                    {selections.flightNumber.trim() && (
+                      <div>
+                        <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Flight</span>
+                        <p className="text-forest-600 font-medium">{selections.flightNumber.trim()}</p>
+                      </div>
+                    )}
+                    {selections.arrivalTime && (
+                      <div>
+                        <span className="text-warm-400 block text-[10px] uppercase tracking-widest mb-1">Arrival time</span>
+                        <p className="text-forest-600 font-medium">{selections.arrivalTime}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+
+              {/* Optional upsells */}
+              {activeUpsells.length > 0 && (
+                <div className="bg-warm-50 border border-warm-200 rounded-2xl p-5 mb-4">
+                  <p className="font-body text-[10px] uppercase tracking-widest text-warm-400 mb-3">Optional extras</p>
+                  <div className="space-y-1">
+                    {activeUpsells.map((u: any) => (
+                      <label key={u.id} className="flex items-center gap-3 py-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={!!selectedUpsells[u.id]}
+                          onChange={e => setSelectedUpsells(prev => ({ ...prev, [u.id]: e.target.checked }))}
+                          className="w-4 h-4 accent-forest-600 rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-body text-sm text-forest-600 font-medium group-hover:text-forest-700">{u.name}</span>
+                          {u.description && (
+                            <span className="font-body text-xs text-warm-400 block">{u.description}</span>
+                          )}
+                        </div>
+                        <span className="font-body text-sm text-forest-700 font-medium shrink-0">+{format(u.priceGBP)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Estimated price block */}
+              {hasEstimate && (
+                <div className="bg-forest-50 border border-forest-200 rounded-2xl p-5 mb-6">
+                  <div className="flex items-baseline justify-between mb-1">
+                    <span className="font-body text-sm text-warm-500">
+                      {format(estimatedRate)} × {displayDays} days{upsellsTotal > 0 ? ` + extras` : ''}
+                    </span>
+                    <span className="font-display text-3xl text-forest-700">
+                      from {format(estimatedTotal)}
+                    </span>
+                  </div>
+                  <p className="font-body text-xs text-warm-400">
+                    Estimated price · per vehicle, not per person · Our team will confirm your final quote within 24 hrs
+                  </p>
+                </div>
+              )}
 
               {/* "Not ready" nudge */}
               <p className="font-body text-sm text-warm-400 mb-6">
@@ -1778,18 +1867,202 @@ export default function CYOWizard() {
                     <option value="US">United States</option>
                     <option value="AU">Australia</option>
                     <option value="CA">Canada</option>
-                    <option value="DE">Germany</option>
-                    <option value="FR">France</option>
-                    <option value="NL">Netherlands</option>
                     <option value="LK">Sri Lanka</option>
                     <option value="IN">India</option>
-                    <option value="Other">Other</option>
+                    <option disabled>──────────────</option>
+                    <option value="AF">Afghanistan</option>
+                    <option value="AL">Albania</option>
+                    <option value="DZ">Algeria</option>
+                    <option value="AD">Andorra</option>
+                    <option value="AO">Angola</option>
+                    <option value="AG">Antigua and Barbuda</option>
+                    <option value="AR">Argentina</option>
+                    <option value="AM">Armenia</option>
+                    <option value="AT">Austria</option>
+                    <option value="AZ">Azerbaijan</option>
+                    <option value="BS">Bahamas</option>
+                    <option value="BH">Bahrain</option>
+                    <option value="BD">Bangladesh</option>
+                    <option value="BB">Barbados</option>
+                    <option value="BY">Belarus</option>
+                    <option value="BE">Belgium</option>
+                    <option value="BZ">Belize</option>
+                    <option value="BJ">Benin</option>
+                    <option value="BT">Bhutan</option>
+                    <option value="BO">Bolivia</option>
+                    <option value="BA">Bosnia and Herzegovina</option>
+                    <option value="BW">Botswana</option>
+                    <option value="BR">Brazil</option>
+                    <option value="BN">Brunei</option>
+                    <option value="BG">Bulgaria</option>
+                    <option value="BF">Burkina Faso</option>
+                    <option value="BI">Burundi</option>
+                    <option value="CV">Cabo Verde</option>
+                    <option value="KH">Cambodia</option>
+                    <option value="CM">Cameroon</option>
+                    <option value="CF">Central African Republic</option>
+                    <option value="TD">Chad</option>
+                    <option value="CL">Chile</option>
+                    <option value="CN">China</option>
+                    <option value="CO">Colombia</option>
+                    <option value="KM">Comoros</option>
+                    <option value="CG">Congo</option>
+                    <option value="CD">Congo (DRC)</option>
+                    <option value="CR">Costa Rica</option>
+                    <option value="HR">Croatia</option>
+                    <option value="CU">Cuba</option>
+                    <option value="CY">Cyprus</option>
+                    <option value="CZ">Czech Republic</option>
+                    <option value="DK">Denmark</option>
+                    <option value="DJ">Djibouti</option>
+                    <option value="DM">Dominica</option>
+                    <option value="DO">Dominican Republic</option>
+                    <option value="EC">Ecuador</option>
+                    <option value="EG">Egypt</option>
+                    <option value="SV">El Salvador</option>
+                    <option value="GQ">Equatorial Guinea</option>
+                    <option value="ER">Eritrea</option>
+                    <option value="EE">Estonia</option>
+                    <option value="SZ">Eswatini</option>
+                    <option value="ET">Ethiopia</option>
+                    <option value="FJ">Fiji</option>
+                    <option value="FI">Finland</option>
+                    <option value="FR">France</option>
+                    <option value="GA">Gabon</option>
+                    <option value="GM">Gambia</option>
+                    <option value="GE">Georgia</option>
+                    <option value="DE">Germany</option>
+                    <option value="GH">Ghana</option>
+                    <option value="GR">Greece</option>
+                    <option value="GD">Grenada</option>
+                    <option value="GT">Guatemala</option>
+                    <option value="GN">Guinea</option>
+                    <option value="GW">Guinea-Bissau</option>
+                    <option value="GY">Guyana</option>
+                    <option value="HT">Haiti</option>
+                    <option value="HN">Honduras</option>
+                    <option value="HU">Hungary</option>
+                    <option value="IS">Iceland</option>
+                    <option value="ID">Indonesia</option>
+                    <option value="IR">Iran</option>
+                    <option value="IQ">Iraq</option>
+                    <option value="IE">Ireland</option>
+                    <option value="IL">Israel</option>
+                    <option value="IT">Italy</option>
+                    <option value="JM">Jamaica</option>
+                    <option value="JP">Japan</option>
+                    <option value="JO">Jordan</option>
+                    <option value="KZ">Kazakhstan</option>
+                    <option value="KE">Kenya</option>
+                    <option value="KI">Kiribati</option>
+                    <option value="KW">Kuwait</option>
+                    <option value="KG">Kyrgyzstan</option>
+                    <option value="LA">Laos</option>
+                    <option value="LV">Latvia</option>
+                    <option value="LB">Lebanon</option>
+                    <option value="LS">Lesotho</option>
+                    <option value="LR">Liberia</option>
+                    <option value="LY">Libya</option>
+                    <option value="LI">Liechtenstein</option>
+                    <option value="LT">Lithuania</option>
+                    <option value="LU">Luxembourg</option>
+                    <option value="MG">Madagascar</option>
+                    <option value="MW">Malawi</option>
+                    <option value="MY">Malaysia</option>
+                    <option value="MV">Maldives</option>
+                    <option value="ML">Mali</option>
+                    <option value="MT">Malta</option>
+                    <option value="MH">Marshall Islands</option>
+                    <option value="MR">Mauritania</option>
+                    <option value="MU">Mauritius</option>
+                    <option value="MX">Mexico</option>
+                    <option value="FM">Micronesia</option>
+                    <option value="MD">Moldova</option>
+                    <option value="MC">Monaco</option>
+                    <option value="MN">Mongolia</option>
+                    <option value="ME">Montenegro</option>
+                    <option value="MA">Morocco</option>
+                    <option value="MZ">Mozambique</option>
+                    <option value="MM">Myanmar</option>
+                    <option value="NA">Namibia</option>
+                    <option value="NR">Nauru</option>
+                    <option value="NP">Nepal</option>
+                    <option value="NL">Netherlands</option>
+                    <option value="NZ">New Zealand</option>
+                    <option value="NI">Nicaragua</option>
+                    <option value="NE">Niger</option>
+                    <option value="NG">Nigeria</option>
+                    <option value="KP">North Korea</option>
+                    <option value="MK">North Macedonia</option>
+                    <option value="NO">Norway</option>
+                    <option value="OM">Oman</option>
+                    <option value="PK">Pakistan</option>
+                    <option value="PW">Palau</option>
+                    <option value="PA">Panama</option>
+                    <option value="PG">Papua New Guinea</option>
+                    <option value="PY">Paraguay</option>
+                    <option value="PE">Peru</option>
+                    <option value="PH">Philippines</option>
+                    <option value="PL">Poland</option>
+                    <option value="PT">Portugal</option>
+                    <option value="QA">Qatar</option>
+                    <option value="RO">Romania</option>
+                    <option value="RU">Russia</option>
+                    <option value="RW">Rwanda</option>
+                    <option value="KN">Saint Kitts and Nevis</option>
+                    <option value="LC">Saint Lucia</option>
+                    <option value="VC">Saint Vincent and the Grenadines</option>
+                    <option value="WS">Samoa</option>
+                    <option value="SM">San Marino</option>
+                    <option value="ST">São Tomé and Príncipe</option>
+                    <option value="SA">Saudi Arabia</option>
+                    <option value="SN">Senegal</option>
+                    <option value="RS">Serbia</option>
+                    <option value="SC">Seychelles</option>
+                    <option value="SL">Sierra Leone</option>
+                    <option value="SG">Singapore</option>
+                    <option value="SK">Slovakia</option>
+                    <option value="SI">Slovenia</option>
+                    <option value="SB">Solomon Islands</option>
+                    <option value="SO">Somalia</option>
+                    <option value="ZA">South Africa</option>
+                    <option value="KR">South Korea</option>
+                    <option value="SS">South Sudan</option>
+                    <option value="ES">Spain</option>
+                    <option value="SD">Sudan</option>
+                    <option value="SR">Suriname</option>
+                    <option value="SE">Sweden</option>
+                    <option value="CH">Switzerland</option>
+                    <option value="SY">Syria</option>
+                    <option value="TW">Taiwan</option>
+                    <option value="TJ">Tajikistan</option>
+                    <option value="TZ">Tanzania</option>
+                    <option value="TH">Thailand</option>
+                    <option value="TL">Timor-Leste</option>
+                    <option value="TG">Togo</option>
+                    <option value="TO">Tonga</option>
+                    <option value="TT">Trinidad and Tobago</option>
+                    <option value="TN">Tunisia</option>
+                    <option value="TR">Turkey</option>
+                    <option value="TM">Turkmenistan</option>
+                    <option value="TV">Tuvalu</option>
+                    <option value="UG">Uganda</option>
+                    <option value="UA">Ukraine</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="UY">Uruguay</option>
+                    <option value="UZ">Uzbekistan</option>
+                    <option value="VU">Vanuatu</option>
+                    <option value="VE">Venezuela</option>
+                    <option value="VN">Vietnam</option>
+                    <option value="YE">Yemen</option>
+                    <option value="ZM">Zambia</option>
+                    <option value="ZW">Zimbabwe</option>
                   </select>
                 </div>
               </div>
 
               <p className="font-body text-sm text-warm-400 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-                Our team will review your request and send you a personalised quote within 24–48 hours.
+                Once submitted, we'll reach out within 24 hrs to confirm your trip details and send you a final quote.
               </p>
             </div>
           )}
@@ -1948,7 +2221,7 @@ export default function CYOWizard() {
                 disabled={!canProceed() || submitting}
                 className="h-14 px-10 text-lg bg-amber-200 text-warm-900 hover:bg-amber-300 font-body"
               >
-                {submitting ? 'Submitting…' : 'Submit request'}
+                {submitting ? 'Submitting…' : hasEstimate ? `Submit request — from ${format(estimatedTotal)}` : 'Submit request'}
               </Button>
             )}
           </div>

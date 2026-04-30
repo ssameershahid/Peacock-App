@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
 import { Mail, Phone, Plus, Trash2, Copy, Send, Link2, Clock } from 'lucide-react';
-import { useAdminCYO, useUpdateCYOStatus } from '@/hooks/use-app-data';
+import { useAdminCYO, useUpdateCYOStatus, useCYOPricing } from '@/hooks/use-app-data';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import AdminLayout from './AdminLayout';
@@ -11,18 +11,34 @@ export default function AdminCYODetail() {
   const reqId = params?.id || '';
   const { data: requests } = useAdminCYO();
   const updateStatus = useUpdateCYOStatus();
+  const { data: cyoPricing } = useCYOPricing();
   const { format } = useCurrency();
   const request = requests?.find(r => r.id === reqId);
 
-  const [lineItems, setLineItems] = useState([
-    { desc: 'Car x 10 days', rate: 38, qty: 10, subtotal: 380 },
-  ]);
-  const [extras, setExtras] = useState([
-    { desc: 'Premium accommodation surcharge', amount: 60 },
-    { desc: 'Trail guide (3 days)', amount: 45 },
-  ]);
+  const [lineItems, setLineItems] = useState<{ desc: string; rate: number; qty: number; subtotal: number }[]>([]);
+  const [extras, setExtras] = useState<{ desc: string; amount: number }[]>([]);
+  const [initialized, setInitialized] = useState(false);
   const [linkGenerated, setLinkGenerated] = useState(false);
   const [quoteSent, setQuoteSent] = useState(false);
+
+  // Pre-populate quote builder from the wizard's estimated breakdown (runs once per request)
+  useEffect(() => {
+    if (!request || !cyoPricing || initialized) return;
+    const slug = request.vehiclePreference ?? '';
+    const vehicleName = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Vehicle';
+    const rate = (cyoPricing as any).vehicleRates?.[slug] ?? 0;
+    const days = request.durationDays ?? 1;
+    setLineItems(rate > 0
+      ? [{ desc: `${vehicleName} × ${days} days`, rate, qty: days, subtotal: rate * days }]
+      : [{ desc: '', rate: 0, qty: 1, subtotal: 0 }]
+    );
+    const upsellExtras = ((request as any).selectedUpsellIds ?? [])
+      .map((id: string) => (cyoPricing as any).upsells?.find((u: any) => u.id === id))
+      .filter(Boolean)
+      .map((u: any) => ({ desc: u.name, amount: u.priceGBP }));
+    setExtras(upsellExtras);
+    setInitialized(true);
+  }, [request, cyoPricing, initialized]);
 
   if (!request) {
     return (
@@ -103,6 +119,31 @@ export default function AdminCYODetail() {
               <div className="bg-amber-50 rounded-xl p-4">
                 <p className="font-body text-xs font-semibold text-amber-800 mb-1">Special requests</p>
                 <p className="font-body text-sm text-amber-700">{request.specialRequests}</p>
+              </div>
+            )}
+            {(request.estimatedTotal != null || request.selectedUpsellIds?.length > 0) && (
+              <div className="mt-4 bg-forest-50 border border-forest-100 rounded-xl px-4 py-3 space-y-2">
+                {request.estimatedTotal != null && (
+                  <div className="flex items-center justify-between">
+                    <p className="font-body text-xs text-warm-400">Wizard showed customer</p>
+                    <p className="font-body text-sm font-semibold text-forest-600">from {format(request.estimatedTotal)}</p>
+                  </div>
+                )}
+                {request.selectedUpsellIds?.length > 0 && (
+                  <div>
+                    <p className="font-body text-xs text-warm-400 mb-1">Customer selected extras</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {request.selectedUpsellIds.map((id: string) => {
+                        const upsell = cyoPricing?.upsells?.find((u: any) => u.id === id);
+                        return (
+                          <span key={id} className="font-body text-xs bg-forest-100 text-forest-700 px-2.5 py-1 rounded-full">
+                            {upsell ? `${upsell.name} (+${format(upsell.priceGBP)})` : id}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
